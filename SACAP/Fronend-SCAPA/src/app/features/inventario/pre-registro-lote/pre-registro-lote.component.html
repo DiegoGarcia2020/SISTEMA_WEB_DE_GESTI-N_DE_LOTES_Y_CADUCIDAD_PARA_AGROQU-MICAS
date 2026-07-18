@@ -1,0 +1,159 @@
+<section class="pr-page">
+
+  <div class="pr-header">
+    <div class="pr-header-icon">📋</div>
+    <div>
+      <h1 class="pr-title">Pre-registro de Lote</h1>
+      <p class="pr-subtitle">Formulario A — Proveedor declara datos del lote y adjunta documentos</p>
+    </div>
+  </div>
+
+  <!-- Indicador de pasos -->
+  <div class="pr-stepper">
+    <div class="pr-step" [class.pr-step--active]="paso() === 'form'"       [class.pr-step--done]="paso() !== 'form'">
+      <span class="pr-step-num">1</span><span class="pr-step-lbl">Datos del Lote</span>
+    </div>
+    <div class="pr-step-line"></div>
+    <div class="pr-step" [class.pr-step--active]="paso() === 'documentos'" [class.pr-step--done]="paso() === 'exito'">
+      <span class="pr-step-num">2</span><span class="pr-step-lbl">Documentos</span>
+    </div>
+    <div class="pr-step-line"></div>
+    <div class="pr-step" [class.pr-step--active]="paso() === 'exito'">
+      <span class="pr-step-num">3</span><span class="pr-step-lbl">Confirmación</span>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="pr-error">⚠️ {{ error() }}</div>
+  }
+
+  <!-- PASO 1: Formulario de datos del lote -->
+  @if (paso() === 'form') {
+    <div class="pr-card">
+      <h2 class="pr-card-title">Datos del Lote</h2>
+      <div class="pr-grid">
+
+        <div class="pr-field">
+          <label class="pr-label">Número de Lote <span class="pr-req">*</span></label>
+          <input class="pr-input" [(ngModel)]="form.numeroLote"
+                 placeholder="Ej: LOT-2025-001" required />
+        </div>
+
+        <div class="pr-field">
+          <label class="pr-label">ID Producto <span class="pr-req">*</span></label>
+          <input class="pr-input" type="number" [(ngModel)]="form.idProducto"
+                 placeholder="ID del producto" min="1" />
+        </div>
+
+        <div class="pr-field">
+          <label class="pr-label">ID Proveedor <span class="pr-req">*</span></label>
+          <input class="pr-input" type="number" [(ngModel)]="form.idProveedor"
+                 placeholder="ID del proveedor" min="1" />
+        </div>
+
+        <div class="pr-field">
+          <label class="pr-label">Cantidad Declarada <span class="pr-req">*</span></label>
+          <input class="pr-input" type="number" [(ngModel)]="form.cantidadDeclarada"
+                 placeholder="Unidades" min="1" />
+        </div>
+
+        <div class="pr-field">
+          <label class="pr-label">Fecha de Fabricación <span class="pr-req">*</span></label>
+          <input class="pr-input" type="date" [(ngModel)]="form.fechaFabricacion" />
+        </div>
+
+        <div class="pr-field">
+          <label class="pr-label">Fecha de Vencimiento <span class="pr-req">*</span></label>
+          <input class="pr-input" type="date" [(ngModel)]="form.fechaVencimiento" />
+        </div>
+
+      </div>
+
+      <div class="pr-info-box">
+        ℹ️ Al enviar, el lote quedará en estado <strong>EN REVISIÓN</strong> hasta que el Bodeguero confirme la recepción y asigne una ubicación física.
+      </div>
+
+      <div class="pr-actions">
+        <button class="pr-btn pr-btn--primary" (click)="enviarPreRegistro()" [disabled]="cargando()">
+          @if (cargando()) { <span class="pr-spinner"></span> Registrando... }
+          @else { ✅ Registrar Lote →  }
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- PASO 2: Subir documentos -->
+  @if (paso() === 'documentos') {
+    <div class="pr-card">
+      <div class="pr-success-badge">✅ Lote <strong>{{ loteCreado()?.numeroLote }}</strong> pre-registrado — Estado: EN REVISIÓN</div>
+
+      <h2 class="pr-card-title">Adjuntar Documentos</h2>
+      <p class="pr-card-sub">Suba la guía de remisión, ficha técnica y/o certificados del lote.</p>
+
+      <!-- Documentos ya subidos -->
+      @if (documentos().length) {
+        <div class="pr-doc-list">
+          @for (doc of documentos(); track doc.idDocumento) {
+            <div class="pr-doc-item">
+              <span class="pr-doc-icon">📄</span>
+              <div class="pr-doc-info">
+                <strong>{{ doc.nombreArchivo }}</strong>
+                <span class="pr-doc-type">{{ doc.tipoDocumento }}</span>
+              </div>
+              <span class="pr-doc-ok">✓</span>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Upload area -->
+      <div class="pr-upload-area">
+        <div class="pr-upload-icon">📁</div>
+        <select class="pr-select" [(ngModel)]="tipoDocumento">
+          @for (tipo of tiposDoc; track tipo) {
+            <option [value]="tipo">{{ tipo.replace('_', ' ') }}</option>
+          }
+        </select>
+        <input id="fileInput" type="file" accept=".pdf,.png,.jpg"
+               (change)="onArchivoSeleccionado($event)" class="pr-file-input" />
+        <label for="fileInput" class="pr-file-label">
+          {{ archivoSeleccionado ? archivoSeleccionado.name : '📎 Seleccionar archivo (PDF, imagen)' }}
+        </label>
+        <button class="pr-btn pr-btn--secondary"
+                [disabled]="!archivoSeleccionado || subiendoDoc()"
+                (click)="subirDocumento()">
+          @if (subiendoDoc()) { <span class="pr-spinner"></span> Subiendo... }
+          @else { ☁️ Subir Documento }
+        </button>
+      </div>
+
+      <div class="pr-actions">
+        <button class="pr-btn pr-btn--ghost" (click)="finalizar()">
+          Omitir documentos →
+        </button>
+        <button class="pr-btn pr-btn--primary" (click)="finalizar()">
+          ✅ Finalizar Pre-registro
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- PASO 3: Éxito -->
+  @if (paso() === 'exito') {
+    <div class="pr-card pr-card--success">
+      <div class="pr-exito-icon">🎉</div>
+      <h2 class="pr-exito-title">Pre-registro Completado</h2>
+      <p class="pr-exito-sub">
+        El lote <strong>{{ loteCreado()?.numeroLote }}</strong> fue enviado al sistema.<br>
+        El Bodeguero recibirá una notificación para validar la recepción.
+      </p>
+      @if (documentos().length) {
+        <p class="pr-exito-docs">📄 {{ documentos().length }} documento(s) adjunto(s)</p>
+      }
+      <button class="pr-btn pr-btn--primary" (click)="reiniciar()">
+        ➕ Registrar otro lote
+      </button>
+    </div>
+  }
+
+</section>

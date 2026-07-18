@@ -1,0 +1,151 @@
+<section class="rl-page">
+
+  <div class="rl-header">
+    <div class="rl-header-icon">✅</div>
+    <div>
+      <h1 class="rl-title">Recepción y Validación de Lotes</h1>
+      <p class="rl-subtitle">Formulario B — Bodeguero valida cantidad y asigna ubicación física</p>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="rl-error">⚠️ {{ error() }}</div>
+  }
+
+  <!-- Toast de éxito -->
+  @if (exito()) {
+    <div class="rl-toast">
+      🎉 Lote <strong>{{ exito()?.numeroLote }}</strong> validado y marcado como <strong>ACTIVO</strong>
+      <button class="rl-toast-close" (click)="cerrarExito()">×</button>
+    </div>
+  }
+
+  <div class="rl-layout">
+
+    <!-- Panel izquierdo: lotes pendientes -->
+    <div class="rl-panel-lotes">
+      <div class="rl-panel-header">
+        <span>📋 Lotes EN REVISIÓN</span>
+        <button class="rl-btn-refresh" (click)="cargarPendientes()" title="Actualizar">🔄</button>
+      </div>
+
+      @if (cargandoLotes()) {
+        <div class="rl-loading"><span class="rl-spinner"></span> Cargando...</div>
+      } @else {
+        <div class="rl-lote-list">
+          @for (lote of lotesPendientes(); track lote.idLote) {
+            <button
+              class="rl-lote-card"
+              [class.rl-lote-card--active]="loteSeleccionado()?.idLote === lote.idLote"
+              (click)="seleccionarLote(lote)">
+              <div class="rl-lote-num">{{ lote.numeroLote }}</div>
+              <div class="rl-lote-prod">📦 {{ lote.nombreProducto || 'Producto #' + lote.idProducto }}</div>
+              <div class="rl-lote-prov">🏭 {{ lote.nombreProveedor || 'Proveedor #' + lote.idProveedor }}</div>
+              <div class="rl-lote-qty">Cant. declarada: <strong>{{ lote.cantidadInicial }}</strong></div>
+              <div class="rl-lote-venc">Vence: {{ lote.fechaVencimiento | date:'dd/MM/yyyy' }}</div>
+            </button>
+          } @empty {
+            <div class="rl-empty">
+              <span style="font-size:2rem">✅</span>
+              <p>No hay lotes pendientes de validación</p>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Panel derecho: formulario de validación -->
+    <div class="rl-panel-form">
+      @if (!loteSeleccionado()) {
+        <div class="rl-placeholder">
+          <span style="font-size:3rem">👈</span>
+          <p>Seleccione un lote de la lista para validarlo</p>
+        </div>
+      } @else {
+        <div class="rl-form-card" style="animation: fadeSlide .3s ease">
+
+          <div class="rl-form-lote-title">
+            Validando: <strong>{{ loteSeleccionado()!.numeroLote }}</strong>
+          </div>
+
+          <!-- Cantidad validada -->
+          <div class="rl-field">
+            <label class="rl-label">Cantidad Física Verificada <span class="rl-req">*</span></label>
+            <input class="rl-input" type="number" [(ngModel)]="form.cantidadValidada" min="1" />
+            @if (form.cantidadValidada !== loteSeleccionado()!.cantidadInicial) {
+              <span class="rl-warn">
+                ⚠️ Difiere de lo declarado ({{ loteSeleccionado()!.cantidadInicial }})
+              </span>
+            }
+          </div>
+
+          <!-- Cascada de ubicación -->
+          <div class="rl-ubicacion-title">📍 Asignar Ubicación Física</div>
+
+          <div class="rl-field">
+            <label class="rl-label">Almacén</label>
+            <select class="rl-select" (change)="onAlmacenChange($event)">
+              <option value="">— Seleccionar —</option>
+              @for (a of almacenes(); track a.idAlmacen) {
+                <option [value]="a.idAlmacen">{{ a.nombre }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="rl-field" [class.rl-field--disabled]="!zonas().length">
+            <label class="rl-label">Zona</label>
+            @if (cargandoZonas()) { <span class="rl-loading-inline">Cargando...</span> }
+            @else {
+              <select class="rl-select" (change)="onZonaChange($event)" [disabled]="!zonas().length">
+                <option value="">— Seleccionar zona —</option>
+                @for (z of zonas(); track z.idZona) {
+                  <option [value]="z.idZona">{{ z.nombre }}</option>
+                }
+              </select>
+            }
+          </div>
+
+          <div class="rl-field" [class.rl-field--disabled]="!estanterias().length">
+            <label class="rl-label">Estantería</label>
+            @if (cargandoEstanterias()) { <span class="rl-loading-inline">Cargando...</span> }
+            @else {
+              <select class="rl-select" (change)="onEstanteriaChange($event)" [disabled]="!estanterias().length">
+                <option value="">— Seleccionar estantería —</option>
+                @for (e of estanterias(); track e.idEstanteria) {
+                  <option [value]="e.idEstanteria">{{ e.codigo }}</option>
+                }
+              </select>
+            }
+          </div>
+
+          <div class="rl-field" [class.rl-field--disabled]="!ubicaciones().length">
+            <label class="rl-label">Ubicación Interna <span class="rl-req">*</span></label>
+            @if (cargandoUbicaciones()) { <span class="rl-loading-inline">Cargando...</span> }
+            @else {
+              <select class="rl-select" (change)="onUbicacionChange($event)" [disabled]="!ubicaciones().length">
+                <option value="0">— Seleccionar ubicación —</option>
+                @for (u of ubicaciones(); track u.idUbicacion) {
+                  <option [value]="u.idUbicacion">{{ u.descripcionCompleta }}</option>
+                }
+              </select>
+            }
+          </div>
+
+          <!-- Observaciones -->
+          <div class="rl-field">
+            <label class="rl-label">Observaciones (opcional)</label>
+            <textarea class="rl-textarea" [(ngModel)]="form.observaciones"
+                      placeholder="Ej: Lote recibido en buen estado, cantidad verificada con remisión N°123..." rows="3"></textarea>
+          </div>
+
+          <!-- Acción -->
+          <button class="rl-btn-confirm" (click)="confirmarRecepcion()" [disabled]="validando()">
+            @if (validando()) { <span class="rl-spinner"></span> Validando... }
+            @else { ✅ Confirmar Recepción — Marcar como ACTIVO }
+          </button>
+        </div>
+      }
+    </div>
+
+  </div>
+</section>

@@ -1,0 +1,142 @@
+<section class="ef-page">
+
+  <!-- Header -->
+  <div class="ef-header">
+    <div class="ef-header-icon">🏭</div>
+    <div>
+      <h1 class="ef-title">Estructura Física de Almacenes</h1>
+      <p class="ef-subtitle">Navegue en cascada: Almacén → Zona → Estantería → Ubicación</p>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="ef-error">⚠️ {{ error() }}</div>
+  }
+
+  <!-- Grid en cascada -->
+  <div class="ef-cascade">
+
+    <!-- Columna 1: Almacenes -->
+    <div class="ef-col">
+      <div class="ef-col-header">
+        <span class="ef-col-icon">🏢</span>
+        <span>Almacenes</span>
+        <span class="ef-count">{{ almacenes().length }}</span>
+      </div>
+      <div class="ef-list">
+        @for (alm of almacenes(); track alm.idAlmacen) {
+          <button
+            class="ef-item"
+            [class.ef-item--active]="almacenSel()?.idAlmacen === alm.idAlmacen"
+            (click)="seleccionarAlmacen(alm)">
+            <span class="ef-item-name">{{ alm.nombre }}</span>
+            <span class="ef-item-sub">📍 {{ alm.ciudad }}</span>
+          </button>
+        } @empty {
+          <p class="ef-empty">Sin almacenes registrados</p>
+        }
+      </div>
+    </div>
+
+    <!-- Columna 2: Zonas -->
+    <div class="ef-col" [class.ef-col--disabled]="!almacenSel()">
+      <div class="ef-col-header">
+        <span class="ef-col-icon">📦</span>
+        <span>Zonas</span>
+        @if (zonas().length) { <span class="ef-count">{{ zonas().length }}</span> }
+      </div>
+      @if (!almacenSel()) {
+        <p class="ef-hint">← Seleccione un almacén</p>
+      } @else if (cargandoZonas()) {
+        <div class="ef-loading"><span class="ef-spinner"></span> Cargando...</div>
+      } @else {
+        <div class="ef-list">
+          @for (zona of zonas(); track zona.idZona) {
+            <button
+              class="ef-item"
+              [class.ef-item--active]="zonaSel()?.idZona === zona.idZona"
+              (click)="seleccionarZona(zona)">
+              <span class="ef-item-name">{{ zona.nombre }}</span>
+              <span class="ef-item-sub">🌡️ {{ zona.condicionClimatica }}</span>
+            </button>
+          } @empty {
+            <p class="ef-empty">Sin zonas en este almacén</p>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Columna 3: Estanterías -->
+    <div class="ef-col" [class.ef-col--disabled]="!zonaSel()">
+      <div class="ef-col-header">
+        <span class="ef-col-icon">🗂️</span>
+        <span>Estanterías</span>
+        @if (estanterias().length) { <span class="ef-count">{{ estanterias().length }}</span> }
+      </div>
+      @if (!zonaSel()) {
+        <p class="ef-hint">← Seleccione una zona</p>
+      } @else if (cargandoEstanterias()) {
+        <div class="ef-loading"><span class="ef-spinner"></span> Cargando...</div>
+      } @else {
+        <div class="ef-list">
+          @for (est of estanterias(); track est.idEstanteria) {
+            <button
+              class="ef-item"
+              [class.ef-item--active]="estanteriaSel()?.idEstanteria === est.idEstanteria"
+              (click)="seleccionarEstanteria(est)">
+              <span class="ef-item-name">{{ est.codigo }}</span>
+            </button>
+          } @empty {
+            <p class="ef-empty">Sin estanterías en esta zona</p>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Columna 4: Ubicaciones -->
+    <div class="ef-col" [class.ef-col--disabled]="!estanteriaSel()">
+      <div class="ef-col-header">
+        <span class="ef-col-icon">📍</span>
+        <span>Ubicaciones</span>
+        @if (ubicaciones().length) { <span class="ef-count">{{ ubicaciones().length }}</span> }
+      </div>
+      @if (!estanteriaSel()) {
+        <p class="ef-hint">← Seleccione una estantería</p>
+      } @else if (cargandoUbicaciones()) {
+        <div class="ef-loading"><span class="ef-spinner"></span> Cargando...</div>
+      } @else {
+        <div class="ef-list">
+          @for (ub of ubicaciones(); track ub.idUbicacion) {
+            <div class="ef-ub-card">
+              <span class="ef-ub-code">#{{ ub.idUbicacion }}</span>
+              <span class="ef-ub-desc">{{ ub.descripcionCompleta }}</span>
+            </div>
+          } @empty {
+            <p class="ef-empty">Sin ubicaciones en esta estantería</p>
+          }
+        </div>
+      }
+    </div>
+
+  </div>
+
+  <!-- Ruta seleccionada -->
+  @if (almacenSel()) {
+    <div class="ef-breadcrumb">
+      <span class="ef-bc-step">{{ almacenSel()!.nombre }}</span>
+      @if (zonaSel()) {
+        <span class="ef-bc-arrow">›</span>
+        <span class="ef-bc-step">{{ zonaSel()!.nombre }}</span>
+      }
+      @if (estanteriaSel()) {
+        <span class="ef-bc-arrow">›</span>
+        <span class="ef-bc-step">{{ estanteriaSel()!.codigo }}</span>
+      }
+      @if (ubicaciones().length) {
+        <span class="ef-bc-arrow">›</span>
+        <span class="ef-bc-step ef-bc-count">{{ ubicaciones().length }} ubicación(es)</span>
+      }
+    </div>
+  }
+
+</section>
