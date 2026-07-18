@@ -19,7 +19,20 @@ export const roleGuard: CanActivateFn = (route, state) => {
     }
   }
 
-  // Redirigir si no tiene permisos
-  router.navigate(['/admin/usuarios']);
+  // Redirigir si no tiene permisos a su ruta por defecto o al login
+  const defaultRoutes: { [key: string]: string } = {
+    'PROVEEDOR': '/admin/inventario/pre-registro',
+    'BODEGUERO': '/admin/inventario/recepcion',
+    'SUPERVISOR': '/admin/alertas',
+    'ADMINISTRADOR': '/admin/dashboard'
+  };
+  const targetRoute = currentRole ? (defaultRoutes[currentRole.toUpperCase()] || '/admin/dashboard') : '/login';
+  
+  // Evitar bucle de redirección infinito si ya estamos intentando ir a su ruta por defecto y falla
+  if (state.url !== targetRoute) {
+    router.navigate([targetRoute]);
+  } else {
+    router.navigate(['/login']);
+  }
   return false;
 };

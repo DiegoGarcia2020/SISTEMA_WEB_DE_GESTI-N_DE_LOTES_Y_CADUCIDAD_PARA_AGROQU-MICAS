@@ -7,7 +7,14 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 import org.uteq.sacpa.entity.inventario.Estanteria;
 
+import java.util.List;
+
+
 public interface IEstanteriaRepository extends JpaRepository<Estanteria, Integer> {
+
+    /** Cascada: estanterías pertenecientes a una zona específica */
+    List<Estanteria> findByZona_IdZona(Integer idZona);
+
     @Modifying @Transactional
     @Query(value = "SELECT inventario.fn_crear_estanteria(:codigo, :idZona)", nativeQuery = true)
     void crearEstanteria(@Param("codigo") String codigo, @Param("idZona") Integer idZona);

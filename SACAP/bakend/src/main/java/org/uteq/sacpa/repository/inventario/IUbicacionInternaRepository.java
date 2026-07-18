@@ -7,7 +7,14 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 import org.uteq.sacpa.entity.inventario.UbicacionInterna;
 
+import java.util.List;
+
+
 public interface IUbicacionInternaRepository extends JpaRepository<UbicacionInterna, Integer> {
+
+    /** Cascada: ubicaciones pertenecientes a una estantería específica */
+    List<UbicacionInterna> findByEstanteria_IdEstanteria(Integer idEstanteria);
+
     @Modifying @Transactional
     @Query(value = "SELECT inventario.fn_crear_ubicacion_interna(:nivel, :posicion, :idEstanteria)", nativeQuery = true)
     void crearUbicacionInterna(@Param("nivel") String nivel, @Param("posicion") String posicion, @Param("idEstanteria") Integer idEstanteria);

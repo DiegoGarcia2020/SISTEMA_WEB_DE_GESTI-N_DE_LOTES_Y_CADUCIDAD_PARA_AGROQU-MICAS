@@ -25,75 +25,115 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
       <!-- Menú de Navegación -->
       <div class="flex-1 overflow-y-auto py-5 px-3 space-y-1 custom-scrollbar">
         
-        <!-- Categoría: PRINCIPAL -->
-        <div class="px-3 pb-1.5 text-[10px] font-bold text-green-200/60 uppercase tracking-wider">Principal</div>
-        
-        <a routerLink="/admin/dashboard" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
-           class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
-          <lucide-icon name="layout-dashboard" class="w-4 h-4 flex-shrink-0"></lucide-icon>
-          <span>Dashboard IA</span>
-        </a>
+        <!-- Categoría: PRINCIPAL (Admin / Supervisor / Gerente) -->
+        @if (hasRole(['SUPERVISOR', 'GERENTE'])) {
+          <div class="px-3 pb-1.5 text-[10px] font-bold text-green-200/60 uppercase tracking-wider">Principal</div>
+          
+          <a routerLink="/admin/dashboard" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
+             class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
+            <lucide-icon name="layout-dashboard" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+            <span>Dashboard IA</span>
+          </a>
 
-        <a routerLink="/admin/usuarios" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
-           class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
-          <lucide-icon name="users" class="w-4 h-4 flex-shrink-0"></lucide-icon>
-          <span>Gestión de Usuarios</span>
-        </a>
+          <a routerLink="/admin/usuarios" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
+             class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
+            <lucide-icon name="users" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+            <span>Gestión de Usuarios</span>
+          </a>
+        }
 
-        <a routerLink="/admin/roles" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
-           class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
-          <lucide-icon name="key" class="w-4 h-4 flex-shrink-0"></lucide-icon>
-          <span>Roles del Sistema</span>
-        </a>
+        <!-- Solo Administrador -->
+        @if (hasRole([])) {
+          <a routerLink="/admin/roles" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
+             class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
+            <lucide-icon name="key" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+            <span>Roles del Sistema</span>
+          </a>
 
-        <a routerLink="/admin/privilegios" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
-           class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
-          <lucide-icon name="shield" class="w-4 h-4 flex-shrink-0"></lucide-icon>
-          <span>Matriz Privilegios</span>
-        </a>
+          <a routerLink="/admin/privilegios" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
+             class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
+            <lucide-icon name="shield" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+            <span>Matriz Privilegios</span>
+          </a>
+        }
 
-        <!-- Categoría: OPERACIONES & IA -->
-        <div class="pt-4 px-3 pb-1.5 text-[10px] font-bold text-green-200/60 uppercase tracking-wider">Operaciones & IA</div>
+        <!-- Categoría: MÓDULO 3 - INVENTARIO (Proveedores y Bodegueros) -->
+        @if (hasRole(['PROVEEDOR', 'BODEGUERO'])) {
+          <div class="pt-4 px-3 pb-1.5 text-[10px] font-bold text-green-200/60 uppercase tracking-wider">Módulo Inventario</div>
 
-        <a routerLink="/admin/temporadas" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
-           class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
-          <lucide-icon name="calendar" class="w-4 h-4 flex-shrink-0"></lucide-icon>
-          <span>Temporadas Agrícolas</span>
-        </a>
+          @if (hasRole(['PROVEEDOR', 'BODEGUERO'])) {
+            <a routerLink="/admin/inventario/pre-registro" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
+               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
+              <lucide-icon name="clipboard-check" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+              <span>Pre-registro de Lotes</span>
+            </a>
+          }
 
-        <a routerLink="/admin/alertas" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
-           class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
-          <lucide-icon name="alert-triangle" class="w-4 h-4 flex-shrink-0"></lucide-icon>
-          <span>Alertas Caducidad</span>
-          <span class="ml-auto text-[10px] bg-amber-500 !text-white font-bold px-1.5 py-0.5 rounded-full">5</span>
-        </a>
+          @if (hasRole(['BODEGUERO'])) {
+            <a routerLink="/admin/inventario/recepcion" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
+               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
+              <lucide-icon name="box" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+              <span>Recepción y Validación</span>
+            </a>
 
-        <a routerLink="/admin/ia/promociones" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
-           class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
-          <lucide-icon name="gift" class="w-4 h-4 flex-shrink-0"></lucide-icon>
-          <span>Combos & IA</span>
-        </a>
+            <a routerLink="/admin/inventario/estructura" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
+               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
+              <lucide-icon name="layers" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+              <span>Estructura Física</span>
+            </a>
+          }
+        }
 
-        <!-- Categoría: SISTEMA & PARÁMETROS -->
-        <div class="pt-4 px-3 pb-1.5 text-[10px] font-bold text-green-200/60 uppercase tracking-wider">Sistema</div>
+        <!-- Categoría: OPERACIONES & IA (Supervisores y Gerentes) -->
+        @if (hasRole(['SUPERVISOR', 'BODEGUERO', 'GERENTE'])) {
+          <div class="pt-4 px-3 pb-1.5 text-[10px] font-bold text-green-200/60 uppercase tracking-wider">Operaciones & IA</div>
 
-        <a routerLink="/admin/catalogos" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
-           class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
-          <lucide-icon name="layers" class="w-4 h-4 flex-shrink-0"></lucide-icon>
-          <span>Catálogos SACPA</span>
-        </a>
+          @if (hasRole(['SUPERVISOR', 'GERENTE'])) {
+            <a routerLink="/admin/temporadas" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
+               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
+              <lucide-icon name="calendar" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+              <span>Temporadas Agrícolas</span>
+            </a>
+          }
 
-        <a routerLink="/admin/auditoria" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
-           class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
-          <lucide-icon name="shield-check" class="w-4 h-4 flex-shrink-0"></lucide-icon>
-          <span>Log de Auditoría</span>
-        </a>
+          <a routerLink="/admin/alertas" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
+             class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
+            <lucide-icon name="alert-triangle" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+            <span>Alertas Caducidad</span>
+            <span class="ml-auto text-[10px] bg-amber-500 !text-white font-bold px-1.5 py-0.5 rounded-full">5</span>
+          </a>
 
-        <a routerLink="/admin/configuracion" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
-           class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
-          <lucide-icon name="settings" class="w-4 h-4 flex-shrink-0"></lucide-icon>
-          <span>Configuración general</span>
-        </a>
+          @if (hasRole(['GERENTE'])) {
+            <a routerLink="/admin/ia/promociones" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
+               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
+              <lucide-icon name="gift" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+              <span>Combos & IA</span>
+            </a>
+          }
+        }
+
+        <!-- Categoría: SISTEMA & PARÁMETROS (Solo Admin) -->
+        @if (hasRole([])) {
+          <div class="pt-4 px-3 pb-1.5 text-[10px] font-bold text-green-200/60 uppercase tracking-wider">Sistema</div>
+
+          <a routerLink="/admin/catalogos" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
+             class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
+            <lucide-icon name="layers" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+            <span>Catálogos SACPA</span>
+          </a>
+
+          <a routerLink="/admin/auditoria" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
+             class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
+            <lucide-icon name="shield-check" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+            <span>Log de Auditoría</span>
+          </a>
+
+          <a routerLink="/admin/configuracion" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
+             class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
+            <lucide-icon name="settings" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+            <span>Configuración general</span>
+          </a>
+        }
       </div>
 
       <!-- Pie del Sidebar: Usuario logueado -->
@@ -116,4 +156,10 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
 })
 export class SidebarComponent {
   authService = inject(AuthService);
+
+  hasRole(allowedRoles: string[]): boolean {
+    const currentRole = this.authService.currentRole()?.toUpperCase() || '';
+    if (currentRole === 'ADMINISTRADOR') return true;
+    return allowedRoles.includes(currentRole);
+  }
 }

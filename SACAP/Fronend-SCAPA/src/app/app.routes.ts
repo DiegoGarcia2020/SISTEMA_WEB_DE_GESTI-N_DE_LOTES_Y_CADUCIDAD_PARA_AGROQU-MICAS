@@ -18,6 +18,12 @@ import { GestionCatalogosComponent } from './features/admin/gestion-catalogos/ge
 import { AuditoriaComponent } from './features/admin/auditoria/auditoria.component';
 import { ConfiguracionComponent } from './features/admin/configuracion/configuracion.component';
 
+// Componentes de Inventario (Módulo 3)
+import { EstructuraFisicaComponent } from './features/inventario/estructura-fisica/estructura-fisica.component';
+import { PreRegistroLoteComponent } from './features/inventario/pre-registro-lote/pre-registro-lote.component';
+import { RecepcionLoteComponent } from './features/inventario/recepcion-lote/recepcion-lote.component';
+
+
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'registro', component: RegistroComponent },
@@ -91,6 +97,25 @@ export const routes: Routes = [
         component: ConfiguracionComponent,
         canActivate: [roleGuard],
         data: { roles: ['Administrador'] }
+      },
+      // -- Rutas de Inventario --
+      {
+        path: 'inventario/estructura',
+        component: EstructuraFisicaComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['Administrador', 'Bodeguero'] }
+      },
+      {
+        path: 'inventario/pre-registro',
+        component: PreRegistroLoteComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['Administrador', 'Proveedor', 'Bodeguero'] }
+      },
+      {
+        path: 'inventario/recepcion',
+        component: RecepcionLoteComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['Administrador', 'Bodeguero'] }
       },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]

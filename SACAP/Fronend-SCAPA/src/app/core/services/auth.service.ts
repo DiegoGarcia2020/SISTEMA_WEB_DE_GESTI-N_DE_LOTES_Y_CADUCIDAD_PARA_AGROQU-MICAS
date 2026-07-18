@@ -97,7 +97,14 @@ export class AuthService {
     this.currentRole.set(rol);
     this.isAuthenticated.set(true);
 
-    this.router.navigate(['/admin/dashboard']);
+    const defaultRoutes: { [key: string]: string } = {
+      'PROVEEDOR': '/admin/inventario/pre-registro',
+      'BODEGUERO': '/admin/inventario/recepcion',
+      'SUPERVISOR': '/admin/alertas',
+      'ADMINISTRADOR': '/admin/dashboard'
+    };
+    const targetRoute = defaultRoutes[rol.toUpperCase()] || '/admin/dashboard';
+    this.router.navigate([targetRoute]);
   }
 
   logout(): void {

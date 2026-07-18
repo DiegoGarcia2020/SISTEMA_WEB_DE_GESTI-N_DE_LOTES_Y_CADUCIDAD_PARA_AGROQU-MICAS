@@ -7,7 +7,13 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 import org.uteq.sacpa.entity.inventario.ZonaAlmacen;
 
+import java.util.List;
+
 public interface IZonaAlmacenRepository extends JpaRepository<ZonaAlmacen, Integer> {
+
+    /** Cascada: zonas pertenecientes a un almacén específico */
+    List<ZonaAlmacen> findByAlmacen_IdAlmacen(Integer idAlmacen);
+
     @Modifying @Transactional
     @Query(value = "SELECT inventario.fn_crear_zona_almacen(:nombre, :condicionClimatica, :idAlmacen)", nativeQuery = true)
     void crearZonaAlmacen(@Param("nombre") String nombre, @Param("condicionClimatica") String condicionClimatica, @Param("idAlmacen") Integer idAlmacen);

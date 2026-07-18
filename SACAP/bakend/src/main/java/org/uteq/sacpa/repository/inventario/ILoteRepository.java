@@ -23,6 +23,23 @@ public interface ILoteRepository extends JpaRepository<Lote, Integer> {
     @Query("SELECT l FROM Lote l WHERE l.fechaVencimiento <= :fechaLimite AND l.idEstadoLote = :idEstadoActivo ORDER BY l.fechaVencimiento ASC")
     List<Lote> findLotesProximosAVencer(@Param("fechaLimite") LocalDate fechaLimite, @Param("idEstadoActivo") Integer idEstadoActivo);
 
+    /**
+     * FEFO — lotes activos de un producto ordenados por fecha_vencimiento ASC.
+     * Primer elemento = lote a despachar primero según FEFO.
+     * Usado por el módulo de despachos (Módulo 4).
+     */
+    @Query("SELECT l FROM Lote l WHERE l.idEstadoLote = :idEstadoActivo ORDER BY l.fechaVencimiento ASC")
+    List<Lote> findAllFEFO(@Param("idEstadoActivo") Integer idEstadoActivo);
+
+    /** FEFO filtrado por producto */
+    @Query("SELECT l FROM Lote l WHERE l.producto.idProducto = :idProducto AND l.idEstadoLote = :idEstadoActivo ORDER BY l.fechaVencimiento ASC")
+    List<Lote> findByProductoFEFO(@Param("idProducto") Integer idProducto, @Param("idEstadoActivo") Integer idEstadoActivo);
+
+    /** Lotes en pre-registro (pendientes de validación del bodeguero) */
+    @Query("SELECT l FROM Lote l WHERE l.idEstadoLote = :idEstadoPendiente ORDER BY l.fechaIngreso DESC")
+    List<Lote> findLotesPendientesValidacion(@Param("idEstadoPendiente") Integer idEstadoPendiente);
+
+
     /** Lotes por proveedor */
     @Query("SELECT l FROM Lote l WHERE l.proveedor.idProveedor = :idProveedor ORDER BY l.fechaVencimiento ASC")
     List<Lote> findByProveedor(@Param("idProveedor") Integer idProveedor);
