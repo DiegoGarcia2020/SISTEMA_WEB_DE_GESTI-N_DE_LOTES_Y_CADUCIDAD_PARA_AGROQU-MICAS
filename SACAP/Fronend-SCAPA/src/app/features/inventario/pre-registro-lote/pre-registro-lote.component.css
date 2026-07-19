@@ -91,6 +91,29 @@
   box-shadow:0 0 0 3px rgba(16,185,129,.2);
 }
 
+/* Proveedor badge */
+.pr-proveedor-badge {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  padding: .75rem 1.1rem;
+  margin-bottom: 1.25rem;
+  font-size: .88rem;
+  color: #1e40af;
+}
+.pr-prov-id {
+  margin-left: auto;
+  background: #2563eb;
+  color: #fff;
+  border-radius: 8px;
+  padding: .1rem .6rem;
+  font-size: .78rem;
+  font-weight: 700;
+}
+
 /* Info box */
 .pr-info-box {
   background:#ecfdf5; border:1px solid #6ee7b7;

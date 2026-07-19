@@ -8,6 +8,7 @@ import org.uteq.sacpa.repository.entidades.IProveedorRepository;
 import org.uteq.sacpa.service.entidades.IProveedorService;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ProveedorServiceImpl implements IProveedorService {
@@ -38,5 +39,12 @@ public class ProveedorServiceImpl implements IProveedorService {
     @Override
     public void eliminarProveedor(Integer idUsuario) {
         proveedorRepository.eliminarProveedor(idUsuario);
+    }
+
+    @Override
+    public Optional<Proveedor> buscarPorIdUsuario(Integer idUsuario) {
+        // Usar consulta nativa para evitar problemas con nombres de columnas
+        Optional<Integer> idProv = proveedorRepository.findIdProveedorByIdUsuario(idUsuario);
+        return idProv.flatMap(id -> proveedorRepository.findById(id));
     }
 }

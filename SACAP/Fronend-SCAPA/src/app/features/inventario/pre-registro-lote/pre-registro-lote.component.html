@@ -31,6 +31,25 @@
   @if (paso() === 'form') {
     <div class="pr-card">
       <h2 class="pr-card-title">Datos del Lote</h2>
+
+      <!-- Proveedor auto-cargado -->
+      <div class="pr-proveedor-badge">
+        @if (cargandoPerfil()) {
+          <span class="pr-spinner"></span> <span>Cargando perfil del proveedor...</span>
+        } @else if (perfilProveedor()) {
+          <span>🏪 <strong>Proveedor:</strong> {{ perfilProveedor()!.nombre }}</span>
+          <span class="pr-prov-id">#{{ perfilProveedor()!.idProveedor }}</span>
+        } @else {
+          <div style="width:100%">
+            <span style="color:#d97706">⚠️ Su cuenta no tiene un perfil de proveedor vinculado. Ingrese su ID de proveedor manualmente:</span>
+            <div class="pr-field" style="margin-top:.5rem">
+              <input class="pr-input" type="number" [(ngModel)]="form.idProveedor"
+                     placeholder="ID del proveedor (consultar con administrador)" min="1" />
+            </div>
+          </div>
+        }
+      </div>
+
       <div class="pr-grid">
 
         <div class="pr-field">
@@ -42,13 +61,7 @@
         <div class="pr-field">
           <label class="pr-label">ID Producto <span class="pr-req">*</span></label>
           <input class="pr-input" type="number" [(ngModel)]="form.idProducto"
-                 placeholder="ID del producto" min="1" />
-        </div>
-
-        <div class="pr-field">
-          <label class="pr-label">ID Proveedor <span class="pr-req">*</span></label>
-          <input class="pr-input" type="number" [(ngModel)]="form.idProveedor"
-                 placeholder="ID del proveedor" min="1" />
+                 placeholder="ID del producto en el catálogo" min="1" />
         </div>
 
         <div class="pr-field">
@@ -62,7 +75,7 @@
           <input class="pr-input" type="date" [(ngModel)]="form.fechaFabricacion" />
         </div>
 
-        <div class="pr-field">
+        <div class="pr-field" style="grid-column: span 1">
           <label class="pr-label">Fecha de Vencimiento <span class="pr-req">*</span></label>
           <input class="pr-input" type="date" [(ngModel)]="form.fechaVencimiento" />
         </div>
@@ -74,7 +87,7 @@
       </div>
 
       <div class="pr-actions">
-        <button class="pr-btn pr-btn--primary" (click)="enviarPreRegistro()" [disabled]="cargando()">
+        <button class="pr-btn pr-btn--primary" (click)="enviarPreRegistro()" [disabled]="cargando() || cargandoPerfil()">
           @if (cargando()) { <span class="pr-spinner"></span> Registrando... }
           @else { ✅ Registrar Lote →  }
         </button>

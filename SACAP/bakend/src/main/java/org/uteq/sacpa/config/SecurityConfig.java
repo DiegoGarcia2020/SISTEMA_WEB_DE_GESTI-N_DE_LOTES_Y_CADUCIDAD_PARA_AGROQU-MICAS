@@ -136,10 +136,12 @@ public class SecurityConfig {
                     "/api/movimientos/aprobar/**"
                 ).hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR")
 
-                // PROVEEDOR — pre-registro de lotes y documentos
+                // PROVEEDOR — pre-registro de lotes, documentos, perfil y diagnóstico
                 .requestMatchers(
                     "/api/lotes/pre-registro",
-                    "/api/documentos-lote/**"
+                    "/api/documentos-lote/**",
+                    "/api/proveedores/perfil",
+                    "/api/proveedores/diagnostico"
                 ).hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "BODEGUERO", "PROVEEDOR")
 
                 // ADMINISTRADOR, SUPERVISOR y BODEGUERO — inventario y lotes

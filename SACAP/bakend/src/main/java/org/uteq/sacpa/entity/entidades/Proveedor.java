@@ -10,7 +10,7 @@ import org.uteq.sacpa.entity.seguridad.Usuario;
 public class Proveedor {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_proveedor") private Integer idProveedor;
-    @Column(name = "nombre", nullable = false, length = 200) private String nombre;
+    @Column(name = "nombre_representante", nullable = false, length = 200) private String nombre;
     @Column(name = "ruc", length = 20) private String ruc;
     @Column(name = "telefono", length = 30) private String telefono;
     @Column(name = "direccion", length = 300) private String direccion;

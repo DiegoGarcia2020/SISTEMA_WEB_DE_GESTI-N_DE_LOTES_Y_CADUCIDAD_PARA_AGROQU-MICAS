@@ -12,13 +12,18 @@ import org.uteq.sacpa.entity.inventario.Lote;
 import org.uteq.sacpa.entity.inventario.UbicacionInterna;
 import org.uteq.sacpa.repository.inventario.ILoteRepository;
 import org.uteq.sacpa.repository.inventario.IUbicacionInternaRepository;
+import org.uteq.sacpa.repository.entidades.IProveedorRepository;
 import org.uteq.sacpa.service.inventario.ILoteService;
 import org.springframework.jdbc.core.JdbcTemplate;
 import jakarta.annotation.PostConstruct;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.uteq.sacpa.security.UsuarioPrincipal;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +35,7 @@ public class LoteServiceImpl implements ILoteService {
     private final ILoteRepository            loteRepository;
     private final IUbicacionInternaRepository ubicacionRepository;
     private final JdbcTemplate               jdbcTemplate;
+    private final IProveedorRepository        proveedorRepository;
 
     @PostConstruct
     public void init() {
@@ -47,10 +53,13 @@ public class LoteServiceImpl implements ILoteService {
 
     @Override
     public void crearLote(LoteRequestDTO dto) {
-        loteRepository.crearLote(
-                dto.getNumeroLote(), dto.getFechaFabricacion(), dto.getFechaVencimiento(),
-                dto.getCantidadInicial(), dto.getIdProducto(), dto.getIdProveedor(),
-                dto.getIdUbicacion(), dto.getIdEstadoLote()
+        // Usar JdbcTemplate para evitar el conflicto de @Modifying con PL/pgSQL que retorna INTEGER
+        jdbcTemplate.queryForObject(
+            "SELECT inventario.fn_crear_lote(?, ?, ?, ?, ?, ?, ?, ?)",
+            Integer.class,
+            dto.getNumeroLote(), dto.getFechaFabricacion(), dto.getFechaVencimiento(),
+            dto.getCantidadInicial(), dto.getIdProducto(), dto.getIdProveedor(),
+            dto.getIdUbicacion(), dto.getIdEstadoLote()
         );
     }
 
@@ -59,13 +68,48 @@ public class LoteServiceImpl implements ILoteService {
     @Override
     @Transactional
     public LoteResponseDTO preRegistrarLote(LotePreRegistroDTO dto) {
-        // Crea el lote sin ubicacion (null) y en estado EN_REVISION
-        loteRepository.crearLote(
-                dto.getNumeroLote(), dto.getFechaFabricacion(), dto.getFechaVencimiento(),
-                dto.getCantidadDeclarada(), dto.getIdProducto(), dto.getIdProveedor(),
-                null,                          // sin ubicación todavía
-                ID_ESTADO_EN_REVISION
-        );
+        // Resolver el idProveedor desde el usuario autenticado (consulta nativa)
+        Integer idProveedorResuelto = dto.getIdProveedor();
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.getPrincipal() instanceof UsuarioPrincipal principal) {
+                Optional<Integer> idProv = proveedorRepository.findIdProveedorByIdUsuario(principal.getIdUsuario());
+                if (idProv.isPresent()) {
+                    idProveedorResuelto = idProv.get();
+                }
+            }
+        } catch (Exception e) {
+            // Si falla, usar el idProveedor del DTO como fallback
+        }
+
+        // Validar que tenemos un idProveedor válido
+        if (idProveedorResuelto == null || idProveedorResuelto <= 0) {
+            throw new IllegalArgumentException(
+                "No se encontró perfil de proveedor vinculado a su cuenta. " +
+                "Por favor contacte al administrador del sistema para asociar su cuenta con un proveedor."
+            );
+        }
+
+        // Llamar fn_crear_lote con PreparedStatement explicit para cada tipo.
+        // jdbcTemplate.queryForObject con varargs falla con "Bad value for type int"
+        // porque el driver infiere tipos incorrectamente para fechas e integers.
+        // Con setString/setDate/setInt el driver recibe exactamente el tipo correcto.
+        final Integer idProvFinal = idProveedorResuelto;
+        jdbcTemplate.execute((java.sql.Connection conn) -> {
+            try (java.sql.PreparedStatement ps = conn.prepareStatement(
+                    "SELECT inventario.fn_crear_lote(?, ?, ?, ?, ?, ?, NULL::INTEGER, ?)")) {
+                ps.setString(1, dto.getNumeroLote());
+                ps.setDate(2,   java.sql.Date.valueOf(dto.getFechaFabricacion()));
+                ps.setDate(3,   java.sql.Date.valueOf(dto.getFechaVencimiento()));
+                ps.setInt(4,    dto.getCantidadDeclarada());
+                ps.setInt(5,    dto.getIdProducto());
+                ps.setInt(6,    idProvFinal);
+                ps.setInt(7,    ID_ESTADO_EN_REVISION);
+                ps.execute();   // execute() acepta tanto SELECT como funciones que retornan valor
+            }
+            return null;
+        });
+
         Lote lote = loteRepository.findByNumeroLote(dto.getNumeroLote())
                 .orElseThrow(() -> new RuntimeException("Error al recuperar el lote pre-registrado: " + dto.getNumeroLote()));
         return LoteResponseDTO.from(lote);

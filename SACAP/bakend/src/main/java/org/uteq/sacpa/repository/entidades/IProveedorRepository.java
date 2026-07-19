@@ -10,7 +10,9 @@ import org.uteq.sacpa.entity.entidades.Proveedor;
 import java.util.Optional;
 
 public interface IProveedorRepository extends JpaRepository<Proveedor, Integer> {
-    Optional<Proveedor> findByUsuario_IdUsuario(Integer idUsuario);
+
+    @Query(value = "SELECT id_proveedor FROM entidades.proveedor WHERE id_usuario = :idUsuario LIMIT 1", nativeQuery = true)
+    Optional<Integer> findIdProveedorByIdUsuario(@Param("idUsuario") Integer idUsuario);
 
     @Modifying @Transactional
     @Query(value = "SELECT entidades.fn_crear_proveedor(:correo, :contrasena, :idEstado, :ruc, :nombreRepresentante, :direccion, :telefonoEmpresa, :idEmpresa, :idCiudad)", nativeQuery = true)
