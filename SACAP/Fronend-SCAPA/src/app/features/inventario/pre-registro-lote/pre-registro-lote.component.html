@@ -1,172 +1,497 @@
-<section class="pr-page">
+<!-- ═══════════════════════════════════════════════════════
+     PRE-REGISTRO DE LOTE — Formulario A (Proveedor)
+     Diseño premium con glassmorphism y animaciones
+     ═══════════════════════════════════════════════════════ -->
 
-  <div class="pr-header">
-    <div class="pr-header-icon">📋</div>
-    <div>
-      <h1 class="pr-title">Pre-registro de Lote</h1>
-      <p class="pr-subtitle">Formulario A — Proveedor declara datos del lote y adjunta documentos</p>
+<div class="pr-bg">
+
+  <!-- Hero Header -->
+  <div class="pr-hero">
+    <div class="pr-hero-left">
+      <div class="pr-hero-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+          <rect x="9" y="3" width="6" height="4" rx="2"/><line x1="9" y1="12" x2="15" y2="12"/>
+          <line x1="9" y1="16" x2="11" y2="16"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="pr-hero-title">Pre-registro de Lote</h1>
+        <p class="pr-hero-sub">Formulario A — Declare los datos del producto y adjunte documentos de respaldo</p>
+      </div>
     </div>
+    <!-- Badge de proveedor en el header -->
+    @if (perfilProveedor()) {
+      <div class="pr-prov-chip">
+        <span class="pr-prov-dot"></span>
+        <span class="pr-prov-name">{{ perfilProveedor()!.nombre }}</span>
+      </div>
+    }
   </div>
 
-  <!-- Indicador de pasos -->
+  <!-- Stepper moderno -->
   <div class="pr-stepper">
-    <div class="pr-step" [class.pr-step--active]="paso() === 'form'"       [class.pr-step--done]="paso() !== 'form'">
-      <span class="pr-step-num">1</span><span class="pr-step-lbl">Datos del Lote</span>
+    <div class="pr-step-item" [class.active]="paso() === 'form'" [class.done]="paso() === 'documentos' || paso() === 'exito'">
+      <div class="pr-step-circle">
+        @if (paso() === 'documentos' || paso() === 'exito') {
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        } @else { <span>1</span> }
+      </div>
+      <div class="pr-step-info">
+        <span class="pr-step-num-label">Paso 1</span>
+        <span class="pr-step-title">Datos del Lote</span>
+      </div>
     </div>
-    <div class="pr-step-line"></div>
-    <div class="pr-step" [class.pr-step--active]="paso() === 'documentos'" [class.pr-step--done]="paso() === 'exito'">
-      <span class="pr-step-num">2</span><span class="pr-step-lbl">Documentos</span>
+    <div class="pr-step-connector" [class.filled]="paso() === 'documentos' || paso() === 'exito'"></div>
+
+    <div class="pr-step-item" [class.active]="paso() === 'documentos'" [class.done]="paso() === 'exito'">
+      <div class="pr-step-circle">
+        @if (paso() === 'exito') {
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        } @else { <span>2</span> }
+      </div>
+      <div class="pr-step-info">
+        <span class="pr-step-num-label">Paso 2</span>
+        <span class="pr-step-title">Documentos</span>
+      </div>
     </div>
-    <div class="pr-step-line"></div>
-    <div class="pr-step" [class.pr-step--active]="paso() === 'exito'">
-      <span class="pr-step-num">3</span><span class="pr-step-lbl">Confirmación</span>
+    <div class="pr-step-connector" [class.filled]="paso() === 'exito'"></div>
+
+    <div class="pr-step-item" [class.active]="paso() === 'exito'">
+      <div class="pr-step-circle"><span>3</span></div>
+      <div class="pr-step-info">
+        <span class="pr-step-num-label">Paso 3</span>
+        <span class="pr-step-title">Confirmación</span>
+      </div>
     </div>
   </div>
 
+  <!-- Error global -->
   @if (error()) {
-    <div class="pr-error">⚠️ {{ error() }}</div>
+    <div class="pr-alert pr-alert--error">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      {{ error() }}
+    </div>
   }
 
-  <!-- PASO 1: Formulario de datos del lote -->
+  <!-- ══════════════════════════════════════
+       PASO 1 — Datos del Lote
+       ══════════════════════════════════════ -->
   @if (paso() === 'form') {
-    <div class="pr-card">
-      <h2 class="pr-card-title">Datos del Lote</h2>
+    <div class="pr-layout">
 
-      <!-- Proveedor auto-cargado -->
-      <div class="pr-proveedor-badge">
-        @if (cargandoPerfil()) {
-          <span class="pr-spinner"></span> <span>Cargando perfil del proveedor...</span>
-        } @else if (perfilProveedor()) {
-          <span>🏪 <strong>Proveedor:</strong> {{ perfilProveedor()!.nombre }}</span>
-          <span class="pr-prov-id">#{{ perfilProveedor()!.idProveedor }}</span>
-        } @else {
-          <div style="width:100%">
-            <span style="color:#d97706">⚠️ Su cuenta no tiene un perfil de proveedor vinculado. Ingrese su ID de proveedor manualmente:</span>
-            <div class="pr-field" style="margin-top:.5rem">
-              <input class="pr-input" type="number" [(ngModel)]="form.idProveedor"
-                     placeholder="ID del proveedor (consultar con administrador)" min="1" />
+      <!-- Columna principal: formulario -->
+      <div class="pr-main-col">
+        <div class="pr-card">
+          <div class="pr-card-header">
+            <div class="pr-card-icon green">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8M12 8v8"/>
+              </svg>
+            </div>
+            <div>
+              <h2 class="pr-card-title">Información del Lote</h2>
+              <p class="pr-card-sub">Complete todos los campos marcados con *</p>
             </div>
           </div>
-        }
-      </div>
 
-      <div class="pr-grid">
-
-        <div class="pr-field">
-          <label class="pr-label">Número de Lote <span class="pr-req">*</span></label>
-          <input class="pr-input" [(ngModel)]="form.numeroLote"
-                 placeholder="Ej: LOT-2025-001" required />
-        </div>
-
-        <div class="pr-field">
-          <label class="pr-label">ID Producto <span class="pr-req">*</span></label>
-          <input class="pr-input" type="number" [(ngModel)]="form.idProducto"
-                 placeholder="ID del producto en el catálogo" min="1" />
-        </div>
-
-        <div class="pr-field">
-          <label class="pr-label">Cantidad Declarada <span class="pr-req">*</span></label>
-          <input class="pr-input" type="number" [(ngModel)]="form.cantidadDeclarada"
-                 placeholder="Unidades" min="1" />
-        </div>
-
-        <div class="pr-field">
-          <label class="pr-label">Fecha de Fabricación <span class="pr-req">*</span></label>
-          <input class="pr-input" type="date" [(ngModel)]="form.fechaFabricacion" />
-        </div>
-
-        <div class="pr-field" style="grid-column: span 1">
-          <label class="pr-label">Fecha de Vencimiento <span class="pr-req">*</span></label>
-          <input class="pr-input" type="date" [(ngModel)]="form.fechaVencimiento" />
-        </div>
-
-      </div>
-
-      <div class="pr-info-box">
-        ℹ️ Al enviar, el lote quedará en estado <strong>EN REVISIÓN</strong> hasta que el Bodeguero confirme la recepción y asigne una ubicación física.
-      </div>
-
-      <div class="pr-actions">
-        <button class="pr-btn pr-btn--primary" (click)="enviarPreRegistro()" [disabled]="cargando() || cargandoPerfil()">
-          @if (cargando()) { <span class="pr-spinner"></span> Registrando... }
-          @else { ✅ Registrar Lote →  }
-        </button>
-      </div>
-    </div>
-  }
-
-  <!-- PASO 2: Subir documentos -->
-  @if (paso() === 'documentos') {
-    <div class="pr-card">
-      <div class="pr-success-badge">✅ Lote <strong>{{ loteCreado()?.numeroLote }}</strong> pre-registrado — Estado: EN REVISIÓN</div>
-
-      <h2 class="pr-card-title">Adjuntar Documentos</h2>
-      <p class="pr-card-sub">Suba la guía de remisión, ficha técnica y/o certificados del lote.</p>
-
-      <!-- Documentos ya subidos -->
-      @if (documentos().length) {
-        <div class="pr-doc-list">
-          @for (doc of documentos(); track doc.idDocumento) {
-            <div class="pr-doc-item">
-              <span class="pr-doc-icon">📄</span>
-              <div class="pr-doc-info">
-                <strong>{{ doc.nombreArchivo }}</strong>
-                <span class="pr-doc-type">{{ doc.tipoDocumento }}</span>
+          <!-- Badge proveedor dentro del form -->
+          @if (cargandoPerfil()) {
+            <div class="pr-prov-loading">
+              <div class="pr-shimmer"></div>
+              <span>Cargando perfil de proveedor...</span>
+            </div>
+          } @else if (perfilProveedor()) {
+            <div class="pr-prov-banner">
+              <div class="pr-prov-avatar">
+                {{ perfilProveedor()!.nombre.charAt(0).toUpperCase() }}
               </div>
-              <span class="pr-doc-ok">✓</span>
+              <div class="pr-prov-details">
+                <span class="pr-prov-label">Registrando como</span>
+                <span class="pr-prov-nombre">{{ perfilProveedor()!.nombre }}</span>
+              </div>
+              <div class="pr-prov-badge">#{{ perfilProveedor()!.idProveedor }}</div>
+            </div>
+          } @else {
+            <div class="pr-alert pr-alert--warn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              <div>
+                <strong>Perfil no vinculado.</strong> Ingrese su ID de proveedor manualmente:
+                <input class="pr-input pr-input--inline" type="number" [(ngModel)]="form.idProveedor"
+                       placeholder="Ej: 14" min="1" />
+              </div>
             </div>
           }
+
+          <!-- Grid de campos -->
+          <div class="pr-grid-2">
+
+            <div class="pr-field">
+              <label class="pr-label">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                  <line x1="7" y1="7" x2="7.01" y2="7"/>
+                </svg>
+                Número de Lote <span class="req">*</span>
+              </label>
+              <input class="pr-input" [(ngModel)]="form.numeroLote"
+                     placeholder="Ej: LOT-2025-001" required />
+              <span class="pr-hint">Se convertirá a mayúsculas automáticamente</span>
+            </div>
+
+            <div class="pr-field">
+              <label class="pr-label">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                </svg>
+                ID Producto <span class="req">*</span>
+              </label>
+              <input class="pr-input" type="number" [(ngModel)]="form.idProducto"
+                     placeholder="ID del catálogo de productos" min="1" />
+              <span class="pr-hint">Consulte el catálogo de productos SACPA</span>
+            </div>
+
+            <div class="pr-field">
+              <label class="pr-label">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+                Cantidad Declarada <span class="req">*</span>
+              </label>
+              <input class="pr-input" type="number" [(ngModel)]="form.cantidadDeclarada"
+                     placeholder="Unidades del lote" min="1" />
+              <span class="pr-hint">Debe coincidir con la guía de remisión</span>
+            </div>
+
+            <div class="pr-field">
+              <!-- placeholder spacer en desktop -->
+            </div>
+
+            <div class="pr-field">
+              <label class="pr-label">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                Fecha de Fabricación <span class="req">*</span>
+              </label>
+              <input class="pr-input" type="date" [(ngModel)]="form.fechaFabricacion" />
+            </div>
+
+            <div class="pr-field">
+              <label class="pr-label">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                Fecha de Vencimiento <span class="req">*</span>
+              </label>
+              <input class="pr-input" type="date" [(ngModel)]="form.fechaVencimiento" />
+            </div>
+
+          </div>
+
+          <!-- Info notice -->
+          <div class="pr-notice">
+            <div class="pr-notice-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+            </div>
+            <p>Al enviar, el lote quedará en estado <strong>EN REVISIÓN</strong>.
+               El Bodeguero recibirá una notificación para confirmar la recepción y asignar la ubicación física.</p>
+          </div>
+
+          <div class="pr-form-actions">
+            <button class="pr-btn pr-btn--primary" id="btn-registrar-lote"
+                    (click)="enviarPreRegistro()"
+                    [disabled]="cargando() || cargandoPerfil()">
+              @if (cargando()) {
+                <div class="pr-spin"></div>
+                <span>Registrando...</span>
+              } @else {
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                  <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <span>Registrar Lote</span>
+              }
+            </button>
+          </div>
+
         </div>
-      }
+      </div>
 
-      <!-- Upload area -->
-      <div class="pr-upload-area">
-        <div class="pr-upload-icon">📁</div>
-        <select class="pr-select" [(ngModel)]="tipoDocumento">
-          @for (tipo of tiposDoc; track tipo) {
-            <option [value]="tipo">{{ tipo.replace('_', ' ') }}</option>
+      <!-- Columna lateral: info -->
+      <div class="pr-side-col">
+
+        <div class="pr-tip-card">
+          <h3 class="pr-tip-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="16" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+            ¿Cómo funciona?
+          </h3>
+          <ol class="pr-tip-list">
+            <li>
+              <span class="pr-tip-num">1</span>
+              <div>
+                <strong>Declare el lote</strong>
+                <p>Complete los datos básicos y la cantidad a ingresar.</p>
+              </div>
+            </li>
+            <li>
+              <span class="pr-tip-num">2</span>
+              <div>
+                <strong>Adjunte documentos</strong>
+                <p>Guía de remisión, ficha técnica y/o certificados.</p>
+              </div>
+            </li>
+            <li>
+              <span class="pr-tip-num">3</span>
+              <div>
+                <strong>Bodeguero valida</strong>
+                <p>Confirma la cantidad física y asigna la ubicación.</p>
+              </div>
+            </li>
+          </ol>
+        </div>
+
+        <div class="pr-status-card">
+          <h3 class="pr-tip-title">Estados del lote</h3>
+          <div class="pr-status-list">
+            <div class="pr-status-item">
+              <span class="pr-badge pr-badge--revision">EN REVISIÓN</span>
+              <span>Pendiente de validación</span>
+            </div>
+            <div class="pr-status-item">
+              <span class="pr-badge pr-badge--activo">ACTIVO</span>
+              <span>Validado y disponible</span>
+            </div>
+            <div class="pr-status-item">
+              <span class="pr-badge pr-badge--rechazado">RECHAZADO</span>
+              <span>No conforme al conteo</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- ══════════════════════════════════════
+       PASO 2 — Documentos
+       ══════════════════════════════════════ -->
+  @if (paso() === 'documentos') {
+    <div class="pr-layout">
+      <div class="pr-main-col">
+        <div class="pr-card">
+
+          <div class="pr-success-banner">
+            <div class="pr-success-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <div>
+              <strong>{{ loteCreado()?.numeroLote }}</strong> pre-registrado exitosamente
+              <span class="pr-tag-revision">EN REVISIÓN</span>
+            </div>
+          </div>
+
+          <div class="pr-card-header" style="margin-top:1.5rem">
+            <div class="pr-card-icon amber">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+            </div>
+            <div>
+              <h2 class="pr-card-title">Adjuntar Documentos</h2>
+              <p class="pr-card-sub">Guía de remisión, ficha técnica, certificados...</p>
+            </div>
+          </div>
+
+          <!-- Docs subidos -->
+          @if (documentos().length) {
+            <div class="pr-doc-list">
+              @for (doc of documentos(); track doc.idDocumento) {
+                <div class="pr-doc-item">
+                  <div class="pr-doc-file-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                      <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                  </div>
+                  <div class="pr-doc-info">
+                    <strong>{{ doc.nombreArchivo }}</strong>
+                    <span class="pr-doc-tipo">{{ doc.tipoDocumento.replace('_', ' ') }}</span>
+                  </div>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                       stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </div>
+              }
+            </div>
           }
-        </select>
-        <input id="fileInput" type="file" accept=".pdf,.png,.jpg"
-               (change)="onArchivoSeleccionado($event)" class="pr-file-input" />
-        <label for="fileInput" class="pr-file-label">
-          {{ archivoSeleccionado ? archivoSeleccionado.name : '📎 Seleccionar archivo (PDF, imagen)' }}
-        </label>
-        <button class="pr-btn pr-btn--secondary"
-                [disabled]="!archivoSeleccionado || subiendoDoc()"
-                (click)="subirDocumento()">
-          @if (subiendoDoc()) { <span class="pr-spinner"></span> Subiendo... }
-          @else { ☁️ Subir Documento }
-        </button>
+
+          <!-- Upload zone -->
+          <div class="pr-upload-zone" [class.dragover]="false">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none"
+                 stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="16 16 12 12 8 16"/>
+              <line x1="12" y1="12" x2="12" y2="21"/>
+              <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+            </svg>
+            <p class="pr-upload-label">Arrastre o seleccione un archivo</p>
+            <p class="pr-upload-sub">PDF, PNG o JPG — máx. 10 MB</p>
+
+            <select class="pr-select" [(ngModel)]="tipoDocumento">
+              @for (tipo of tiposDoc; track tipo) {
+                <option [value]="tipo">{{ tipo.replace('_', ' ') }}</option>
+              }
+            </select>
+
+            <input id="fileInput" type="file" accept=".pdf,.png,.jpg" class="pr-file-hidden"
+                   (change)="onArchivoSeleccionado($event)" />
+            <label for="fileInput" class="pr-file-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+              </svg>
+              {{ archivoSeleccionado ? archivoSeleccionado.name : 'Seleccionar archivo' }}
+            </label>
+
+            <button class="pr-btn pr-btn--upload"
+                    [disabled]="!archivoSeleccionado || subiendoDoc()"
+                    (click)="subirDocumento()">
+              @if (subiendoDoc()) {
+                <div class="pr-spin"></div> Subiendo...
+              } @else {
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
+                  <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+                </svg>
+                Subir Documento
+              }
+            </button>
+          </div>
+
+          <div class="pr-form-actions pr-form-actions--spread">
+            <button class="pr-btn pr-btn--ghost" (click)="finalizar()">
+              Omitir y finalizar →
+            </button>
+            <button class="pr-btn pr-btn--primary" (click)="finalizar()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              Finalizar Pre-registro
+            </button>
+          </div>
+
+        </div>
       </div>
 
-      <div class="pr-actions">
-        <button class="pr-btn pr-btn--ghost" (click)="finalizar()">
-          Omitir documentos →
-        </button>
-        <button class="pr-btn pr-btn--primary" (click)="finalizar()">
-          ✅ Finalizar Pre-registro
-        </button>
+      <!-- Side info -->
+      <div class="pr-side-col">
+        <div class="pr-tip-card">
+          <h3 class="pr-tip-title">📎 Documentos requeridos</h3>
+          <div class="pr-doc-req-list">
+            <div class="pr-doc-req">
+              <span class="pr-req-icon green">✓</span>
+              <div><strong>Guía de Remisión</strong><p>Obligatoria para ingreso al inventario</p></div>
+            </div>
+            <div class="pr-doc-req">
+              <span class="pr-req-icon amber">!</span>
+              <div><strong>Ficha Técnica</strong><p>Recomendada para productos químicos</p></div>
+            </div>
+            <div class="pr-doc-req">
+              <span class="pr-req-icon blue">i</span>
+              <div><strong>Certificado de Calidad</strong><p>Para lotes de alto valor</p></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   }
 
-  <!-- PASO 3: Éxito -->
+  <!-- ══════════════════════════════════════
+       PASO 3 — Confirmación
+       ══════════════════════════════════════ -->
   @if (paso() === 'exito') {
-    <div class="pr-card pr-card--success">
-      <div class="pr-exito-icon">🎉</div>
-      <h2 class="pr-exito-title">Pre-registro Completado</h2>
-      <p class="pr-exito-sub">
-        El lote <strong>{{ loteCreado()?.numeroLote }}</strong> fue enviado al sistema.<br>
-        El Bodeguero recibirá una notificación para validar la recepción.
+    <div class="pr-success-page">
+      <div class="pr-success-circle">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <h2 class="pr-success-title">¡Pre-registro completado!</h2>
+      <p class="pr-success-sub">
+        El lote <strong>{{ loteCreado()?.numeroLote }}</strong> fue enviado al sistema
+        y está en cola de revisión del Bodeguero.
       </p>
-      @if (documentos().length) {
-        <p class="pr-exito-docs">📄 {{ documentos().length }} documento(s) adjunto(s)</p>
-      }
-      <button class="pr-btn pr-btn--primary" (click)="reiniciar()">
-        ➕ Registrar otro lote
-      </button>
+
+      <div class="pr-success-meta">
+        <div class="pr-meta-item">
+          <span class="pr-meta-label">Estado actual</span>
+          <span class="pr-badge pr-badge--revision">EN REVISIÓN</span>
+        </div>
+        <div class="pr-meta-item">
+          <span class="pr-meta-label">Documentos adjuntos</span>
+          <strong>{{ documentos().length }} archivo(s)</strong>
+        </div>
+        <div class="pr-meta-item">
+          <span class="pr-meta-label">Siguiente acción</span>
+          <span>El Bodeguero validará la cantidad y asignará ubicación física</span>
+        </div>
+      </div>
+
+      <div class="pr-success-actions">
+        <button class="pr-btn pr-btn--outline" (click)="reiniciar()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Registrar otro lote
+        </button>
+      </div>
     </div>
   }
 
-</section>
+</div>

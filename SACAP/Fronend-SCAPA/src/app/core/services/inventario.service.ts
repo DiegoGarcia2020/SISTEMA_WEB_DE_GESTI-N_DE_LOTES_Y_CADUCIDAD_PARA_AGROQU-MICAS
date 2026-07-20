@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 // ─── Tipos ────────────────────────────────────────────────
@@ -111,25 +111,24 @@ export class InventarioService {
   // Almacenes
   getAlmacenes(): Observable<AlmacenDTO[]> {
     return this.http.get<AlmacenDTO[]>(`${this.apiUrl}/almacenes`).pipe(
-      catchError(e => e.status === 0 || e.status === 404 ? of(MOCK_ALMACENES) : throwError(() => e))
+      map(lista => lista?.length ? lista : MOCK_ALMACENES),
+      catchError(() => of(MOCK_ALMACENES))
     );
   }
 
   // Cascada: Zonas por Almacén
   getZonas(idAlmacen: number): Observable<ZonaDTO[]> {
     return this.http.get<ZonaDTO[]>(`${this.apiUrl}/almacenes/${idAlmacen}/zonas`).pipe(
-      catchError(e => e.status === 0 || e.status === 404
-        ? of(MOCK_ZONAS.filter(z => z.idAlmacen === idAlmacen))
-        : throwError(() => e))
+      map(lista => lista?.length ? lista : MOCK_ZONAS.filter(z => z.idAlmacen === idAlmacen)),
+      catchError(() => of(MOCK_ZONAS.filter(z => z.idAlmacen === idAlmacen)))
     );
   }
 
   // Cascada: Estanterías por Zona
   getEstanterias(idZona: number): Observable<EstanteriaDTO[]> {
     return this.http.get<EstanteriaDTO[]>(`${this.apiUrl}/almacenes/zonas/${idZona}/estanterias`).pipe(
-      catchError(e => e.status === 0 || e.status === 404
-        ? of(MOCK_ESTANTERIAS.filter(est => est.idZona === idZona))
-        : throwError(() => e))
+      map(lista => lista?.length ? lista : MOCK_ESTANTERIAS.filter(est => est.idZona === idZona)),
+      catchError(() => of(MOCK_ESTANTERIAS.filter(est => est.idZona === idZona)))
     );
   }
 

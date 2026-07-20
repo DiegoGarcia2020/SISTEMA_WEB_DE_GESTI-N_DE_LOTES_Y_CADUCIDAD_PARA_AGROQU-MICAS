@@ -23,6 +23,9 @@ import { EstructuraFisicaComponent } from './features/inventario/estructura-fisi
 import { PreRegistroLoteComponent } from './features/inventario/pre-registro-lote/pre-registro-lote.component';
 import { RecepcionLoteComponent } from './features/inventario/recepcion-lote/recepcion-lote.component';
 
+// Componentes de Proveedor
+import { ProveedorDashboardComponent } from './features/proveedor/proveedor-dashboard/proveedor-dashboard.component';
+
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -116,6 +119,13 @@ export const routes: Routes = [
         component: RecepcionLoteComponent,
         canActivate: [roleGuard],
         data: { roles: ['Administrador', 'Bodeguero'] }
+      },
+      // -- Dashboard Proveedor --
+      {
+        path: 'proveedor/dashboard',
+        component: ProveedorDashboardComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['Proveedor'] }
       },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]

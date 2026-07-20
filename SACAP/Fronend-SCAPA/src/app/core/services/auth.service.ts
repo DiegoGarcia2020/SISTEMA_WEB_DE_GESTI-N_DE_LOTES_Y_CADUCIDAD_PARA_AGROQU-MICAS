@@ -98,7 +98,7 @@ export class AuthService {
     this.isAuthenticated.set(true);
 
     const defaultRoutes: { [key: string]: string } = {
-      'PROVEEDOR': '/admin/inventario/pre-registro',
+      'PROVEEDOR': '/admin/proveedor/dashboard',
       'BODEGUERO': '/admin/inventario/recepcion',
       'SUPERVISOR': '/admin/alertas',
       'ADMINISTRADOR': '/admin/dashboard'

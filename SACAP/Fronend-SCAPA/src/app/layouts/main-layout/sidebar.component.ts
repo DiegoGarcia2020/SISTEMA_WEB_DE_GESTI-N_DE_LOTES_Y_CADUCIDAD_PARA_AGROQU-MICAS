@@ -61,7 +61,13 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
         @if (hasRole(['PROVEEDOR', 'BODEGUERO'])) {
           <div class="pt-4 px-3 pb-1.5 text-[10px] font-bold text-green-200/60 uppercase tracking-wider">Módulo Inventario</div>
 
-          @if (hasRole(['PROVEEDOR', 'BODEGUERO'])) {
+          @if (hasRole(['PROVEEDOR'])) {
+            <a routerLink="/admin/proveedor/dashboard" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
+               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
+              <lucide-icon name="layout-dashboard" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+              <span>Mi Dashboard</span>
+            </a>
+
             <a routerLink="/admin/inventario/pre-registro" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
                class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
               <lucide-icon name="clipboard-check" class="w-4 h-4 flex-shrink-0"></lucide-icon>
