@@ -5,13 +5,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.uteq.sacpa.exception.AccesoDenegadoException;
-import org.uteq.sacpa.exception.OposicionBusinessException;
-import org.uteq.sacpa.repository.ayudantia.AsistenciaRepository;
 
 @Service
 @RequiredArgsConstructor
 public class SecurityContextService {
-    private final AsistenciaRepository asistenciaRepository;
 
     public UsuarioPrincipal obtenerPrincipal() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -27,32 +24,5 @@ public class SecurityContextService {
 
     public String obtenerNombreUsuario() {
         return obtenerPrincipal().getUsername();
-    }
-
-    public Integer obtenerIdAyudantia() {
-        Integer idUsuario   = obtenerIdUsuario();
-        Integer idAyudantia = asistenciaRepository.obtenerIdAyudantiaPorUsuario(idUsuario);
-
-        if (idAyudantia == null) {
-            throw new OposicionBusinessException(
-                    "No se encontró una ayudantía activa para su usuario.");
-        }
-        return idAyudantia;
-    }
-
-    public Integer obtenerIdRegistroActivo(Integer idAyudantia) {
-        Integer idRegistro = asistenciaRepository.obtenerIdRegistroActivoPorAyudantia(idAyudantia);
-
-        if (idRegistro == null) {
-            throw new OposicionBusinessException(
-                    "No se encontró un registro de actividad activo para la ayudantía.");
-        }
-        return idRegistro;
-    }
-
-    public Integer[] obtenerContextoAsistencia() {
-        Integer idAyudantia = obtenerIdAyudantia();
-        Integer idRegistro  = obtenerIdRegistroActivo(idAyudantia);
-        return new Integer[]{ idAyudantia, idRegistro };
     }
 }

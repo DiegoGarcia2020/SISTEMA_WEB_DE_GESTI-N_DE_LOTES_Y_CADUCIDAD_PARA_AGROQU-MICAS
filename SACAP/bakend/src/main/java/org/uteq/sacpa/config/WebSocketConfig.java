@@ -8,8 +8,6 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 import org.uteq.sacpa.security.AuthChannelInterceptor;
 
-import java.io.Console;
-
 @Configuration
 @EnableWebSocketMessageBroker
 @RequiredArgsConstructor

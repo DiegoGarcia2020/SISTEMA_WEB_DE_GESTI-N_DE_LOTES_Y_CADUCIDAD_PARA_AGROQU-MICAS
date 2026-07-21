@@ -13,12 +13,12 @@ import org.uteq.sacpa.config.UserContext;
  * AOP Aspect que cambia el rol de base de datos por cada request.
  * Mapeo de roles de aplicacion a roles de BD PostgreSQL del sistema SACPA:
  *
- *  ADMINISTRADOR  -> agro_administrador
- *  GERENTE        -> agro_gerente
- *  BODEGUERO      -> agro_bodeguero
- *  SUPERVISOR     -> agro_supervisor
- *  PROVEEDOR      -> agro_proveedor
- *  TECNICO_CAMPO  -> agro_tecnico_campo
+ *  ADMINISTRADOR  -> grupo_administrador
+ *  GERENTE        -> grupo_gerente
+ *  BODEGUERO      -> grupo_bodeguero
+ *  SUPERVISOR     -> grupo_supervisor
+ *  PROVEEDOR      -> grupo_proveedor
+ *  TECNICO_CAMPO  -> grupo_tecnico_campo
  */
 @Aspect
 @Component
@@ -53,12 +53,12 @@ public class DatabaseRoleAspect {
     private String mapearRolBD(String rolApp) {
         if (rolApp == null) return null;
         return switch (rolApp.toUpperCase()) {
-            case "ADMINISTRADOR"  -> "agro_administrador";
-            case "GERENTE"        -> "agro_gerente";
-            case "BODEGUERO"      -> "agro_bodeguero";
-            case "SUPERVISOR"     -> "agro_supervisor";
-            case "PROVEEDOR"      -> "agro_proveedor";
-            case "TECNICO_CAMPO"  -> "agro_tecnico_campo";
+            case "ADMINISTRADOR"  -> "grupo_administrador";
+            case "GERENTE"        -> "grupo_gerente";
+            case "BODEGUERO"      -> "grupo_bodeguero";
+            case "SUPERVISOR"     -> "grupo_supervisor";
+            case "PROVEEDOR"      -> "grupo_proveedor";
+            case "TECNICO_CAMPO"  -> "grupo_tecnico_campo";
             default -> {
                 log.warn("[SACPA-AOP] Rol de aplicacion no reconocido: {}", rolApp);
                 yield null;
