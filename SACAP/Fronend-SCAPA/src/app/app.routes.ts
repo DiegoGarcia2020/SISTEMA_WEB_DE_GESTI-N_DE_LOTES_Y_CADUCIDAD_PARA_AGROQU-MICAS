@@ -7,6 +7,9 @@ import { roleGuard } from './core/guards/role.guard';
 import { RegistroComponent } from './features/auth/registro/registro.component';
 // Componentes de Administración
 import { DashboardComponent } from './features/admin/dashboard/dashboard.component';
+import { GestionPaisesComponent } from './features/admin/gestion-paises/gestion-paises.component';
+import { GestionProvinciasComponent } from './features/admin/gestion-provincias/gestion-provincias.component';
+import { GestionCiudadesComponent } from './features/admin/gestion-ciudades/gestion-ciudades.component';
 import { GestionUsuariosComponent } from './features/admin/gestion-usuarios/gestion-usuarios.component';
 import { SolicitudesRegistroComponent } from './features/admin/solicitudes-registro/solicitudes-registro.component';
 import { GestionRolesComponent } from './features/admin/gestion-roles/gestion-roles.component';
@@ -89,6 +92,24 @@ export const routes: Routes = [
       {
         path: 'configuracion',
         component: ConfiguracionComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['Administrador'] }
+      },
+      {
+        path: 'geografia/paises',
+        component: GestionPaisesComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['Administrador'] }
+      },
+      {
+        path: 'geografia/provincias',
+        component: GestionProvinciasComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['Administrador'] }
+      },
+      {
+        path: 'geografia/ciudades',
+        component: GestionCiudadesComponent,
         canActivate: [roleGuard],
         data: { roles: ['Administrador'] }
       },

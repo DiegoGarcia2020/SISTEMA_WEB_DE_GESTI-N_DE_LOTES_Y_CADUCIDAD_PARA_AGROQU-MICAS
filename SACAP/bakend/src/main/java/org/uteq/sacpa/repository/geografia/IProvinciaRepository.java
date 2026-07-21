@@ -7,7 +7,11 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 import org.uteq.sacpa.entity.geografia.Provincia;
 
+import java.util.List;
+
 public interface IProvinciaRepository extends JpaRepository<Provincia, Integer> {
+
+    List<Provincia> findByPais_IdPais(Integer idPais);
     @Modifying @Transactional
     @Query(value = "SELECT geografia.fn_crear_provincia(:nombre, :idPais)", nativeQuery = true)
     void crearProvincia(@Param("nombre") String nombre, @Param("idPais") Integer idPais);

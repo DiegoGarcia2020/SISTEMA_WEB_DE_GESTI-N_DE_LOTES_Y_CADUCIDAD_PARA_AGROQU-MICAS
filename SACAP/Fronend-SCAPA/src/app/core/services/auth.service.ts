@@ -41,9 +41,8 @@ export class AuthService {
         }
       }),
       catchError(err => {
-        // Fallback para desarrollo UI si el servidor Java está apagado
-        if (err.status === 0 || err.status === 404) {
-          console.warn('⚠️ Servidor SACPA no accesible. Usando sesión mock local para UI de AgroSense LMS.');
+        if (!environment.production && (err.status === 0 || err.status === 404)) {
+          console.warn('Servidor SACPA no accesible. Usando sesion mock local para UI de desarrollo.');
           const mockUser: UsuarioInfo = { idUsuario: 1, correo: credentials.correo || 'c.mendoza@agrosense.ec' };
           const mockRoles = ['ADMINISTRADOR', 'SUPERVISOR', 'BODEGUERO'];
           const mockRes: AuthResponse = {
@@ -72,8 +71,8 @@ export class AuthService {
         this.setFinalSession(res.token, res.usuario || this.currentUser()!, rolSeleccionado);
       }),
       catchError(err => {
-        if (err.status === 0 || err.status === 404) {
-          console.warn('⚠️ Servidor SACPA no accesible. Auto-aprobando selección de rol mock: ' + rolSeleccionado);
+        if (!environment.production && (err.status === 0 || err.status === 404)) {
+          console.warn('Servidor SACPA no accesible. Auto-aprobando seleccion de rol mock: ' + rolSeleccionado);
           const mockRes: AuthResponse = {
             token: 'mock-final-jwt-token-999',
             tipoFase: 'FINAL',

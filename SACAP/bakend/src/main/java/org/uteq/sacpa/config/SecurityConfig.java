@@ -32,7 +32,7 @@ import java.util.Arrays;
 /**
  * Configuracion de seguridad SACPA.
  * Roles del sistema: ADMINISTRADOR, GERENTE, BODEGUERO, SUPERVISOR, PROVEEDOR, TECNICO_CAMPO
- * Roles BD: agro_administrador, agro_gerente, agro_bodeguero, agro_supervisor, agro_proveedor, agro_tecnico_campo
+ * Roles BD: grupo_administrador, grupo_gerente, grupo_bodeguero, grupo_supervisor, grupo_proveedor, grupo_tecnico_campo
  */
 @Configuration
 @EnableWebSecurity
@@ -100,7 +100,6 @@ public class SecurityConfig {
                 // Publico: login, seleccion de rol y solicitud de registro
                 .requestMatchers(
                     "/api/auth/login",
-                    "/api/auth/seleccionar-rol",
                     "/api/auth/select-role",
                     "/api/registro/solicitar"
                 ).permitAll()
@@ -117,7 +116,10 @@ public class SecurityConfig {
                     "/api/roles/**",
                     "/api/seguridad/**",
                     "/api/ia/modelos/**",
-                    "/api/ia/reglas/**"
+                    "/api/ia/reglas/**",
+                    "/api/paises/**",
+                    "/api/provincias/**",
+                    "/api/ciudades/**"
                 ).hasAnyAuthority("ADMINISTRADOR")
 
                 // ADMINISTRADOR y GERENTE — reportes y gerencia

@@ -16,6 +16,7 @@ import org.uteq.sacpa.repository.seguridad.IRolRepository;
 import org.uteq.sacpa.repository.seguridad.ISolicitudRegistroRepository;
 import org.uteq.sacpa.repository.seguridad.IUsuarioRepository;
 import org.uteq.sacpa.service.seguridad.ISolicitudRegistroService;
+import org.uteq.sacpa.util.PasswordGenerator;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -35,6 +36,7 @@ public class SolicitudRegistroServiceImpl implements ISolicitudRegistroService {
     private final IRolRepository rolRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final PasswordGenerator passwordGenerator;
 
     @Override
     @Transactional
@@ -80,8 +82,8 @@ public class SolicitudRegistroServiceImpl implements ISolicitudRegistroService {
             solicitud.setIdEstado(2); // APROBADA
             solicitud.setFechaProcesamiento(LocalDateTime.now());
 
-            // Crear Usuario en BD con clave temporal
-            String claveTemp = "SacpaTemp" + (1000 + (int)(Math.random() * 8999)) + "!";
+            // Crear Usuario en BD con clave temporal segura
+            String claveTemp = passwordGenerator.generate();
             Usuario usuario = Usuario.builder()
                     .correo(solicitud.getCorreo())
                     .contrasena(passwordEncoder != null ? passwordEncoder.encode(claveTemp) : claveTemp)

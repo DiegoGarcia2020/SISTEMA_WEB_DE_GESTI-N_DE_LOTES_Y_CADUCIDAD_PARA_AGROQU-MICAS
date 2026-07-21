@@ -82,37 +82,6 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, "Bad Request", ex.getMessage());
     }
 
-    @ExceptionHandler(ConvocatoriaBusinessException.class)
-    public ResponseEntity<Map<String, Object>> handleBusiness(ConvocatoriaBusinessException ex) {
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(Map.of(
-                "timestamp", Instant.now().toString(),
-                "status",    422,
-                "error",     "Validación de negocio",
-                "message",   ex.getMessage(),
-                "codigo",    ex.getCodigo()
-        ));
-    }
-
-    @ExceptionHandler(FaseRestriccionException.class)
-    public ResponseEntity<Map<String, Object>> handleFase(FaseRestriccionException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
-                "timestamp", Instant.now().toString(),
-                "status",    409,
-                "error",     "Restricción de fase",
-                "message",   ex.getMessage()
-        ));
-    }
-
-    @ExceptionHandler(OposicionBusinessException.class)
-    public ResponseEntity<Map<String, Object>> handleOposicion(OposicionBusinessException ex) {
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(Map.of(
-                "timestamp", Instant.now().toString(),
-                "status",    422,
-                "error",     "Validación de oposición",
-                "message",   ex.getMessage()
-        ));
-    }
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
         String errores = ex.getBindingResult().getFieldErrors().stream()
