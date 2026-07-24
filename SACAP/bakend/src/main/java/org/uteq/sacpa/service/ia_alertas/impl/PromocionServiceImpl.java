@@ -35,7 +35,21 @@ public class PromocionServiceImpl implements IPromocionService {
     }
 
     @Override
+    public List<Promocion> listarPorEstado(Integer idEstado) {
+        return promocionRepository.findByIdEstado(idEstado);
+    }
+
+    @Override
     public void desactivarPromocion(Integer idPromocion, Integer idEstadoInactivo) {
         promocionRepository.desactivarPromocion(idPromocion, idEstadoInactivo);
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public void cambiarEstadoPromocion(Integer idPromocion, Integer idEstado) {
+        Promocion prom = promocionRepository.findById(idPromocion)
+                .orElseThrow(() -> new RuntimeException("Promoción no encontrada con ID: " + idPromocion));
+        prom.setIdEstado(idEstado);
+        promocionRepository.save(prom);
     }
 }

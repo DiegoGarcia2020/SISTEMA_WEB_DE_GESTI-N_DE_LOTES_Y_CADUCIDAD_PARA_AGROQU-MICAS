@@ -1,0 +1,485 @@
+/* =================================================================
+   PANTALLA 2: CREACIÓN DE ORDEN DE COMPRA
+   Formulario Maestro-Detalle con CSS Puro
+   ================================================================= */
+
+:host {
+  --green-700: #15803d;
+  --green-800: #14532d;
+  --green-50: #f0fdf4;
+  --green-100: #dcfce7;
+  --green-200: #bbf7d0;
+  --amber-50: #fffbeb;
+  --amber-600: #d97706;
+  --red-50: #fef2f2;
+  --red-600: #dc2626;
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-700: #374151;
+  --gray-900: #111827;
+  --white: #ffffff;
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --radius: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  display: block;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.crear-container {
+  padding: 1.5rem;
+  min-height: 100vh;
+  background: var(--gray-50);
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* ── Cabecera ── */
+.page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background: linear-gradient(135deg, #1e293b 0%, #14532d 60%, #0b4628 100%);
+  padding: 1.5rem;
+  border-radius: var(--radius-xl);
+  color: var(--white);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .page-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.page-header__blur {
+  position: absolute;
+  right: -2.5rem;
+  bottom: -2.5rem;
+  width: 12rem;
+  height: 12rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  filter: blur(40px);
+  pointer-events: none;
+}
+
+.page-header__info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  z-index: 1;
+}
+
+.page-header__icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #86efac;
+}
+
+.page-header__title {
+  font-size: 1.375rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.page-header__subtitle {
+  font-size: 0.75rem;
+  color: #cbd5e1;
+  margin: 0.125rem 0 0 0;
+}
+
+.page-header__actions {
+  display: flex;
+  gap: 0.75rem;
+  z-index: 1;
+}
+
+/* ── Tarjetas de sección ── */
+.section-card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-xs);
+  overflow: hidden;
+}
+
+.section-card__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--gray-200);
+  background: var(--gray-50);
+}
+
+.section-card__icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.625rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.section-card__icon--green {
+  background: var(--green-100);
+  color: var(--green-700);
+}
+
+.section-card__icon--amber {
+  background: var(--amber-50);
+  color: var(--amber-600);
+}
+
+.section-card__title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin: 0;
+}
+
+.section-card__subtitle {
+  font-size: 0.6875rem;
+  color: var(--gray-500);
+  margin: 0;
+}
+
+.section-card__body {
+  padding: 1.25rem;
+}
+
+/* ── Grid del formulario de cabecera ── */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .form-grid--3 {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.form-group__label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.form-group__input,
+.form-group__select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--gray-200);
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-family: inherit;
+  color: var(--gray-900);
+  background: var(--white);
+  transition: border-color 0.2s;
+  outline: none;
+}
+
+.form-group__input:focus,
+.form-group__select:focus {
+  border-color: var(--green-700);
+  box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.1);
+}
+
+.form-group__input--error {
+  border-color: var(--red-600);
+}
+
+/* ── Tabla de detalles (productos) ── */
+.detalles-table-wrapper {
+  overflow-x: auto;
+}
+
+.detalles-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+}
+
+.detalles-table th {
+  padding: 0.75rem 0.75rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--gray-50);
+  border-bottom: 1px solid var(--gray-200);
+  text-align: left;
+}
+
+.detalles-table td {
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid var(--gray-100);
+  vertical-align: middle;
+}
+
+.detalles-table__input {
+  width: 100%;
+  padding: 0.375rem 0.5rem;
+  border: 1px solid var(--gray-200);
+  border-radius: 0.375rem;
+  font-size: 0.8125rem;
+  font-family: inherit;
+  color: var(--gray-900);
+  background: var(--white);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.detalles-table__input:focus {
+  border-color: var(--green-700);
+  box-shadow: 0 0 0 2px rgba(21, 128, 61, 0.08);
+}
+
+.detalles-table__input--readonly {
+  background: var(--gray-50);
+  color: var(--gray-500);
+  cursor: not-allowed;
+}
+
+.detalles-table__input--number {
+  text-align: right;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.detalles-table__subtotal {
+  font-weight: 800;
+  color: var(--gray-900);
+  font-family: monospace;
+  font-size: 0.875rem;
+  text-align: right;
+  padding-right: 0.5rem;
+}
+
+/* ── Fila de bonificación (regalo) ── */
+.row--bonificacion {
+  background: var(--green-50) !important;
+}
+
+.row--bonificacion td {
+  border-bottom-color: var(--green-200);
+}
+
+.badge-regalo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  background: var(--green-100);
+  color: var(--green-700);
+  border-radius: 1rem;
+  font-size: 0.625rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+/* ── Botones de detalle ── */
+.detalles-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding: 0 0.75rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn--primary {
+  background: var(--green-700);
+  color: var(--white);
+  box-shadow: var(--shadow-xs);
+}
+
+.btn--primary:hover {
+  background: var(--green-800);
+}
+
+.btn--outline {
+  background: var(--white);
+  color: var(--green-700);
+  border: 1px solid var(--green-700);
+}
+
+.btn--outline:hover {
+  background: var(--green-50);
+}
+
+.btn--gift {
+  background: var(--green-100);
+  color: var(--green-700);
+  border: 1px dashed var(--green-700);
+}
+
+.btn--gift:hover {
+  background: var(--green-200);
+}
+
+.btn--ghost {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--white);
+}
+
+.btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.btn--back {
+  background: var(--gray-100);
+  color: var(--gray-700);
+  border: 1px solid var(--gray-200);
+}
+
+.btn--back:hover {
+  background: var(--gray-200);
+}
+
+.btn--sm {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+.btn--danger-sm {
+  background: transparent;
+  color: var(--red-600);
+  padding: 0.25rem;
+  border-radius: 0.375rem;
+}
+
+.btn--danger-sm:hover {
+  background: var(--red-50);
+}
+
+.btn--lg {
+  padding: 0.75rem 2rem;
+  font-size: 0.9375rem;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Pie de totales ── */
+.totals-card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-xs);
+}
+
+.totals-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .totals-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+}
+
+.totals-right {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.375rem 0;
+}
+
+.total-row__label {
+  font-size: 0.8125rem;
+  color: var(--gray-500);
+  font-weight: 500;
+}
+
+.total-row__value {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  font-family: monospace;
+}
+
+.total-row--discount .total-row__value {
+  color: var(--red-600);
+}
+
+.total-row--grand {
+  border-top: 2px solid var(--gray-200);
+  padding-top: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.total-row--grand .total-row__label {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--gray-900);
+}
+
+.total-row--grand .total-row__value {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: var(--green-700);
+}
+
+/* ── Pie de acción ── */
+.action-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}

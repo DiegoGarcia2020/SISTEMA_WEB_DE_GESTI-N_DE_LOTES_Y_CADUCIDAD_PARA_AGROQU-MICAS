@@ -11,7 +11,11 @@ import {
   AlertTriangle, AlertCircle, Info, Settings, LogOut, HelpCircle, Save, X, Check, Bell,
   UserX, Calendar, Sprout, Gift, Grid, Layers, PieChart, Plus, PlusCircle, Database, Camera, Image, Upload,
   Play, StopCircle, Award, Sparkles, Sliders, CheckSquare, Tag, Percent, DollarSign,
-  Download, Globe, FileText, HardDrive, Cpu, Terminal, Power, Folder
+  Download, Globe, FileText, HardDrive, Cpu, Terminal, Power, Folder,
+  List, Briefcase, UploadCloud, FileCheck, Link, MapPin, Zap, Ban, RefreshCw, MoreVertical,
+  ListChecks, TrendingUp, BarChart2, Boxes, ChevronLeft, ChevronUp, ArrowUp, ArrowDown,
+  Printer, Copy, ExternalLink, Eye as EyeIcon, EyeOff as EyeOffIcon,
+  FilePlus, PackagePlus, Receipt, Warehouse, ShoppingCart
 } from 'lucide-angular';
 
 export const appConfig: ApplicationConfig = {
@@ -27,7 +31,12 @@ export const appConfig: ApplicationConfig = {
         AlertTriangle, AlertCircle, Info, Settings, LogOut, HelpCircle, Save, X, Check, Bell,
         UserX, Calendar, Sprout, Gift, Grid, Layers, PieChart, Plus, PlusCircle, Database, Camera, Image, Upload,
         Play, StopCircle, Award, Sparkles, Sliders, CheckSquare, Tag, Percent, DollarSign,
-        Download, Globe, FileText, HardDrive, Cpu, Terminal, Power, Folder
+        Download, Globe, FileText, HardDrive, Cpu, Terminal, Power, Folder,
+        List, Briefcase, UploadCloud, FileCheck, Link, MapPin, Zap, Ban, RefreshCw, MoreVertical,
+        ListChecks, TrendingUp, BarChart2, Boxes, ChevronLeft, ChevronUp, ArrowUp, ArrowDown,
+        Printer, Copy, ExternalLink,
+        EyeIcon, EyeOffIcon,
+        FilePlus, PackagePlus, Receipt, Warehouse, ShoppingCart
       })
     )
   ]

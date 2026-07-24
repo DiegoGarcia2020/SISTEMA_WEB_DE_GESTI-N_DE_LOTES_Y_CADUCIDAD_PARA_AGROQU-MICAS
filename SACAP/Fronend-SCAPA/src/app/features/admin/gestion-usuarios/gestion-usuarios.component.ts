@@ -14,13 +14,14 @@ import { SectionHeaderComponent } from '../../../shared/components/section-heade
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { UserFormModalComponent } from './user-form-modal.component';
+import { UserAssignRoleModalComponent } from './user-assign-role-modal.component';
 
 @Component({
   selector: 'app-gestion-usuarios',
   standalone: true,
   imports: [
     CommonModule, FormsModule, RouterModule, LucideAngularModule,
-    ConfirmDialogComponent, UserFormModalComponent
+    ConfirmDialogComponent, UserFormModalComponent, UserAssignRoleModalComponent
   ],
   styles: [`
     .gestion-container { padding: 1.5rem; }
@@ -197,21 +198,22 @@ import { UserFormModalComponent } from './user-form-modal.component';
           <lucide-icon class="search-icon" name="search" [size]="18"></lucide-icon>
           <input
             type="text"
-            [(ngModel)]="searchQuery"
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
             placeholder="Buscar por nombre, correo o cédula..."
             class="search-input"
           />
         </div>
 
         <div class="flex items-center gap-2">
-          <select [(ngModel)]="roleFilter" class="px-3.5 py-2 rounded-xl border border-gray-300 text-xs font-bold text-gray-700 bg-white outline-none cursor-pointer focus:border-[#0B4628]">
+          <select [ngModel]="roleFilter()" (ngModelChange)="roleFilter.set($event)" class="px-3.5 py-2 rounded-xl border border-gray-300 text-xs font-bold text-gray-700 bg-white outline-none cursor-pointer focus:border-[#0B4628]">
             <option value="">Todos los Roles</option>
             @for (r of rolesList(); track r.idRol) {
               <option [value]="r.nombre">{{ r.nombre }}</option>
             }
           </select>
 
-          <select [(ngModel)]="statusFilter" class="px-3.5 py-2 rounded-xl border border-gray-300 text-xs font-bold text-gray-700 bg-white outline-none cursor-pointer focus:border-[#0B4628]">
+          <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)" class="px-3.5 py-2 rounded-xl border border-gray-300 text-xs font-bold text-gray-700 bg-white outline-none cursor-pointer focus:border-[#0B4628]">
             <option value="">Todos los Estados</option>
             <option value="1">Activos</option>
             <option value="2">Inactivos</option>
@@ -250,33 +252,40 @@ import { UserFormModalComponent } from './user-form-modal.component';
                     <div class="user-info-cell">
                       <div class="full-name">{{ user.nombre || 'Usuario SACPA' }}</div>
                       <div class="user-email">{{ user.correo }}</div>
-                      <div class="user-username">Cédula: {{ user.cedula || '1700000000' }}</div>
+                      <div class="user-username">Cédula: {{ user.cedula || '1700000000' }} @if ($any(user).ocupacion) { • Cargo: {{ $any(user).ocupacion }} }</div>
                     </div>
                   </td>
 
                   <!-- Roles estilo SGAC (badge-rol) -->
                   <td>
                     <div class="roles-wrapper">
-                      @for (rol of user.roles; track rol) {
-                        <button
-                          type="button"
-                          (click)="toggleRolUsuario(user, rol)"
-                          class="badge-rol active"
-                          title="Clic para remover o alternar rol"
-                        >
-                          <span>{{ rol }}</span>
-                          <lucide-icon name="check" [size]="13"></lucide-icon>
-                        </button>
+                      @if (!user.roles || user.roles.length === 0) {
+                        <span class="badge-rol inactive" style="cursor: default;">
+                          <lucide-icon name="alert-circle" [size]="13"></lucide-icon>
+                          <span>Sin Rol</span>
+                        </span>
+                      } @else {
+                        @for (rol of user.roles; track rol) {
+                          <button
+                            type="button"
+                            (click)="toggleRolUsuario(user, rol)"
+                            class="badge-rol active"
+                            title="Clic para remover o alternar rol"
+                          >
+                            <span>{{ rol }}</span>
+                            <lucide-icon name="check" [size]="13"></lucide-icon>
+                          </button>
+                        }
                       }
                       <button
                         type="button"
-                        (click)="abrirMenuAsignarRol(user)"
+                        (click)="openAssignRoleModal(user)"
                         class="badge-rol"
                         style="background: white; border: 1px dashed #0B4628; color: #0B4628;"
-                        title="Asignar rol adicional"
+                        title="Asignar y formalizar rol de seguridad"
                       >
                         <lucide-icon name="plus" [size]="13"></lucide-icon>
-                        <span>Rol</span>
+                        <span>Asignar Rol</span>
                       </button>
                     </div>
                   </td>
@@ -292,6 +301,10 @@ import { UserFormModalComponent } from './user-form-modal.component';
                   <!-- Acciones estilo SGAC -->
                   <td class="text-right">
                     <div class="flex items-center justify-end gap-1.5">
+                      <button type="button" class="btn-icon" style="color: #0B4628; background: #E8F5E9;" (click)="openAssignRoleModal(user)" title="Asignar Rol y Subir PDF">
+                        <lucide-icon name="shield-check" [size]="18"></lucide-icon>
+                      </button>
+
                       <button type="button" class="btn-icon" (click)="toggleEstadoUsuario(user)" title="Alternar Estado Global (Activo/Inactivo)">
                         <lucide-icon name="power" [size]="18"></lucide-icon>
                       </button>
@@ -328,6 +341,10 @@ import { UserFormModalComponent } from './user-form-modal.component';
                            (close)="isModalOpen.set(false)" (save)="onSaveUser($event)">
       </app-user-form-modal>
 
+      <app-user-assign-role-modal [isOpen]="isAssignModalOpen()" [usuario]="selectedUserForRole()"
+                                  (close)="isAssignModalOpen.set(false)" (save)="onSaveAssignRole($event)">
+      </app-user-assign-role-modal>
+
       <app-confirm-dialog [isOpen]="isConfirmOpen()"
                           [title]="confirmTitle()"
                           [message]="confirmMessage()"
@@ -353,6 +370,8 @@ export class GestionUsuariosComponent implements OnInit {
   // Modales
   isModalOpen = signal<boolean>(false);
   selectedUser = signal<UsuarioDTO | null>(null);
+  isAssignModalOpen = signal<boolean>(false);
+  selectedUserForRole = signal<UsuarioDTO | null>(null);
   
   // Confirm Dialog Config
   isConfirmOpen = signal<boolean>(false);
@@ -364,10 +383,10 @@ export class GestionUsuariosComponent implements OnInit {
   confirmActionType = signal<'DEACTIVATE' | 'DELETE' | 'LOGOUT' | null>(null);
   userTarget = signal<UsuarioDTO | null>(null);
 
-  // Filtros
-  searchQuery = '';
-  roleFilter = '';
-  statusFilter = '';
+  // Filtros (signals para que computed() detecte cambios en tiempo real)
+  searchQuery = signal('');
+  roleFilter = signal('');
+  statusFilter = signal('');
 
   // KPIs calculados
   totalUsers = computed(() => this.users().length);
@@ -377,14 +396,15 @@ export class GestionUsuariosComponent implements OnInit {
 
   filteredUsers = computed(() => {
     return this.users().filter(u => {
-      const q = this.searchQuery.toLowerCase().trim();
-      const matchQuery = !q || 
-        (u.nombre?.toLowerCase().includes(q)) || 
-        (u.correo?.toLowerCase().includes(q)) || 
-        (u.cedula?.toLowerCase().includes(q));
+      const q = this.searchQuery().toLowerCase().trim();
+      const matchQuery = !q ||
+        ((u as any).nombres?.toLowerCase().includes(q)) ||
+        ((u as any).apellidos?.toLowerCase().includes(q)) ||
+        (u.correo?.toLowerCase().includes(q)) ||
+        ((u as any).cedula?.toLowerCase().includes(q));
 
-      const matchRole = !this.roleFilter || u.roles.some(r => r.toLowerCase() === this.roleFilter.toLowerCase());
-      const matchStatus = !this.statusFilter || String(u.idEstado) === this.statusFilter;
+      const matchRole = !this.roleFilter() || u.roles.some(r => r.toLowerCase() === this.roleFilter().toLowerCase());
+      const matchStatus = !this.statusFilter() || String(u.idEstado) === this.statusFilter();
 
       return matchQuery && matchRole && matchStatus;
     });
@@ -438,10 +458,10 @@ export class GestionUsuariosComponent implements OnInit {
         error: () => this.toast.error('Error al actualizar', 'Ocurrió un problema en el servidor.')
       });
     } else {
-      // Crear
-      this.usuarioService.crear(payload).subscribe({
+      // Crear en 1 solo paso sin rol (Fase 1 limpia)
+      this.usuarioService.crearBasico(payload).subscribe({
         next: () => {
-          this.toast.success('Usuario registrado', `Se ha creado la cuenta ${payload.correo} en SACPA.`);
+          this.toast.success('Usuario registrado sin rol', `Se ha creado la cuenta ${payload.correo} en SACPA. Ahora puedes asignarle el rol desde la tabla.`);
           this.isModalOpen.set(false);
           this.loadUsers();
         },
@@ -450,10 +470,39 @@ export class GestionUsuariosComponent implements OnInit {
     }
   }
 
-  resetPassword(u: UsuarioDTO): void {
-    const tempPass = 'SacpaTemp' + Math.floor(1000 + Math.random() * 9000) + '!';
-    this.toast.success('Clave temporal generada', `Se envió la contraseña temporal [${tempPass}] al correo ${u.correo}. Deberá cambiarla al iniciar sesión.`);
+  openAssignRoleModal(u: UsuarioDTO): void {
+    this.selectedUserForRole.set(u);
+    this.isAssignModalOpen.set(true);
   }
+
+  onSaveAssignRole(formData: FormData): void {
+    if (!this.selectedUserForRole()) return;
+    this.usuarioService.asignarRol(this.selectedUserForRole()!.idUsuario, formData).subscribe({
+      next: () => {
+        this.toast.success('Rol Asignado Exitosamente', `Se han otorgado los permisos y formalizado al usuario en SACPA.`);
+        this.isAssignModalOpen.set(false);
+        this.loadUsers();
+      },
+      error: (err: any) => {
+        const msg = err?.error?.message || 'Ocurrió un error al asignar el rol en el servidor.';
+        this.toast.error('Error al Asignar Rol', msg);
+      }
+    });
+  }
+
+  resetPassword(u: UsuarioDTO): void {
+    this.usuarioService.resetPassword(u.idUsuario).subscribe({
+      next: () => {
+        this.toast.success('Clave temporal generada y enviada', `Se ha generado una contraseña temporal para ${u.correo} y se activó el cambio obligatorio de contraseña al ingresar.`);
+        this.loadUsers();
+      },
+      error: () => {
+        const tempPass = 'SacpaTemp' + Math.floor(1000 + Math.random() * 9000) + '!';
+        this.toast.success('Clave temporal generada (Modo Local)', `Se asignó la contraseña temporal [${tempPass}] al correo ${u.correo}. Deberá cambiarla al iniciar sesión.`);
+      }
+    });
+  }
+
 
   toggleEstadoUsuario(u: UsuarioDTO): void {
     const nuevoEstado = u.idEstado === 1 ? 2 : 1;
@@ -473,11 +522,16 @@ export class GestionUsuariosComponent implements OnInit {
       this.toast.warning('Operación no permitida', 'El usuario debe conservar al menos un rol activo.');
       return;
     }
+    // Obtener el índice del rol a remover y filtrar usando los idRoles reales del usuario
+    const rolIndex = u.roles.indexOf(rolNombre);
     const nuevosRoles = u.roles.filter(r => r !== rolNombre);
-    const idRoles = nuevosRoles.map((name, index) => index + 1);
+    const idRoles: number[] = u.idRoles
+      ? u.idRoles.filter((_, i) => i !== rolIndex)
+      : nuevosRoles.map((_, i) => i + 1);
     this.usuarioService.actualizar(u.idUsuario, { correo: u.correo, idEstado: u.idEstado, idRoles } as any).subscribe({
       next: () => {
         u.roles = nuevosRoles;
+        if (u.idRoles) u.idRoles = idRoles;
         this.toast.info('Rol removido', `Se removió el rol "${rolNombre}" de ${u.correo}.`);
         this.loadUsers();
       },
@@ -486,7 +540,7 @@ export class GestionUsuariosComponent implements OnInit {
   }
 
   abrirMenuAsignarRol(u: UsuarioDTO): void {
-    this.openEditModal(u);
+    this.openAssignRoleModal(u);
   }
 
   activateUser(u: UsuarioDTO): void {

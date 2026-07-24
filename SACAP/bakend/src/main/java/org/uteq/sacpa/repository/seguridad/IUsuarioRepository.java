@@ -18,9 +18,24 @@ public interface IUsuarioRepository extends JpaRepository<Usuario, Integer> {
         LEFT JOIN FETCH u.roles ur
         LEFT JOIN FETCH ur.rol r
         LEFT JOIN FETCH r.rolBD
-        WHERE u.correo = :correo
+        WHERE LOWER(u.correo) = LOWER(:correo)
+           OR LOWER(u.correo) LIKE CONCAT(LOWER(:correo), '@%')
     """)
     Optional<Usuario> findByCorreoWithRoles(@Param("correo") String correo);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @Query("UPDATE Usuario u SET u.contrasena = :contrasena, u.requiereCambioClave = :requiereCambioClave WHERE u.idUsuario = :idUsuario")
+    void actualizarContrasenaYEstado(@Param("idUsuario") Integer idUsuario, @Param("contrasena") String contrasena, @Param("requiereCambioClave") Boolean requiereCambioClave);
+
+
+    @Query("""
+        SELECT DISTINCT u FROM Usuario u
+        LEFT JOIN FETCH u.roles ur
+        LEFT JOIN FETCH ur.rol r
+        LEFT JOIN FETCH r.rolBD
+    """)
+    java.util.List<Usuario> findAllWithRoles();
 
     Optional<Usuario> findByCorreo(String correo);
 

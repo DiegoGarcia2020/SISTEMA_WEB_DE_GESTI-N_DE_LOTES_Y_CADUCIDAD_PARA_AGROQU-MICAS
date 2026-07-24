@@ -97,13 +97,15 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // Publico: login, seleccion de rol y solicitud de registro
+                // Publico o con token previo: login, seleccion de rol, cambio de contraseña y solicitud de registro
                 .requestMatchers(
                     "/api/auth/login",
                     "/api/auth/seleccionar-rol",
                     "/api/auth/select-role",
+                    "/api/auth/cambiar-contrasena",
                     "/api/registro/solicitar"
                 ).permitAll()
+
 
                 // WebSocket alertas en tiempo real
                 .requestMatchers("/ws-sacpa/**").permitAll()

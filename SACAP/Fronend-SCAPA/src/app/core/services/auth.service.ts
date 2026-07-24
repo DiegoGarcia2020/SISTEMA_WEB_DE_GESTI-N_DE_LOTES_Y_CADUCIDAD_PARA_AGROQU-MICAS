@@ -45,7 +45,7 @@ export class AuthService {
         if (err.status === 0 || err.status === 404) {
           console.warn('⚠️ Servidor SACPA no accesible. Usando sesión mock local para UI de AgroSense LMS.');
           const mockUser: UsuarioInfo = { idUsuario: 1, correo: credentials.correo || 'c.mendoza@agrosense.ec' };
-          const mockRoles = ['ADMINISTRADOR', 'SUPERVISOR', 'BODEGUERO'];
+          const mockRoles = ['ADMINISTRADOR', 'SUPERVISOR', 'BODEGUERO', 'TÉCNICO DE CAMPO'];
           const mockRes: AuthResponse = {
             token: 'mock-pre-auth-token-xyz',
             tipoFase: 'PRE_AUTH',
@@ -87,7 +87,7 @@ export class AuthService {
     );
   }
 
-  private setFinalSession(token: string, usuario: UsuarioInfo, rol: string): void {
+  setFinalSession(token: string, usuario: UsuarioInfo, rol: string, skipRedirect = false): void {
     localStorage.removeItem(this.PRE_AUTH_TOKEN_KEY);
     localStorage.setItem(this.TOKEN_KEY, token);
     localStorage.setItem(this.USER_KEY, JSON.stringify(usuario));
@@ -97,8 +97,58 @@ export class AuthService {
     this.currentRole.set(rol);
     this.isAuthenticated.set(true);
 
-    this.router.navigate(['/admin/dashboard']);
+    if (skipRedirect || usuario.requiereCambioClave) {
+      return;
+    }
+
+    this.navigateAfterLogin(rol);
   }
+
+  navigateAfterLogin(rol: string): void {
+    const r = rol.toUpperCase();
+    if (r.includes('BODEG') || r.includes('ALMACEN')) {
+      this.router.navigate(['/bodega/dashboard']);
+    } else if (r.includes('TECNIC') || r.includes('TÉCNIC') || r.includes('CAMPO')) {
+      this.router.navigate(['/campo/dashboard']);
+    } else if (r.includes('SUPERVIS')) {
+      this.router.navigate(['/supervisor/dashboard']);
+    } else {
+      this.router.navigate(['/admin/dashboard']);
+    }
+  }
+
+  cambiarContrasena(nuevaContrasena: string, contrasenaActual?: string): Observable<any> {
+    const token = this.getToken() || localStorage.getItem(this.PRE_AUTH_TOKEN_KEY);
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    const payload: any = { nuevaContrasena };
+    if (contrasenaActual) {
+      payload.contrasenaActual = contrasenaActual;
+    }
+    return this.http.post<any>(`${this.apiUrl}/auth/cambiar-contrasena`, payload, { headers }).pipe(
+      tap(() => {
+        const user = this.currentUser();
+        if (user) {
+          const updated = { ...user, requiereCambioClave: false };
+          this.currentUser.set(updated);
+          localStorage.setItem(this.USER_KEY, JSON.stringify(updated));
+        }
+      }),
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) {
+          console.warn('⚠️ Servidor SACPA no accesible. Simulando cambio de contraseña local.');
+          const user = this.currentUser();
+          if (user) {
+            const updated = { ...user, requiereCambioClave: false };
+            this.currentUser.set(updated);
+            localStorage.setItem(this.USER_KEY, JSON.stringify(updated));
+          }
+          return of({});
+        }
+        return throwError(() => err);
+      })
+    );
+  }
+
 
   logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);

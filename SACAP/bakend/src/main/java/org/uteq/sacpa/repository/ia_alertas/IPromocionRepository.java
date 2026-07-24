@@ -15,6 +15,8 @@ public interface IPromocionRepository extends JpaRepository<Promocion, Integer> 
 
     List<Promocion> findBySugerencia_IdSugerencia(Integer idSugerencia);
 
+    List<Promocion> findByIdEstado(Integer idEstado);
+
     @Modifying
     @Transactional
     @Query(value = "SELECT ia_alertas.fn_crear_promocion(:nombrePromocion, :descripcion, :descuentoGlobal, :fechaInicio, :fechaFin, :idSugerencia, :idUsuarioAprueba, :idEstado)", nativeQuery = true)

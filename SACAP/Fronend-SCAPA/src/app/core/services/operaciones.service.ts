@@ -240,4 +240,600 @@ export class OperacionesService {
       })
     );
   }
+
+  // ================= MOCKS DE OPERACIONES (DESPACHOS, USO EN CAMPO, DEVOLUCIONES) =================
+  private mockLotesFefo: any[] = [
+    { idLote: 101, numeroLote: 'LT-2026-089', idProducto: 1, nombreProducto: 'Fertilizante Urea Agrícola 46% N', cantidadActual: 150, fechaVencimiento: '2026-07-15', nombreProveedor: 'Agroquímicos del Pacífico', ubicacionAlmacen: 'Bodega Central Quevedo - Pasillo 2' },
+    { idLote: 102, numeroLote: 'LT-2026-042', idProducto: 2, nombreProducto: 'Fungicida Carbendazim 500 SC', cantidadActual: 45, fechaVencimiento: '2026-07-18', nombreProveedor: 'Bayer CropScience', ubicacionAlmacen: 'Almacén Agroquímicos Norte - Estante A' },
+    { idLote: 103, numeroLote: 'LT-2026-112', idProducto: 3, nombreProducto: 'Semilla Híbrida Maíz Trueno', cantidadActual: 80, fechaVencimiento: '2026-08-10', nombreProveedor: 'Semillas Certificadas S.A.', ubicacionAlmacen: 'Bodega Climatizada Sur' },
+    { idLote: 104, numeroLote: 'LT-2026-005', idProducto: 4, nombreProducto: 'Insecticida Cipermetrina 25 EC', cantidadActual: 120, fechaVencimiento: '2026-08-25', nombreProveedor: 'Syngenta Ecuador', ubicacionAlmacen: 'Almacén Agroquímicos Norte - Estante B' }
+  ];
+
+  private mockDespachos: any[] = [
+    { idMovimiento: 501, cantidad: 20, observacion: 'Despacho FEFO para campaña Maíz Verano', idLote: 101, idTipoMovimiento: 2, idUsuario: 3, idEstadoAprobacion: 2, fechaMovimiento: '2026-07-18', lote: { numeroLote: 'LT-2026-089', producto: { nombre: 'Fertilizante Urea Agrícola 46% N' } } },
+    { idMovimiento: 502, cantidad: 10, observacion: 'Urgente para control de hongos en lote 4', idLote: 102, idTipoMovimiento: 2, idUsuario: 3, idEstadoAprobacion: 1, fechaMovimiento: '2026-07-17', lote: { numeroLote: 'LT-2026-042', producto: { nombre: 'Fungicida Carbendazim 500 SC' } } }
+  ];
+
+  private mockUsosCampo: any[] = [
+    { idUsoCampo: 701, parcela: 'Parcela Norte - Lote A', cultivo: 'Maíz Híbrido INIAP', fechaAplicacion: '2026-07-16', cantidadUsada: 15, observacion: 'Aplicación foliar en etapa V8', idLote: 101, lote: { numeroLote: 'LT-2026-089', producto: { nombre: 'Fertilizante Urea Agrícola 46% N' } } },
+    { idUsoCampo: 702, parcela: 'Parcela Sur - Cacao CCN51', cultivo: 'Cacao CCN-51', fechaAplicacion: '2026-07-15', cantidadUsada: 5, observacion: 'Control preventivo moniliasis', idLote: 102, lote: { numeroLote: 'LT-2026-042', producto: { nombre: 'Fungicida Carbendazim 500 SC' } } }
+  ];
+
+  private mockDevoluciones: any[] = [
+    { idDevolucion: 901, motivo: 'Envases con filtración / sello dañado de fábrica', cantidadDevuelta: 12, idLote: 104, idProveedor: 4, idEstadoAprobacion: 2, fechaDevolucion: '2026-07-18', lote: { numeroLote: 'LT-2026-005', producto: { nombre: 'Insecticida Cipermetrina 25 EC' } }, proveedor: { nombre: 'Syngenta Ecuador' } },
+    { idDevolucion: 902, motivo: 'Cristalización parcial del producto líquido', cantidadDevuelta: 8, idLote: 102, idProveedor: 2, idEstadoAprobacion: 1, fechaDevolucion: '2026-07-14', lote: { numeroLote: 'LT-2026-042', producto: { nombre: 'Fungicida Carbendazim 500 SC' } }, proveedor: { nombre: 'Bayer CropScience' } }
+  ];
+
+  // ================= MOCKS DE VENTAS: CLIENTES, PEDIDOS, COMBOS =================
+  private mockClientes: any[] = [
+    { idCliente: 1, nombreFinca: 'Hacienda El Paraíso - Cacao & Maíz', cedula: '1204567890', telefono: '0987654321', direccion: 'Vía Quevedo - San Carlos Km 4', idEstado: 1, idTecnico: 1 },
+    { idCliente: 2, nombreFinca: 'Finca La Esperanza - Agrícola del Río', cedula: '1712345678', telefono: '0991122334', direccion: 'Recinto La Virginia', idEstado: 1, idTecnico: 1 },
+    { idCliente: 3, nombreFinca: 'Agropecuaria Santa Rosa S.A.', cedula: '0923456781', telefono: '0988776655', direccion: 'Mocache Centro - Sector 3', idEstado: 1, idTecnico: 1 }
+  ];
+
+  private mockPedidos: any[] = [
+    {
+      idUso: 801,
+      idCliente: 1,
+      cliente: { nombreFinca: 'Hacienda El Paraíso - Cacao & Maíz', cedula: '1204567890' },
+      descripcionPlaga: 'Brote moderado de moniliasis en mazorcas jóvenes por exceso de humedad',
+      idLote: 102,
+      lote: { numeroLote: 'LT-2026-042', nombreProducto: 'Fungicida Carbendazim 500 SC', ubicacionAlmacen: 'Almacén Agroquímicos Norte - Estante A' },
+      cantidadUsada: 10,
+      cantidadReservada: 10,
+      observacion: 'Receta preventivo-curativa de ciclo rápido (Combo IA aplicado #102)',
+      idEstadoPedido: 1, // 1: PENDIENTE_BODEGA
+      idComboAplicado: 102,
+      fechaAplicacion: '2026-07-18',
+      tipoRegistro: 'ORDEN_PEDIDO'
+    },
+    {
+      idUso: 802,
+      idCliente: 2,
+      cliente: { nombreFinca: 'Finca La Esperanza - Agrícola del Río', cedula: '1712345678' },
+      descripcionPlaga: 'Deficiencia severa de nitrógeno en hojas de maíz en floración',
+      idLote: 101,
+      lote: { numeroLote: 'LT-2026-089', nombreProducto: 'Fertilizante Urea Agrícola 46% N', ubicacionAlmacen: 'Bodega Central Quevedo - Pasillo 2' },
+      cantidadUsada: 25,
+      cantidadReservada: 0,
+      observacion: 'Despacho completado en bodega para aplicación en fertilizadora',
+      idEstadoPedido: 2, // 2: DESPACHADO
+      idComboAplicado: 101,
+      fechaAplicacion: '2026-07-17',
+      tipoRegistro: 'ORDEN_PEDIDO'
+    }
+  ];
+
+  private mockCombosKit: any[] = [
+    {
+      idPromocion: 101,
+      nombrePromocion: 'Combo Liquidación Rápida Urea + Bioestimulante',
+      descripcion: 'Promo especial para empujar lote LT-2026-089 por caducidad cercana (12 días). Descuento del 20% al llevar más de 10 sacos.',
+      descuentoGlobal: 20.0,
+      fechaInicio: '2026-07-01',
+      fechaFin: '2026-07-15',
+      idEstado: 1, // 1: ACTIVO
+      codigoLoteRef: 'LT-2026-089',
+      productoRef: 'Fertilizante Urea Agrícola 46% N',
+      stockLote: 150
+    },
+    {
+      idPromocion: 102,
+      nombrePromocion: 'Kit Antifúngico Preventivo Cacao (Carbendazim 4x3)',
+      descripcion: 'Combo diseñado por IA AgroSense para rotar Carbendazim antes de fecha crítica. Descuento del 25% por compra en combo o receta.',
+      descuentoGlobal: 25.0,
+      fechaInicio: '2026-07-02',
+      fechaFin: '2026-07-18',
+      idEstado: 1, // 1: ACTIVO
+      codigoLoteRef: 'LT-2026-042',
+      productoRef: 'Fungicida Carbendazim 500 SC',
+      stockLote: 45
+    },
+    {
+      idPromocion: 103,
+      nombrePromocion: 'Pack Semilla Maíz Trueno + Arranque Fosfatado',
+      descripcion: 'Descuento preventivo por rotación de bodega sur. 15% de rebaja en semilla certificada combinada con abono.',
+      descuentoGlobal: 15.0,
+      fechaInicio: '2026-06-25',
+      fechaFin: '2026-08-10',
+      idEstado: 2, // 2: SUGERIDA / PENDIENTE DE APROBACIÓN SUPERVISOR
+      codigoLoteRef: 'LT-2026-112',
+      productoRef: 'Semilla Híbrida Maíz Trueno',
+      stockLote: 80
+    }
+  ];
+
+  // ================= ENDPOINTS DE DESPACHOS FEFO & LOTES =================
+  listarLotesDisponiblesFefo(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/movimientos/lotes-disponibles`).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) return of([...this.mockLotesFefo]);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  despacharFefo(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/movimientos/despachos-fefo`, payload).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) {
+          const newId = Math.max(...this.mockDespachos.map(d => d.idMovimiento), 500) + 1;
+          const prod = this.mockLotesFefo.find(l => l.idProducto === payload.idProducto);
+          const nuevo = {
+            idMovimiento: newId,
+            cantidad: payload.cantidad,
+            observacion: payload.observacion || 'Despacho FEFO registrado',
+            idLote: prod ? prod.idLote : 101,
+            idTipoMovimiento: 2,
+            idUsuario: payload.idUsuario || 1,
+            idEstadoAprobacion: 2,
+            fechaMovimiento: new Date().toISOString().split('T')[0],
+            lote: { numeroLote: prod ? prod.numeroLote : 'LT-2026-089', producto: { nombre: prod ? prod.nombreProducto : 'Producto Agrícola' } }
+          };
+          this.mockDespachos.unshift(nuevo);
+          return of({ mensaje: 'Despacho FEFO registrado offline (simulado)' });
+        }
+        return throwError(() => err);
+      })
+    );
+  }
+
+  listarDespachosPendientes(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/movimientos/pendientes`).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) return of(this.mockDespachos.filter(d => d.idEstadoAprobacion === 2));
+        return throwError(() => err);
+      })
+    );
+  }
+
+  listarTodosMovimientos(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/movimientos`).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) return of([...this.mockDespachos]);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  aprobarDespacho(idMovimiento: number, observacion?: string): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/movimientos/${idMovimiento}/aprobar`, {}, { params: { observacion: observacion || 'Aprobado' } }).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) {
+          const d = this.mockDespachos.find(x => x.idMovimiento === idMovimiento);
+          if (d) d.idEstadoAprobacion = 1;
+          return of({ mensaje: 'Aprobado offline' });
+        }
+        return throwError(() => err);
+      })
+    );
+  }
+
+  rechazarDespacho(idMovimiento: number, observacion?: string): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/movimientos/${idMovimiento}/rechazar`, {}, { params: { observacion: observacion || 'Rechazado' } }).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) {
+          const d = this.mockDespachos.find(x => x.idMovimiento === idMovimiento);
+          if (d) d.idEstadoAprobacion = 3;
+          return of({ mensaje: 'Rechazado offline' });
+        }
+        return throwError(() => err);
+      })
+    );
+  }
+
+  // ================= ENDPOINTS DE USO EN CAMPO =================
+  crearUsoCampo(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/uso-campo`, payload).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) {
+          const newId = Math.max(...this.mockUsosCampo.map(u => u.idUsoCampo), 700) + 1;
+          const lote = this.mockLotesFefo.find(l => l.idLote === payload.idLote);
+          const nuevo = {
+            idUsoCampo: newId,
+            parcela: payload.cultivoParcela || 'Parcela General',
+            cultivo: payload.cultivoParcela || 'Cultivo Agrícola',
+            fechaAplicacion: payload.fechaUso || new Date().toISOString().split('T')[0],
+            cantidadUsada: payload.cantidadUsada,
+            observacion: payload.observaciones || 'Aplicación en campo',
+            idLote: payload.idLote,
+            lote: { numeroLote: lote ? lote.numeroLote : 'LT-2026-089', producto: { nombre: lote ? lote.nombreProducto : 'Insumo Agrícola' } }
+          };
+          this.mockUsosCampo.unshift(nuevo);
+          if (lote) lote.cantidadActual = Math.max(0, lote.cantidadActual - payload.cantidadUsada);
+          return of({ mensaje: 'Uso en campo registrado offline (simulado)' });
+        }
+        return throwError(() => err);
+      })
+    );
+  }
+
+  listarUsoCampo(fechaInicio?: string, fechaFin?: string, cultivo?: string): Observable<any[]> {
+    let params: any = {};
+    if (fechaInicio) params.fechaInicio = fechaInicio;
+    if (fechaFin) params.fechaFin = fechaFin;
+    if (cultivo) params.cultivo = cultivo;
+
+    return this.http.get<any[]>(`${this.apiUrl}/uso-campo/filtrado`, { params }).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) {
+          return of(this.mockUsosCampo.filter(u => {
+            const matchIn = !fechaInicio || u.fechaAplicacion >= fechaInicio;
+            const matchFi = !fechaFin || u.fechaAplicacion <= fechaFin;
+            const matchCu = !cultivo || u.cultivo.toLowerCase().includes(cultivo.toLowerCase()) || u.parcela.toLowerCase().includes(cultivo.toLowerCase());
+            return matchIn && matchFi && matchCu;
+          }));
+        }
+        return throwError(() => err);
+      })
+    );
+  }
+
+  // ================= ENDPOINTS DE DEVOLUCIONES =================
+  crearDevolucion(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/devoluciones`, payload).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) {
+          const newId = Math.max(...this.mockDevoluciones.map(d => d.idDevolucion), 900) + 1;
+          const lote = this.mockLotesFefo.find(l => l.idLote === payload.idLote);
+          const nuevo = {
+            idDevolucion: newId,
+            motivo: payload.motivo || 'Devolución por defectos',
+            cantidadDevuelta: payload.cantidadDevuelta,
+            idLote: payload.idLote,
+            idProveedor: payload.idProveedor,
+            idEstadoAprobacion: 2,
+            fechaDevolucion: new Date().toISOString().split('T')[0],
+            lote: { numeroLote: lote ? lote.numeroLote : 'LT-2026-005', producto: { nombre: lote ? lote.nombreProducto : 'Insumo' } },
+            proveedor: { nombre: lote ? lote.nombreProveedor : 'Proveedor Registrado' }
+          };
+          this.mockDevoluciones.unshift(nuevo);
+          return of({ mensaje: 'Devolución registrada offline (simulado)' });
+        }
+        return throwError(() => err);
+      })
+    );
+  }
+
+  listarDevolucionesPendientes(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/devoluciones/pendientes`).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) return of(this.mockDevoluciones.filter(d => d.idEstadoAprobacion === 2));
+        return throwError(() => err);
+      })
+    );
+  }
+
+  listarTodasDevoluciones(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/devoluciones`).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) return of([...this.mockDevoluciones]);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  cambiarEstadoDevolucion(idDevolucion: number, payload: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/devoluciones/${idDevolucion}/cambiar-estado`, payload).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) {
+          const dev = this.mockDevoluciones.find(x => x.idDevolucion === idDevolucion);
+          if (dev) dev.idEstadoAprobacion = payload.idEstadoAprobacion;
+          return of({ mensaje: 'Estado de devolución actualizado offline' });
+        }
+        return throwError(() => err);
+      })
+    );
+  }
+
+  // ================= ENDPOINTS DE VENTAS: CLIENTES =================
+  listarClientes(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/clientes`).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) return of([...this.mockClientes]);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  crearCliente(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/clientes`, payload).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) {
+          const newId = Math.max(...this.mockClientes.map(c => c.idCliente), 0) + 1;
+          const nuevo = {
+            idCliente: newId,
+            nombreFinca: payload.nombreFinca,
+            cedula: payload.cedula,
+            telefono: payload.telefono || '',
+            direccion: payload.direccion || '',
+            idEstado: 1,
+            idTecnico: payload.idTecnico || 1
+          };
+          this.mockClientes.push(nuevo);
+          return of({ mensaje: 'Cliente creado offline (simulado)', cliente: nuevo });
+        }
+        return throwError(() => err);
+      })
+    );
+  }
+
+  // ================= ENDPOINTS DE VENTAS: ÓRDENES DE PEDIDO =================
+  crearOrdenPedido(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/operaciones/pedidos`, payload).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) {
+          const newId = Math.max(...this.mockPedidos.map(p => p.idUso), 800) + 1;
+          const cliente = this.mockClientes.find(c => c.idCliente === Number(payload.idCliente));
+          const lote = this.mockLotesFefo.find(l => l.idLote === Number(payload.idLote));
+          const nuevo = {
+            idUso: newId,
+            idCliente: payload.idCliente,
+            cliente: cliente ? { nombreFinca: cliente.nombreFinca, cedula: cliente.cedula } : { nombreFinca: 'Finca General', cedula: '9999999999' },
+            descripcionPlaga: payload.descripcionPlaga,
+            idLote: payload.idLote,
+            lote: lote ? { numeroLote: lote.numeroLote, nombreProducto: lote.nombreProducto, ubicacionAlmacen: lote.ubicacionAlmacen } : { numeroLote: 'LT-000', nombreProducto: 'Producto Agrícola' },
+            cantidadUsada: payload.cantidad,
+            cantidadReservada: payload.cantidad,
+            observacion: payload.observacion || 'Pedido generado por Técnico',
+            idEstadoPedido: 1, // 1: PENDIENTE_BODEGA
+            idComboAplicado: payload.idComboAplicado,
+            fechaAplicacion: new Date().toISOString().split('T')[0],
+            tipoRegistro: 'ORDEN_PEDIDO'
+          };
+          this.mockPedidos.unshift(nuevo);
+          if (lote) {
+            lote.cantidadReservada = (lote.cantidadReservada || 0) + payload.cantidad;
+          }
+          return of({ mensaje: 'Orden de pedido creada exitosamente (simulado)' });
+        }
+        return throwError(() => err);
+      })
+    );
+  }
+
+  listarPedidosPorTecnico(idTecnico: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/operaciones/pedidos/tecnico/${idTecnico}`).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) return of([...this.mockPedidos]);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  listarPedidosPendientesBodega(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/operaciones/pedidos/bodega/pendientes`).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) {
+          return of(this.mockPedidos.filter(p => p.idEstadoPedido === 1));
+        }
+        return throwError(() => err);
+      })
+    );
+  }
+
+  despacharPedido(idOrden: number, idUsuarioBodeguero: number): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/operaciones/pedidos/${idOrden}/despachar`, {}, { params: { idUsuarioBodeguero } }).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) {
+          const p = this.mockPedidos.find(x => x.idUso === idOrden);
+          if (p) {
+            p.idEstadoPedido = 2; // DESPACHADO
+            const lote = this.mockLotesFefo.find(l => l.idLote === p.idLote);
+            if (lote) {
+              lote.cantidadActual = Math.max(0, (lote.cantidadActual || 0) - p.cantidadUsada);
+              lote.cantidadReservada = Math.max(0, (lote.cantidadReservada || 0) - p.cantidadUsada);
+            }
+          }
+          return of({ mensaje: 'Pedido despachado offline' });
+        }
+        return throwError(() => err);
+      })
+    );
+  }
+
+  registrarDevolucionCliente(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/operaciones/pedidos/devolucion-cliente`, null, {
+      params: {
+        idPedidoOriginal: payload.idPedidoOriginal || '',
+        motivo: payload.motivo,
+        cantidad: payload.cantidad,
+        idLote: payload.idLote,
+        idUsuario: payload.idUsuario || 1
+      }
+    }).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) {
+          const lote = this.mockLotesFefo.find(l => l.idLote === Number(payload.idLote));
+          if (lote) {
+            lote.cantidadActual = (lote.cantidadActual || 0) + Number(payload.cantidad);
+          }
+          if (payload.idPedidoOriginal) {
+            const p = this.mockPedidos.find(x => x.idUso === Number(payload.idPedidoOriginal));
+            if (p) p.idEstadoPedido = 5; // DEVUELTO
+          }
+          return of({ mensaje: 'Devolución de cliente registrada y stock sumado al lote (simulado)' });
+        }
+        return throwError(() => err);
+      })
+    );
+  }
+
+  // ================= ENDPOINTS DE COMBOS / KITTING =================
+  listarCombosActivos(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/ia/promociones/activas`).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) {
+          return of(this.mockCombosKit.filter(c => c.idEstado === 1));
+        }
+        return throwError(() => err);
+      })
+    );
+  }
+
+  crearComboKit(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/ia/promociones`, payload).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) {
+          const newId = Math.max(...this.mockCombosKit.map(c => c.idPromocion), 100) + 1;
+          const lote = this.mockLotesFefo.find(l => l.numeroLote === payload.codigoLoteRef || l.idLote === payload.idLoteRef);
+          const nuevo = {
+            idPromocion: newId,
+            nombrePromocion: payload.nombrePromocion || payload.titulo,
+            descripcion: payload.descripcion,
+            descuentoGlobal: payload.descuentoGlobal || payload.porcentajeDescuento || 15,
+            fechaInicio: payload.fechaInicio || new Date().toISOString().split('T')[0],
+            fechaFin: payload.fechaFin || '2026-08-30',
+            idEstado: 1, // ACTIVO
+            codigoLoteRef: lote ? lote.numeroLote : (payload.codigoLoteRef || 'LT-GEN'),
+            productoRef: lote ? lote.nombreProducto : (payload.productoRef || 'Insumo en Combo'),
+            stockLote: lote ? lote.cantidadActual : 100
+          };
+          this.mockCombosKit.unshift(nuevo);
+          return of({ mensaje: 'Combo/Kit creado offline', combo: nuevo });
+        }
+        return throwError(() => err);
+      })
+    );
+  }
+
+  // ================= MÓDULO COMPRAS: ÓRDENES DE COMPRA =================
+
+  private mockOrdenesCompra: any[] = [
+    {
+      id: 1,
+      idProveedor: 1,
+      nombreProveedor: 'Agroquímicos del Pacífico',
+      numeroFactura: 'FAC-001-2026-0045',
+      fechaEmision: '2026-07-15',
+      subtotalBruto: 3250.00,
+      totalDescuentos: 325.00,
+      costoTransporte: 50.00,
+      impuestos: 351.00,
+      totalNeto: 3326.00,
+      estado: 'PENDIENTE',
+      fechaRegistro: '2026-07-15T10:30:00',
+      detalles: [
+        { id: 1, idProducto: 1, nombreProducto: 'Fertilizante Urea Agrícola 46% N', unidadMedida: 'Sacos (50kg)', cantidad: 100, precioUnitario: 32.50, porcentajeDescuento: 10.00, valorDescuento: 325.00, subtotal: 2925.00, esBonificacion: false },
+        { id: 2, idProducto: 1, nombreProducto: 'Fertilizante Urea Agrícola 46% N', unidadMedida: 'Sacos (50kg)', cantidad: 10, precioUnitario: 0.00, porcentajeDescuento: 0.00, valorDescuento: 0.00, subtotal: 0.00, esBonificacion: true }
+      ]
+    },
+    {
+      id: 2,
+      idProveedor: 2,
+      nombreProveedor: 'Bayer CropScience',
+      numeroFactura: 'FAC-BAY-2026-1122',
+      fechaEmision: '2026-07-10',
+      subtotalBruto: 900.00,
+      totalDescuentos: 0.00,
+      costoTransporte: 25.00,
+      impuestos: 108.00,
+      totalNeto: 1033.00,
+      estado: 'RECEPCIONADA',
+      fechaRegistro: '2026-07-10T14:20:00',
+      detalles: [
+        { id: 3, idProducto: 2, nombreProducto: 'Fungicida Carbendazim 500 SC', unidadMedida: 'Litros', cantidad: 50, precioUnitario: 18.00, porcentajeDescuento: 0.00, valorDescuento: 0.00, subtotal: 900.00, esBonificacion: false }
+      ]
+    }
+  ];
+
+  crearOrdenCompra(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/ordenes-compra`, payload).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) {
+          const newId = Math.max(...this.mockOrdenesCompra.map(o => o.id), 0) + 1;
+          const nueva = {
+            id: newId,
+            ...payload,
+            nombreProveedor: 'Proveedor (Simulado)',
+            subtotalBruto: 0,
+            totalDescuentos: 0,
+            totalNeto: 0,
+            estado: 'PENDIENTE',
+            fechaRegistro: new Date().toISOString(),
+            detalles: payload.detalles || []
+          };
+          this.mockOrdenesCompra.unshift(nueva);
+          return of({ mensaje: 'Orden de compra registrada exitosamente (simulado)', idOrden: newId, totalNeto: 0 });
+        }
+        return throwError(() => err);
+      })
+    );
+  }
+
+  listarOrdenesCompra(estado?: string, idProveedor?: number, desde?: string, hasta?: string): Observable<any[]> {
+    let params: any = {};
+    if (estado) params.estado = estado;
+    if (idProveedor) params.idProveedor = idProveedor;
+    if (desde) params.desde = desde;
+    if (hasta) params.hasta = hasta;
+
+    return this.http.get<any[]>(`${this.apiUrl}/ordenes-compra`, { params }).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) {
+          return of(this.mockOrdenesCompra.filter(o => {
+            const matchEst = !estado || o.estado === estado;
+            const matchProv = !idProveedor || o.idProveedor === idProveedor;
+            const matchDesde = !desde || o.fechaEmision >= desde;
+            const matchHasta = !hasta || o.fechaEmision <= hasta;
+            return matchEst && matchProv && matchDesde && matchHasta;
+          }));
+        }
+        return throwError(() => err);
+      })
+    );
+  }
+
+  obtenerOrdenCompra(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/ordenes-compra/${id}`).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) {
+          const orden = this.mockOrdenesCompra.find(o => o.id === id);
+          if (orden) return of(orden);
+          return throwError(() => new Error('Orden no encontrada'));
+        }
+        return throwError(() => err);
+      })
+    );
+  }
+
+  recepcionarOrden(id: number, payload: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/ordenes-compra/${id}/recepcionar`, payload).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) {
+          const orden = this.mockOrdenesCompra.find(o => o.id === id);
+          if (orden) orden.estado = 'RECEPCIONADA';
+          return of({ mensaje: 'Orden recepcionada exitosamente. Lotes generados en estado FLOTANTE. (simulado)' });
+        }
+        return throwError(() => err);
+      })
+    );
+  }
+
+  anularOrdenCompra(id: number): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/ordenes-compra/${id}/anular`, {}).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) {
+          const orden = this.mockOrdenesCompra.find(o => o.id === id);
+          if (orden) orden.estado = 'ANULADA';
+          return of({ mensaje: 'Orden anulada exitosamente (simulado)' });
+        }
+        return throwError(() => err);
+      })
+    );
+  }
+
+  obtenerUltimoPrecioProducto(idProducto: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/ordenes-compra/ultimo-precio/${idProducto}`).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) {
+          // Mock: devolver precio del producto si existe
+          const producto = this.mockLotesFefo.find(l => l.idProducto === idProducto);
+          return of({ precioUnitario: producto ? 32.50 : 0, encontrado: !!producto });
+        }
+        return throwError(() => err);
+      })
+    );
+  }
 }
+

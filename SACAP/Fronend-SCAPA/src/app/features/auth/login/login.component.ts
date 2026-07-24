@@ -31,16 +31,16 @@ import { ToastService as TS } from '../../../shared/components/toast/toast.servi
             <!-- Paso 1: Credenciales -->
             <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="space-y-5">
               <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Correo Electrónico</label>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Usuario o Correo Electrónico</label>
                 <div class="relative">
                   <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
                     <lucide-icon name="mail" class="w-5 h-5"></lucide-icon>
                   </div>
-                  <input type="email" formControlName="correo" placeholder="ej. c.mendoza@agrosense.ec"
+                  <input type="text" formControlName="correo" placeholder="ej. anthonyarana173 o c.mendoza@agrosense.ec"
                          class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-[#0B4628] focus:ring-2 focus:ring-[#0B4628]/20 outline-none transition-all">
                 </div>
                 @if (loginForm.get('correo')?.touched && loginForm.get('correo')?.invalid) {
-                  <p class="text-xs text-red-500 mt-1.5 font-medium">Ingrese un correo electrónico válido</p>
+                  <p class="text-xs text-red-500 mt-1.5 font-medium">El usuario o correo es requerido</p>
                 }
               </div>
 
@@ -81,7 +81,7 @@ import { ToastService as TS } from '../../../shared/components/toast/toast.servi
                 }
               </button>
             </form>
-          } @else {
+          } @else if (step() === 'ROLE_SELECT') {
             <!-- Paso 2: Selección de Rol (Multidirol) -->
             <div class="space-y-4 animate-slide-up">
               <div class="text-center mb-6">
@@ -113,6 +113,61 @@ import { ToastService as TS } from '../../../shared/components/toast/toast.servi
                 ← Volver con otra cuenta
               </button>
             </div>
+          } @else if (step() === 'CHANGE_PASSWORD') {
+            <!-- Paso 3: Cambio Obligatorio de Contraseña -->
+            <form [formGroup]="changePassForm" (ngSubmit)="onChangePassword()" class="space-y-5 animate-slide-up">
+              <div class="text-center mb-6">
+                <span class="inline-block px-3 py-1 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold rounded-full uppercase tracking-wider mb-2 flex items-center justify-center gap-1.5 w-fit mx-auto">
+                  <lucide-icon name="shield-check" class="w-3.5 h-3.5"></lucide-icon>
+                  <span>Seguridad de la Cuenta</span>
+                </span>
+                <h3 class="text-lg font-bold text-gray-900">Actualiza tu Contraseña Temporal</h3>
+                <p class="text-xs text-gray-500 mt-1.5">Has iniciado sesión con una clave temporal. Por tu seguridad y privacidad, establece tu contraseña personal y secreta para acceder al panel.</p>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Nueva Contraseña</label>
+                <div class="relative">
+                  <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                    <lucide-icon name="lock" class="w-5 h-5"></lucide-icon>
+                  </div>
+                  <input [type]="showPassword() ? 'text' : 'password'" formControlName="nuevaContrasena" placeholder="Mínimo 6 caracteres"
+                         class="w-full pl-11 pr-11 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-[#0B4628] focus:ring-2 focus:ring-[#0B4628]/20 outline-none transition-all font-mono">
+                  <button type="button" (click)="showPassword.set(!showPassword())" 
+                          class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
+                    <lucide-icon [name]="showPassword() ? 'eye-off' : 'eye'" class="w-5 h-5"></lucide-icon>
+                  </button>
+                </div>
+                @if (changePassForm.get('nuevaContrasena')?.touched && changePassForm.get('nuevaContrasena')?.invalid) {
+                  <p class="text-xs text-red-500 mt-1.5 font-medium">La contraseña debe tener al menos 6 caracteres</p>
+                }
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Confirmar Nueva Contraseña</label>
+                <div class="relative">
+                  <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                    <lucide-icon name="check-circle" class="w-5 h-5"></lucide-icon>
+                  </div>
+                  <input [type]="showPassword() ? 'text' : 'password'" formControlName="confirmarContrasena" placeholder="Repite la nueva contraseña"
+                         class="w-full pl-11 pr-11 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-[#0B4628] focus:ring-2 focus:ring-[#0B4628]/20 outline-none transition-all font-mono">
+                </div>
+                @if (changePassForm.get('confirmarContrasena')?.touched && changePassForm.value.nuevaContrasena !== changePassForm.value.confirmarContrasena) {
+                  <p class="text-xs text-red-500 mt-1.5 font-medium">Las contraseñas no coinciden</p>
+                }
+              </div>
+
+              <button type="submit" [disabled]="changePassForm.invalid || changePassForm.value.nuevaContrasena !== changePassForm.value.confirmarContrasena || isLoading()"
+                      class="w-full py-3.5 px-4 bg-[#0B4628] hover:bg-[#146C43] disabled:opacity-60 text-white font-bold text-sm rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer mt-4">
+                @if (isLoading()) {
+                  <lucide-icon name="loader" class="w-5 h-5 animate-spin"></lucide-icon>
+                  <span>Actualizando contraseña...</span>
+                } @else {
+                  <span>Guardar Contraseña e Ingresar al Sistema</span>
+                  <lucide-icon name="arrow-right" class="w-5 h-5"></lucide-icon>
+                }
+              </button>
+            </form>
           }
         </div>
 
@@ -132,14 +187,19 @@ export class LoginComponent {
   private authService = inject(AuthService);
   private toast = inject(TS);
 
-  step = signal<'LOGIN' | 'ROLE_SELECT'>('LOGIN');
+  step = signal<'LOGIN' | 'ROLE_SELECT' | 'CHANGE_PASSWORD'>('LOGIN');
   isLoading = signal<boolean>(false);
   showPassword = signal<boolean>(false);
   availableRoles = signal<string[]>([]);
 
   loginForm = this.fb.group({
-    correo: ['c.mendoza@agrosense.ec', [Validators.required, Validators.email]],
+    correo: ['c.mendoza@agrosense.ec', [Validators.required]],
     contrasena: ['admin123', [Validators.required]]
+  });
+
+  changePassForm = this.fb.group({
+    nuevaContrasena: ['', [Validators.required, Validators.minLength(6)]],
+    confirmarContrasena: ['', [Validators.required, Validators.minLength(6)]]
   });
 
   onLogin(): void {
@@ -151,6 +211,18 @@ export class LoginComponent {
     this.authService.login({ correo: correo!, contrasena: contrasena! }).subscribe({
       next: res => {
         this.isLoading.set(false);
+        if (res.usuario?.requiereCambioClave) {
+          if (res.tipoFase === 'PRE_AUTH' && res.rolesDisponibles && res.rolesDisponibles.length > 1) {
+            this.availableRoles.set(res.rolesDisponibles);
+            this.step.set('ROLE_SELECT');
+            this.toast.info('Autenticación preliminar exitosa', 'Seleccione con qué rol trabajará y luego cambie su contraseña temporal.');
+          } else {
+            this.step.set('CHANGE_PASSWORD');
+            this.toast.warning('Cambio obligatorio de contraseña', 'Has ingresado por primera vez o con una contraseña temporal. Por seguridad, debes establecer tu nueva contraseña personal antes de continuar.');
+          }
+          return;
+        }
+
         if (res.tipoFase === 'PRE_AUTH' && res.rolesDisponibles && res.rolesDisponibles.length > 1) {
           this.availableRoles.set(res.rolesDisponibles);
           this.step.set('ROLE_SELECT');
@@ -173,11 +245,34 @@ export class LoginComponent {
     this.authService.selectRole(rol).subscribe({
       next: res => {
         this.isLoading.set(false);
-        this.toast.success('Perfil seleccionado', `Ingresando al área de trabajo de ${rol}`);
+        if (res.usuario?.requiereCambioClave || this.authService.currentUser()?.requiereCambioClave) {
+          this.step.set('CHANGE_PASSWORD');
+          this.toast.warning('Cambio obligatorio de contraseña', 'Has ingresado por primera vez o con una contraseña temporal. Por seguridad, debes establecer tu nueva contraseña personal antes de continuar.');
+        } else {
+          this.toast.success('Perfil seleccionado', `Ingresando al área de trabajo de ${rol}`);
+        }
       },
       error: err => {
         this.isLoading.set(false);
         this.toast.error('Error', 'No se pudo activar la sesión con el rol seleccionado.');
+      }
+    });
+  }
+
+  onChangePassword(): void {
+    if (this.changePassForm.invalid || this.changePassForm.value.nuevaContrasena !== this.changePassForm.value.confirmarContrasena) return;
+    this.isLoading.set(true);
+    const nueva = this.changePassForm.value.nuevaContrasena!;
+    this.authService.cambiarContrasena(nueva).subscribe({
+      next: () => {
+        this.isLoading.set(false);
+        this.toast.success('¡Contraseña actualizada!', 'Tu contraseña ha sido cambiada exitosamente. Bienvenido.');
+        const rol = this.authService.currentRole() || 'ADMINISTRADOR';
+        this.authService.navigateAfterLogin(rol);
+      },
+      error: err => {
+        this.isLoading.set(false);
+        this.toast.error('Error al cambiar contraseña', err.error?.message || 'No se pudo actualizar la contraseña.');
       }
     });
   }
@@ -196,3 +291,4 @@ export class LoginComponent {
     this.toast.info('Restablecer contraseña', 'Por favor comuníquese con el administrador TIC de su cooperativa o ingrese a soporte@agrosense.ec.');
   }
 }
+

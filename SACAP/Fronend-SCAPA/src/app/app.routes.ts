@@ -18,9 +18,47 @@ import { GestionCatalogosComponent } from './features/admin/gestion-catalogos/ge
 import { AuditoriaComponent } from './features/admin/auditoria/auditoria.component';
 import { ConfiguracionComponent } from './features/admin/configuracion/configuracion.component';
 
+// Componentes por Rol (Bodega, Campo, Supervisor)
+import { BodegaDashboardComponent } from './features/bodeguero/bodega-dashboard.component';
+import { ComprasRecepcionComponent } from './features/bodeguero/compras-recepcion/compras-recepcion.component';
+import { CampoDashboardComponent } from './features/tecnico-campo/campo-dashboard.component';
+import { SupervisorDashboardComponent } from './features/supervisor/supervisor-dashboard.component';
+import { ComprasListadoComponent } from './features/supervisor/compras-listado/compras-listado.component';
+import { ComprasCrearComponent } from './features/supervisor/compras-crear/compras-crear.component';
+
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'registro', component: RegistroComponent },
+  {
+    path: 'bodega',
+    component: MainLayoutComponent,
+    canActivate: [authGuard],
+    children: [
+      { path: 'dashboard', component: BodegaDashboardComponent },
+      { path: 'recepcion/:idOrden', component: ComprasRecepcionComponent },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
+    ]
+  },
+  {
+    path: 'campo',
+    component: MainLayoutComponent,
+    canActivate: [authGuard],
+    children: [
+      { path: 'dashboard', component: CampoDashboardComponent },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
+    ]
+  },
+  {
+    path: 'supervisor',
+    component: MainLayoutComponent,
+    canActivate: [authGuard],
+    children: [
+      { path: 'dashboard', component: SupervisorDashboardComponent },
+      { path: 'compras', component: ComprasListadoComponent },
+      { path: 'compras/nueva', component: ComprasCrearComponent },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
+    ]
+  },
   {
     path: 'admin',
     component: MainLayoutComponent,

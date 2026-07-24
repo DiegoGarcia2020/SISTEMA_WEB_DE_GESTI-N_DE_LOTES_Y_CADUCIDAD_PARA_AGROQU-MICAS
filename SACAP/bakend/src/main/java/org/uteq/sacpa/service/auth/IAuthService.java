@@ -11,9 +11,13 @@ public interface IAuthService {
      */
     AuthResponseDTO login(LoginRequestDTO request);
 
-    /**
-     * Fase 2: Recibe el token PRE_AUTH (via contexto) y el rol seleccionado.
-     * Valida que el usuario posea el rol y emite el token FINAL con dicho rol.
-     */
     AuthResponseDTO selectRole(RoleSelectionRequestDTO request, String authHeader);
+
+    /**
+     * Permite al usuario autenticado (con token PRE_AUTH o FINAL) actualizar su contraseña personal
+     * y limpiar la bandera requiereCambioClave.
+     */
+    void cambiarContrasena(org.uteq.sacpa.dto.auth.CambioContrasenaRequestDTO request, String authHeader);
 }
+
+

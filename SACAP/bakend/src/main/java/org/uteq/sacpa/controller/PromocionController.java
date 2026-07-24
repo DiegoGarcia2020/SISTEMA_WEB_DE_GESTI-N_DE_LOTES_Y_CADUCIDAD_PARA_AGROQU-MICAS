@@ -29,11 +29,29 @@ public class PromocionController {
         return ResponseEntity.ok(promocionService.listarTodas());
     }
 
+    @GetMapping({"/activas", "/combos/activos"})
+    public ResponseEntity<List<Promocion>> listarActivas() {
+        return ResponseEntity.ok(promocionService.listarPorEstado(1)); // 1: Activo/Aprobado
+    }
+
+    @GetMapping("/pendientes")
+    public ResponseEntity<List<Promocion>> listarPendientes() {
+        return ResponseEntity.ok(promocionService.listarPorEstado(2)); // 2: Sugerido/Pendiente de aprobación
+    }
+
     @PutMapping("/{idPromocion}/desactivar")
     public ResponseEntity<Map<String, String>> desactivarPromocion(
             @PathVariable Integer idPromocion,
             @RequestParam("idEstadoInactivo") Integer idEstadoInactivo) {
         promocionService.desactivarPromocion(idPromocion, idEstadoInactivo);
         return ResponseEntity.ok(Map.of("mensaje", "Promocion desactivada exitosamente"));
+    }
+
+    @PutMapping("/{idPromocion}/cambiar-estado")
+    public ResponseEntity<Map<String, String>> cambiarEstado(
+            @PathVariable Integer idPromocion,
+            @RequestParam("idEstado") Integer idEstado) {
+        promocionService.cambiarEstadoPromocion(idPromocion, idEstado);
+        return ResponseEntity.ok(Map.of("mensaje", "Estado de combo/promoción actualizado exitosamente"));
     }
 }

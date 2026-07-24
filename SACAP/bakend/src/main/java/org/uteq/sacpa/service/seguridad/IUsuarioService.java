@@ -18,4 +18,11 @@ public interface IUsuarioService {
     void cambiarEstado(Integer id, Integer idEstado);
 
     void eliminar(Integer id);
+
+    UsuarioResponseDTO crearBasico(org.uteq.sacpa.dto.seguridad.CrearUsuarioBasicoRequestDTO request);
+
+    UsuarioResponseDTO asignarRol(Integer idUsuario, Integer idRol, org.springframework.web.multipart.MultipartFile documento);
+
+    UsuarioResponseDTO resetPassword(Integer id);
 }
+

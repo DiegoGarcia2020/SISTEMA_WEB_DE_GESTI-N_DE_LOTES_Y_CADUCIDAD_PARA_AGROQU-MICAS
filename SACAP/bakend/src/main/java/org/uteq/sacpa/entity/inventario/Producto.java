@@ -16,6 +16,9 @@ public class Producto {
     @Column(name = "precio", precision = 10, scale = 2) private BigDecimal precio;
     @Column(name = "id_estado") private Integer idEstado;
 
+    /** Cantidad mínima aceptable en inventario. Genera alerta de reabastecimiento si el stock cae por debajo */
+    @Column(name = "stock_minimo") private Integer stockMinimo;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_categoria") private Categoria categoria;
 }

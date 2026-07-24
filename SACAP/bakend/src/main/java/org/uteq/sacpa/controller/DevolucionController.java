@@ -46,4 +46,22 @@ public class DevolucionController {
         devolucionService.anularDevolucion(idDevolucion, idEstadoAnulado);
         return ResponseEntity.ok(Map.of("mensaje", "Devolucion anulada exitosamente"));
     }
+
+    @GetMapping("/pendientes")
+    public ResponseEntity<List<Devolucion>> listarPendientes() {
+        return ResponseEntity.ok(devolucionService.listarPendientes());
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Devolucion>> listarTodos() {
+        return ResponseEntity.ok(devolucionService.listarTodos());
+    }
+
+    @PutMapping("/{idDevolucion}/cambiar-estado")
+    public ResponseEntity<Map<String, String>> cambiarEstadoDevolucion(
+            @PathVariable Integer idDevolucion,
+            @Valid @RequestBody org.uteq.sacpa.dto.operaciones.CambioEstadoDevolucionDTO request) {
+        devolucionService.cambiarEstadoDevolucion(idDevolucion, request);
+        return ResponseEntity.ok(Map.of("mensaje", "Estado de devolución actualizado por el Supervisor exitosamente"));
+    }
 }

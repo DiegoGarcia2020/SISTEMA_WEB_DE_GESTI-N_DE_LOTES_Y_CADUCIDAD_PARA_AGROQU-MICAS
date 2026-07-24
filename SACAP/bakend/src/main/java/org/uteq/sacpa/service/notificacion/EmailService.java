@@ -18,22 +18,28 @@ public class EmailService {
     private String remitente;
 
     public void enviarCredencialesUsuario(String correoDestinatario, String contrasena) {
+        String nombreUsuario = correoDestinatario != null && correoDestinatario.contains("@") 
+                ? correoDestinatario.split("@")[0] 
+                : correoDestinatario;
+
         String asunto = "Bienvenido a SACPA Agroindustria - Sus Credenciales de Acceso";
         String mensaje = "Estimado/a Usuario/a,\n\n"
-                + "Le informamos que su cuenta en el Sistema Agroindustrial SACPA ha sido creada o aprobada exitosamente.\n\n"
-                + "Sus credenciales de acceso son:\n"
+                + "Le informamos que su cuenta en el Sistema Agroindustrial SACPA ha sido registrada o aprobada exitosamente según su cargo y función en la empresa.\n\n"
+                + "Sus credenciales oficiales de acceso para ingresar a la plataforma son:\n"
                 + "--------------------------------------------------------\n"
-                + "Usuario / Correo: " + correoDestinatario + "\n"
+                + "Usuario: " + nombreUsuario + "\n"
+                + "Correo Electrónico: " + correoDestinatario + "\n"
                 + "Contraseña Temporal: " + contrasena + "\n"
                 + "--------------------------------------------------------\n\n"
-                + "Por favor, inicie sesión y cambie su contraseña lo antes posible.\n\n"
+                + "Nota: Puede iniciar sesión utilizando su nombre de usuario (" + nombreUsuario + ") o su dirección de correo electrónico.\n"
+                + "Por favor, acceda al sistema y cambie su contraseña temporal lo antes posible por motivos de seguridad.\n\n"
                 + "Atentamente,\n"
-                + "Equipo de Administración SACPA AgroSense";
+                + "Equipo de Administración y Soporte - SACPA AgroSense";
 
         // Siempre registrar en consola para auditoría inmediata
         log.info("===================================================================");
         log.info(">>> [NOTIFICACIÓN CORREO SACPA] Preparando envío de credenciales");
-        log.info(">>> Destinatario: {}", correoDestinatario);
+        log.info(">>> Destinatario: {} (Usuario: {})", correoDestinatario, nombreUsuario);
         log.info(">>> Asunto: {}", asunto);
         log.info(">>> Contraseña Temporal: {}", contrasena);
         log.info("===================================================================");

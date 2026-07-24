@@ -136,8 +136,14 @@ export class TopbarComponent {
 
   currentUrl = signal<string>(this.router.url);
   isProfileModalOpen = signal<boolean>(false);
-  savedPhoto = signal<string | undefined>(localStorage.getItem('sacpa_admin_foto') || undefined);
+  savedPhoto = signal<string | undefined>(undefined);
   fotoUrl = '';
+
+  /** Clave única de localStorage por usuario logueado para aislar fotos entre perfiles */
+  private getPhotoKey(): string {
+    const correo = this.authService.currentUser()?.correo || 'guest';
+    return `sacpa_foto_${correo}`;
+  }
 
   constructor() {
     this.router.events.pipe(
@@ -145,10 +151,26 @@ export class TopbarComponent {
     ).subscribe((event: any) => {
       this.currentUrl.set(event.urlAfterRedirects);
     });
+
+    // Cargar la foto del usuario actual al iniciar (clave única por correo)
+    const key = this.getPhotoKey();
+    const fotoGuardada = localStorage.getItem(key);
+    if (fotoGuardada) {
+      this.savedPhoto.set(fotoGuardada);
+    }
   }
 
   currentRouteInfo = computed(() => {
     const url = this.currentUrl();
+    if (url.includes('/bodega')) {
+      return { title: 'Módulo Almacén & Despachos FEFO', subtitle: 'Gestión de inventario físico, rotación de lotes y devoluciones a proveedor', icon: 'package' };
+    }
+    if (url.includes('/campo')) {
+      return { title: 'Módulo Agronómico & Uso en Campo', subtitle: 'Registro transaccional de consumo en parcelas y auditoría de cultivos', icon: 'activity' };
+    }
+    if (url.includes('/supervisor')) {
+      return { title: 'Centro de Control y Autorizaciones', subtitle: 'Revisión de despachos pendientes y aprobación con disparo de Alertas IA', icon: 'check-circle' };
+    }
     if (url.includes('/dashboard')) {
       return { title: 'Dashboard Ejecutivo IA', subtitle: 'Monitoreo en tiempo real del sistema AgroSense SACPA', icon: 'layout-dashboard' };
     }
@@ -207,6 +229,13 @@ export class TopbarComponent {
     const usrId = this.authService.currentUser()?.idUsuario || 1;
     this.adminService.actualizarFoto(usrId, this.fotoUrl).subscribe({
       next: () => {
+        // Guardar en localStorage con clave única por usuario
+        const key = this.getPhotoKey();
+        if (this.fotoUrl) {
+          localStorage.setItem(key, this.fotoUrl);
+        } else {
+          localStorage.removeItem(key);
+        }
         this.savedPhoto.set(this.fotoUrl || undefined);
         this.isProfileModalOpen.set(false);
         this.toast.success('Foto actualizada', 'Tu foto de perfil ha sido guardada y sincronizada con el servidor.');

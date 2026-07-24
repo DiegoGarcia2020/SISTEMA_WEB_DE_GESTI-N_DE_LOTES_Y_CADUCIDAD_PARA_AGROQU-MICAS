@@ -31,6 +31,10 @@ public interface ILoteRepository extends JpaRepository<Lote, Integer> {
     @Query("SELECT l FROM Lote l WHERE l.producto.idProducto = :idProducto ORDER BY l.fechaVencimiento ASC")
     List<Lote> findByProducto(@Param("idProducto") Integer idProducto);
 
+    /** Lotes disponibles en stock ordenados por FEFO (Primero en vencer, primero en salir) */
+    @Query("SELECT l FROM Lote l WHERE l.cantidadActual > 0 ORDER BY l.fechaVencimiento ASC")
+    List<Lote> findLotesDisponiblesFefo();
+
     // ============================================================
     // Llamadas a funciones PL/pgSQL del esquema inventario
     // ============================================================

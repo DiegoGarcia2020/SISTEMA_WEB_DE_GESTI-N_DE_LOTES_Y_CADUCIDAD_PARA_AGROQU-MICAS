@@ -11,5 +11,9 @@ public interface IPromocionService {
 
     List<Promocion> listarTodas();
 
+    List<Promocion> listarPorEstado(Integer idEstado);
+
     void desactivarPromocion(Integer idPromocion, Integer idEstadoInactivo);
+
+    void cambiarEstadoPromocion(Integer idPromocion, Integer idEstado);
 }
