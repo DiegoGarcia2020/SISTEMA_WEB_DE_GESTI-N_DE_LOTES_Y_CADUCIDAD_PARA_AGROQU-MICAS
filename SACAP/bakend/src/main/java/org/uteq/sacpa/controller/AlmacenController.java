@@ -12,12 +12,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Controlador de Almacenes con endpoints en cascada para la estructura física.
- *
- * GET /api/almacenes                                   → lista todos los almacenes
- * GET /api/almacenes/{id}/zonas                        → zonas de un almacén
- * GET /api/almacenes/zonas/{idZona}/estanterias        → estanterías de una zona
- * GET /api/almacenes/estanterias/{idEst}/ubicaciones   → ubicaciones de una estantería
+ * Controlador de Almacenes con endpoints para Topología Física (árbol, creación dinámica),
+ * Generación de Código QR y Auditoría Rápida Móvil.
  */
 @RestController
 @RequestMapping("/api/almacenes")
@@ -49,24 +45,79 @@ public class AlmacenController {
         return ResponseEntity.ok(Map.of("mensaje", "Almacén desactivado exitosamente"));
     }
 
-    // ── CASCADA 3.1: Zonas ───────────────────────────────────
+    // ── CASCADA ──────────────────────────────────────────────
 
     @GetMapping("/{idAlmacen}/zonas")
     public ResponseEntity<List<ZonaAlmacenResponseDTO>> listarZonas(@PathVariable Integer idAlmacen) {
         return ResponseEntity.ok(almacenService.listarZonasPorAlmacen(idAlmacen));
     }
 
-    // ── CASCADA 3.1: Estanterías ─────────────────────────────
-
     @GetMapping("/zonas/{idZona}/estanterias")
     public ResponseEntity<List<EstanteriaResponseDTO>> listarEstanterias(@PathVariable Integer idZona) {
         return ResponseEntity.ok(almacenService.listarEstanteriasPorZona(idZona));
     }
 
-    // ── CASCADA 3.1: Ubicaciones internas ────────────────────
-
     @GetMapping("/estanterias/{idEstanteria}/ubicaciones")
     public ResponseEntity<List<UbicacionInternaResponseDTO>> listarUbicaciones(@PathVariable Integer idEstanteria) {
         return ResponseEntity.ok(almacenService.listarUbicacionesPorEstanteria(idEstanteria));
+    }
+
+    // ── MÓDULO 2: MÁQUINAS Y TOPOLOGÍA DE ALMACÉN (ÁRBOLES) ──
+
+    @GetMapping("/arbol")
+    public ResponseEntity<List<NodoTopologiaDTO>> obtenerArbolTopologia() {
+        return ResponseEntity.ok(almacenService.obtenerArbolTopologia());
+    }
+
+    @PostMapping("/zonas")
+    public ResponseEntity<Map<String, String>> crearZona(@RequestBody Map<String, Object> body) {
+        String nombre = (String) body.get("nombre");
+        String condicion = (String) body.getOrDefault("condicionClimatica", "Estándar");
+        Integer idAlmacen = Integer.parseInt(body.get("idAlmacen").toString());
+
+        almacenService.crearZona(nombre, condicion, idAlmacen);
+        return ResponseEntity.ok(Map.of("mensaje", "Zona creada exitosamente"));
+    }
+
+    @PostMapping("/estanterias")
+    public ResponseEntity<Map<String, String>> crearEstanteria(@RequestBody Map<String, Object> body) {
+        String codigo = (String) body.get("codigo");
+        Integer idZona = Integer.parseInt(body.get("idZona").toString());
+
+        almacenService.crearEstanteria(codigo, idZona);
+        return ResponseEntity.ok(Map.of("mensaje", "Estantería creada exitosamente"));
+    }
+
+    @PostMapping("/ubicaciones")
+    public ResponseEntity<Map<String, String>> crearUbicacion(@RequestBody Map<String, Object> body) {
+        String nivel = body.get("nivel").toString();
+        String posicion = body.get("posicion").toString();
+        Integer capacidadMaxima = body.containsKey("capacidadMaxima") && body.get("capacidadMaxima") != null
+                ? Integer.parseInt(body.get("capacidadMaxima").toString()) : 100;
+        Integer idEstanteria = Integer.parseInt(body.get("idEstanteria").toString());
+
+        almacenService.crearUbicacion(nivel, posicion, capacidadMaxima, idEstanteria);
+        return ResponseEntity.ok(Map.of("mensaje", "Ubicación creada exitosamente"));
+    }
+
+    // ── MÓDULO 2: CÓDIGOS QR & AUDITORÍA MÓVIL ───────────────
+
+    @GetMapping("/ubicaciones/{idUbicacion}/qr")
+    public ResponseEntity<Map<String, String>> generarQrUbicacion(@PathVariable Integer idUbicacion) {
+        String base64Qr = almacenService.generarQrUbicacionBase64(idUbicacion);
+        return ResponseEntity.ok(Map.of("qrBase64", base64Qr));
+    }
+
+    @GetMapping("/ubicaciones/qr/{codigoQr}")
+    public ResponseEntity<UbicacionDetalleQrDTO> obtenerUbicacionPorQr(@PathVariable String codigoQr) {
+        return ResponseEntity.ok(almacenService.obtenerDetalleUbicacionPorQr(codigoQr));
+    }
+
+    @PostMapping("/ubicaciones/{idUbicacion}/conteo-fisico")
+    public ResponseEntity<UbicacionDetalleQrDTO> registrarConteoFisico(
+            @PathVariable Integer idUbicacion,
+            @Valid @RequestBody ConteoFisicoRequestDTO request) {
+        request.setIdUbicacion(idUbicacion);
+        return ResponseEntity.ok(almacenService.registrarConteoFisico(request));
     }
 }

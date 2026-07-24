@@ -12,6 +12,9 @@ public class UbicacionInterna {
     @Column(name = "nivel", length = 50) private String nivel;
     @Column(name = "posicion", length = 50) private String posicion;
     @Column(name = "id_estado") private Integer idEstado;
+    @Column(name = "capacidad_maxima") private Integer capacidadMaxima;
+    @Column(name = "capacidad_actual") private Integer capacidadActual;
+    @Column(name = "codigo_qr", length = 100) private String codigoQr;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_estanteria") private Estanteria estanteria;

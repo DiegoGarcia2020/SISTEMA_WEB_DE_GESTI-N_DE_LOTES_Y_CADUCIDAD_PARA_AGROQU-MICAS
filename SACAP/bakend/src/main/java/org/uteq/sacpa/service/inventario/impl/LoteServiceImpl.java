@@ -124,9 +124,24 @@ public class LoteServiceImpl implements ILoteService {
         UbicacionInterna ubicacion = ubicacionRepository.findById(dto.getIdUbicacion())
                 .orElseThrow(() -> new EntityNotFoundException("Ubicación no encontrada: " + dto.getIdUbicacion()));
 
-        // Actualizar el lote con la cantidad validada, ubicación y pasar a ACTIVO
-        lote.setCantidadInicial(dto.getCantidadValidada());
-        lote.setCantidadActual(dto.getCantidadValidada());
+        // Validación de Capacidad de Almacenamiento
+        int capMax = ubicacion.getCapacidadMaxima() != null ? ubicacion.getCapacidadMaxima() : 100;
+        int capAct = ubicacion.getCapacidadActual() != null ? ubicacion.getCapacidadActual() : 0;
+        int cantidadAAgregar = dto.getCantidadValidada() != null ? dto.getCantidadValidada() : 0;
+
+        if (capAct + cantidadAAgregar > capMax) {
+            int disponible = Math.max(0, capMax - capAct);
+            throw new IllegalArgumentException("Capacidad de la ubicación física excedida. Capacidad máxima: " 
+                    + capMax + ", Ocupada: " + capAct + ", Disponible: " + disponible + " unidades.");
+        }
+
+        // Actualizar la capacidad actual de la ubicación física
+        ubicacion.setCapacidadActual(capAct + cantidadAAgregar);
+        ubicacionRepository.save(ubicacion);
+
+        // Actualizar el lote con la cantidad validada, ubicación y pasar a ACTIVO / DISPONIBLE
+        lote.setCantidadInicial(cantidadAAgregar);
+        lote.setCantidadActual(cantidadAAgregar);
         lote.setUbicacion(ubicacion);
         lote.setIdEstadoLote(ID_ESTADO_ACTIVO);
         lote.setFechaIngreso(LocalDateTime.now());

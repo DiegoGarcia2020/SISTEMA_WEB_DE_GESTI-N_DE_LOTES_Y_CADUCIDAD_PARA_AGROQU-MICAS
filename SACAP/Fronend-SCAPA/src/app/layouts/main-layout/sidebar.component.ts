@@ -76,16 +76,22 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
           }
 
           @if (hasRole(['BODEGUERO'])) {
-            <a routerLink="/admin/inventario/recepcion" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
+            <a routerLink="/admin/bodega/topologia" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
                class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
-              <lucide-icon name="box" class="w-4 h-4 flex-shrink-0"></lucide-icon>
-              <span>Recepción y Validación</span>
+              <lucide-icon name="network" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+              <span>Gestor de Topología</span>
             </a>
 
-            <a routerLink="/admin/inventario/estructura" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
+            <a routerLink="/admin/bodega/asignacion" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
                class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
-              <lucide-icon name="layers" class="w-4 h-4 flex-shrink-0"></lucide-icon>
-              <span>Estructura Física</span>
+              <lucide-icon name="arrow-right-left" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+              <span>Asignar a Ubicación</span>
+            </a>
+
+            <a routerLink="/admin/bodega/auditoria-qr" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
+               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
+              <lucide-icon name="qr-code" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+              <span>Auditoría QR (Móvil)</span>
             </a>
           }
         }

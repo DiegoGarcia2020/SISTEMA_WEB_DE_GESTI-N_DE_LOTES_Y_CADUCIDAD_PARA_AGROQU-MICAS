@@ -39,6 +39,9 @@ public interface ILoteRepository extends JpaRepository<Lote, Integer> {
     @Query("SELECT l FROM Lote l WHERE l.idEstadoLote = :idEstadoPendiente ORDER BY l.fechaIngreso DESC")
     List<Lote> findLotesPendientesValidacion(@Param("idEstadoPendiente") Integer idEstadoPendiente);
 
+    /** Lotes almacenados en una ubicación específica */
+    List<Lote> findByUbicacion_IdUbicacion(Integer idUbicacion);
+
 
     /** Lotes por proveedor */
     @Query("SELECT l FROM Lote l WHERE l.proveedor.idProveedor = :idProveedor ORDER BY l.fechaVencimiento ASC")

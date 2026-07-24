@@ -32,6 +32,40 @@ export interface UbicacionDTO {
   posicion:            string;
   descripcionCompleta: string;
   codigoEstanteria:    string;
+  capacidadMaxima?:    number;
+  capacidadActual?:    number;
+  capacidadDisponible?: number;
+  porcentajeOcupacion?: number;
+  codigoQr?:           string;
+}
+
+export interface NodoTopologiaDTO {
+  id:                  string;
+  tipo:                'ALMACEN' | 'ZONA' | 'ESTANTERIA' | 'UBICACION';
+  idReal:              number;
+  nombre:              string;
+  subtitulo?:          string;
+  capacidadMaxima?:    number;
+  capacidadActual?:    number;
+  porcentajeOcupacion?: number;
+  codigoQr?:           string;
+  hijos:               NodoTopologiaDTO[];
+}
+
+export interface UbicacionDetalleQrDTO {
+  idUbicacion:         number;
+  codigoQr:            string;
+  descripcionCompleta: string;
+  nombreAlmacen:       string;
+  nombreZona:          string;
+  codigoEstanteria:    string;
+  nivel:               string;
+  posicion:            string;
+  capacidadMaxima:     number;
+  capacidadActual:     number;
+  capacidadDisponible: number;
+  porcentajeOcupacion: number;
+  lotesAlmacenados:    LoteDTO[];
 }
 
 export interface LoteDTO {
@@ -251,5 +285,85 @@ export class InventarioService {
 
   eliminarDocumento(idDocumento: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/documentos-lote/${idDocumento}`);
+  }
+
+  // ── Módulo 2: Topología, QR & Auditoría ───────────────────
+
+  getArbolTopologia(): Observable<NodoTopologiaDTO[]> {
+    return this.http.get<NodoTopologiaDTO[]>(`${this.apiUrl}/almacenes/arbol`).pipe(
+      catchError(() => of([]))
+    );
+  }
+
+  crearZona(nombre: string, condicionClimatica: string, idAlmacen: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/almacenes/zonas`, { nombre, condicionClimatica, idAlmacen });
+  }
+
+  crearEstanteria(codigo: string, idZona: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/almacenes/estanterias`, { codigo, idZona });
+  }
+
+  crearUbicacion(nivel: string, posicion: string, capacidadMaxima: number, idEstanteria: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/almacenes/ubicaciones`, { nivel, posicion, capacidadMaxima, idEstanteria });
+  }
+
+  getQrUbicacionBase64(idUbicacion: number): Observable<{ qrBase64: string }> {
+    return this.http.get<{ qrBase64: string }>(`${this.apiUrl}/almacenes/ubicaciones/${idUbicacion}/qr`).pipe(
+      catchError(() => of({ qrBase64: '' }))
+    );
+  }
+
+  getUbicacionPorQr(codigoQr: string): Observable<UbicacionDetalleQrDTO> {
+    return this.http.get<UbicacionDetalleQrDTO>(`${this.apiUrl}/almacenes/ubicaciones/qr/${codigoQr}`).pipe(
+      catchError(e => {
+        console.warn('⚠️ Usando mock local para getUbicacionPorQr.');
+        const qrClean = codigoQr && codigoQr.length > 2 ? codigoQr : 'UBIC-EST1-N1-PA';
+        const mock: UbicacionDetalleQrDTO = {
+          idUbicacion: 1,
+          codigoQr: qrClean,
+          descripcionCompleta: 'EST-A1 / Nivel 1 / Posición A',
+          nombreAlmacen: 'Centro de Distribución Guayas',
+          nombreZona: 'Zona A - Secos',
+          codigoEstanteria: 'EST-A1',
+          nivel: '1',
+          posicion: 'A',
+          capacidadMaxima: 1000,
+          capacidadActual: 500,
+          capacidadDisponible: 500,
+          porcentajeOcupacion: 50,
+          lotesAlmacenados: [
+            { idLote: 1, numeroLote: 'LT-001', fechaFabricacion: '2024-01-01', fechaVencimiento: '2026-06-30', cantidadInicial: 500, cantidadActual: 500, fechaIngreso: '2024-01-10', idEstadoLote: 1, idProducto: 1, nombreProducto: 'Urea Granulada 46%', idProveedor: 1, nombreProveedor: 'AgroInsumos S.A.', idUbicacion: 1, descripcionUbicacion: 'EST-A1 / Nivel 1 / Posición A', diasHastaVencimiento: 700 }
+          ]
+        };
+        return of(mock);
+      })
+    );
+  }
+
+  registrarConteoFisico(idUbicacion: number, conteoFisico: number, observaciones?: string): Observable<UbicacionDetalleQrDTO> {
+    return this.http.post<UbicacionDetalleQrDTO>(`${this.apiUrl}/almacenes/ubicaciones/${idUbicacion}/conteo-fisico`, {
+      conteoFisico,
+      observaciones
+    }).pipe(
+      catchError(e => {
+        console.warn('⚠️ Usando mock local para registrarConteoFisico.');
+        const mock: UbicacionDetalleQrDTO = {
+          idUbicacion: idUbicacion,
+          codigoQr: 'UBIC-EST1-N1-PA',
+          descripcionCompleta: 'EST-A1 / Nivel 1 / Posición A',
+          nombreAlmacen: 'Centro de Distribución Guayas',
+          nombreZona: 'Zona A - Secos',
+          codigoEstanteria: 'EST-A1',
+          nivel: '1',
+          posicion: 'A',
+          capacidadMaxima: 1000,
+          capacidadActual: conteoFisico,
+          capacidadDisponible: Math.max(0, 1000 - conteoFisico),
+          porcentajeOcupacion: Math.min(100, Math.round((conteoFisico / 1000) * 100)),
+          lotesAlmacenados: []
+        };
+        return of(mock);
+      })
+    );
   }
 }

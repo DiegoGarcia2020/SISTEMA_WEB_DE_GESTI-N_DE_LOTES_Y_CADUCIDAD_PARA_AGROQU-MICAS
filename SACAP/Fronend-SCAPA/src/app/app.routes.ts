@@ -23,9 +23,13 @@ import { EstructuraFisicaComponent } from './features/inventario/estructura-fisi
 import { PreRegistroLoteComponent } from './features/inventario/pre-registro-lote/pre-registro-lote.component';
 import { RecepcionLoteComponent } from './features/inventario/recepcion-lote/recepcion-lote.component';
 
+// Componentes de Bodega (Módulo 2: Topología y Gestión Física)
+import { GestorTopologiaComponent } from './features/bodega/gestor-topologia/gestor-topologia.component';
+import { AsignacionUbicacionComponent } from './features/bodega/asignacion-ubicacion/asignacion-ubicacion.component';
+import { AuditoriaQrComponent } from './features/bodega/auditoria-qr/auditoria-qr.component';
+
 // Componentes de Proveedor
 import { ProveedorDashboardComponent } from './features/proveedor/proveedor-dashboard/proveedor-dashboard.component';
-
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -100,6 +104,25 @@ export const routes: Routes = [
         component: ConfiguracionComponent,
         canActivate: [roleGuard],
         data: { roles: ['Administrador'] }
+      },
+      // -- MÓDULO 2: TOPOLOGÍA Y GESTIÓN FÍSICA (Bodeguero & Admin) --
+      {
+        path: 'bodega/topologia',
+        component: GestorTopologiaComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['Administrador', 'Bodeguero'] }
+      },
+      {
+        path: 'bodega/asignacion',
+        component: AsignacionUbicacionComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['Administrador', 'Bodeguero'] }
+      },
+      {
+        path: 'bodega/auditoria-qr',
+        component: AuditoriaQrComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['Administrador', 'Bodeguero'] }
       },
       // -- Rutas de Inventario --
       {
