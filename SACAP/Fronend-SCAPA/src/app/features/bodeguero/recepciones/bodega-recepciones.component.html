@@ -1,0 +1,84 @@
+<div class="dashboard-container">
+  
+  <div class="dashboard-header">
+    <h1>Recepciones Esperadas (Dock Scheduling)</h1>
+    <p>Órdenes de compra programadas para llegar el día de hoy.</p>
+  </div>
+
+  @if (isLoading()) {
+    <div class="empty-state">Cargando recepciones...</div>
+  } @else if (ordenesHoy().length === 0) {
+    <div class="empty-state">
+      <lucide-icon name="truck" class="w-12 h-12" style="margin-bottom: 1rem; color: #9ca3af;"></lucide-icon>
+      <p>No hay camiones programados para llegar hoy.</p>
+    </div>
+  } @else {
+    <div class="recepciones-grid">
+      @for (orden of ordenesHoy(); track orden.id) {
+        <div class="recepcion-card">
+          <div class="recepcion-card__header">
+            <div>
+              <h3 class="recepcion-card__proveedor">{{ orden.nombreProveedor }}</h3>
+              <p class="recepcion-card__factura">Factura: {{ orden.numeroFactura }}</p>
+            </div>
+            <span class="recepcion-card__badge">{{ orden.ventanaHoraria || 'Sin horario' }}</span>
+          </div>
+
+          <div class="recepcion-card__body">
+            <div class="info-row">
+              <span class="info-label">Fecha Emisión</span>
+              <span class="info-value">{{ orden.fechaEmision | date:'dd/MM/yyyy' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Total Ítems</span>
+              <span class="info-value">{{ orden.detalles?.length || 0 }}</span>
+            </div>
+          </div>
+
+          <div class="recepcion-card__actions">
+            <button class="btn btn--success" (click)="registrarLlegada(orden.id)" [disabled]="isProcessing(orden.id)">
+              @if (isProcessing(orden.id)) {
+                Procesando...
+              } @else {
+                ✅ Llegó a Tiempo
+              }
+            </button>
+            <button class="btn btn--danger" (click)="abrirModalRetraso(orden.id)" [disabled]="isProcessing(orden.id)">
+              ❌ Reportar Retraso
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Modal CSS Puro para Reportar Retraso -->
+@if (modalAbierto()) {
+  <div class="modal-overlay">
+    <div class="modal-content">
+      <h2>Reportar Retraso</h2>
+      <p style="color: #6b7280; font-size: 0.875rem; margin-bottom: 1.5rem;">
+        Indique el motivo por el cual el proveedor no cumplió con el horario SLA acordado.
+      </p>
+      
+      <div class="form-group">
+        <label>Motivo / Observación</label>
+        <input type="text" [formControl]="motivoCtrl" placeholder="Ej: Camión accidentado, tráfico..." autofocus>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn--secondary" (click)="cerrarModal()" style="width: auto; padding: 0.5rem 1rem;">
+          Cancelar
+        </button>
+        <button class="btn btn--confirm-danger" (click)="confirmarRetraso()" [disabled]="!motivoCtrl.value || isProcessingModal()" style="width: auto; padding: 0.5rem 1rem;">
+          @if (isProcessingModal()) {
+            Enviando...
+          } @else {
+            Enviar Alerta
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

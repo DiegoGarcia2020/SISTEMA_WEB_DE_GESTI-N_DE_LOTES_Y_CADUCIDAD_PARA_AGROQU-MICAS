@@ -78,6 +78,9 @@ public class OrdenCompraServiceImpl implements IOrdenCompraService {
                 .costoTransporte(dto.getCostoTransporte() != null ? dto.getCostoTransporte() : BigDecimal.ZERO)
                 .impuestos(dto.getImpuestos() != null ? dto.getImpuestos() : BigDecimal.ZERO)
                 .estado("PENDIENTE")
+                .estadoCumplimiento("PENDIENTE")
+                .fechaLlegadaEstimada(dto.getFechaLlegadaEstimada())
+                .ventanaHoraria(dto.getVentanaHoraria())
                 .fechaRegistro(LocalDateTime.now())
                 .detalles(new ArrayList<>())
                 .build();
@@ -304,7 +307,53 @@ public class OrdenCompraServiceImpl implements IOrdenCompraService {
                 .totalNeto(orden.getTotalNeto())
                 .estado(orden.getEstado())
                 .fechaRegistro(orden.getFechaRegistro())
+                .fechaLlegadaEstimada(orden.getFechaLlegadaEstimada())
+                .ventanaHoraria(orden.getVentanaHoraria())
+                .fechaLlegadaReal(orden.getFechaLlegadaReal())
+                .estadoCumplimiento(orden.getEstadoCumplimiento())
+                .observacionRetraso(orden.getObservacionRetraso())
                 .detalles(detallesDTO)
                 .build();
+    }
+
+    // ========================================================================
+    // CONTROL DE SLA Y RECEPCIONES (DOCK SCHEDULING)
+    // ========================================================================
+
+    @Override
+    @Transactional
+    public void registrarLlegadaTiempo(Integer idOrden) {
+        OrdenCompra orden = ordenCompraRepository.findById(idOrden)
+                .orElseThrow(() -> new RuntimeException("Orden de compra no encontrada"));
+
+        orden.setFechaLlegadaReal(LocalDateTime.now());
+        orden.setEstadoCumplimiento("A_TIEMPO");
+        // No cambiamos el 'estado' global a RECEPCIONADA hasta que no hagan la revisión final (RecepcionLote)
+        
+        ordenCompraRepository.save(orden);
+    }
+
+    @Override
+    @Transactional
+    public void reportarRetraso(Integer idOrden, String motivo) {
+        OrdenCompra orden = ordenCompraRepository.findById(idOrden)
+                .orElseThrow(() -> new RuntimeException("Orden de compra no encontrada"));
+
+        orden.setEstadoCumplimiento("NO_ENTREGADO");
+        orden.setObservacionRetraso(motivo);
+        
+        ordenCompraRepository.save(orden);
+    }
+
+    @Override
+    @Transactional
+    public void cancelarOrdenCompra(Integer idOrden) {
+        OrdenCompra orden = ordenCompraRepository.findById(idOrden)
+                .orElseThrow(() -> new RuntimeException("Orden de compra no encontrada"));
+
+        orden.setEstado("ANULADA");
+        orden.setEstadoCumplimiento("CANCELADA");
+        
+        ordenCompraRepository.save(orden);
     }
 }

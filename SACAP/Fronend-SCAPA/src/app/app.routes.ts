@@ -21,7 +21,11 @@ import { ConfiguracionComponent } from './features/admin/configuracion/configura
 // Componentes por Rol (Bodega, Campo, Supervisor)
 import { BodegaDashboardComponent } from './features/bodeguero/bodega-dashboard.component';
 import { ComprasRecepcionComponent } from './features/bodeguero/compras-recepcion/compras-recepcion.component';
+import { BodegaRecepcionesComponent } from './features/bodeguero/recepciones/bodega-recepciones.component';
+import { BodegaDespachosComponent } from './features/bodeguero/despachos/bodega-despachos.component';
 import { CampoDashboardComponent } from './features/tecnico-campo/campo-dashboard.component';
+import { PuntoVentaComponent } from './features/tecnico-campo/punto-venta/punto-venta.component';
+import { TecnicoEntregasComponent } from './features/tecnico-campo/entregas/tecnico-entregas.component';
 import { SupervisorDashboardComponent } from './features/supervisor/supervisor-dashboard.component';
 import { ComprasListadoComponent } from './features/supervisor/compras-listado/compras-listado.component';
 import { ComprasCrearComponent } from './features/supervisor/compras-crear/compras-crear.component';
@@ -35,6 +39,8 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       { path: 'dashboard', component: BodegaDashboardComponent },
+      { path: 'recepciones-hoy', component: BodegaRecepcionesComponent },
+      { path: 'despachos', component: BodegaDespachosComponent },
       { path: 'recepcion/:idOrden', component: ComprasRecepcionComponent },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
@@ -45,6 +51,8 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       { path: 'dashboard', component: CampoDashboardComponent },
+      { path: 'punto-venta', component: PuntoVentaComponent },
+      { path: 'entregas', component: TecnicoEntregasComponent },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

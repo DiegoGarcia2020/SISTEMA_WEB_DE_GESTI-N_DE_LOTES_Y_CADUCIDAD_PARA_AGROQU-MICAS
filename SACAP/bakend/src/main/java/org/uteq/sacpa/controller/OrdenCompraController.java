@@ -112,4 +112,29 @@ public class OrdenCompraController {
         }
         return ResponseEntity.ok(Map.of("precioUnitario", 0, "encontrado", false));
     }
+
+    // ========================================================================
+    // CONTROL DE SLA Y RECEPCIONES (DOCK SCHEDULING)
+    // ========================================================================
+
+    @PutMapping("/{id}/llegada-tiempo")
+    public ResponseEntity<Map<String, String>> registrarLlegadaTiempo(@PathVariable Integer id) {
+        ordenCompraService.registrarLlegadaTiempo(id);
+        return ResponseEntity.ok(Map.of("mensaje", "Llegada a tiempo registrada con éxito"));
+    }
+
+    @PutMapping("/{id}/reportar-retraso")
+    public ResponseEntity<Map<String, String>> reportarRetraso(
+            @PathVariable Integer id,
+            @RequestBody Map<String, String> body) {
+        String motivo = body.getOrDefault("motivo", "Retraso no justificado");
+        ordenCompraService.reportarRetraso(id, motivo);
+        return ResponseEntity.ok(Map.of("mensaje", "Retraso reportado y alerta generada"));
+    }
+
+    @PutMapping("/{id}/cancelar-sla")
+    public ResponseEntity<Map<String, String>> cancelarOrdenSLA(@PathVariable Integer id) {
+        ordenCompraService.cancelarOrdenCompra(id);
+        return ResponseEntity.ok(Map.of("mensaje", "Orden cancelada por incumplimiento de entrega"));
+    }
 }

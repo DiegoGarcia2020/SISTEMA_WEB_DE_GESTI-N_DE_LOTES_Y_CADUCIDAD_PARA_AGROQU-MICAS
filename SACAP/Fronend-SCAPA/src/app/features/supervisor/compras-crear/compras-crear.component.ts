@@ -63,6 +63,21 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
                 <input type="date" class="form-group__input" formControlName="fechaEmision"
                        [class.form-group__input--error]="campoInvalido('fechaEmision')">
               </div>
+              <div class="form-group">
+                <label class="form-group__label">Fecha Estimada Llegada</label>
+                <input type="date" class="form-group__input" formControlName="fechaLlegadaEstimada"
+                       [class.form-group__input--error]="campoInvalido('fechaLlegadaEstimada')">
+              </div>
+              <div class="form-group">
+                <label class="form-group__label">Ventana Horaria</label>
+                <select class="form-group__select" formControlName="ventanaHoraria"
+                        [class.form-group__input--error]="campoInvalido('ventanaHoraria')">
+                  <option [ngValue]="null" disabled>Seleccione ventana...</option>
+                  <option value="08:00 - 10:00">08:00 - 10:00</option>
+                  <option value="10:00 - 12:00">10:00 - 12:00</option>
+                  <option value="14:00 - 16:00">14:00 - 16:00</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
@@ -250,6 +265,8 @@ export class ComprasCrearComponent implements OnInit {
       idProveedor: [null, Validators.required],
       numeroFactura: ['', Validators.required],
       fechaEmision: [new Date().toISOString().substring(0, 10), Validators.required],
+      fechaLlegadaEstimada: [null],
+      ventanaHoraria: [null],
       costoTransporte: [0, [Validators.required, Validators.min(0)]],
       detalles: this.fb.array([], Validators.required)
     });

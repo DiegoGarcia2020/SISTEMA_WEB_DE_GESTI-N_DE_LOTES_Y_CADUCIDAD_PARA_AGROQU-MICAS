@@ -53,4 +53,19 @@ public interface IOrdenCompraService {
      * Retorna null si no hay compras previas.
      */
     BigDecimal obtenerUltimoPrecioProducto(Integer idProducto);
+
+    /**
+     * Control de SLA - Bodeguero: Registra la llegada a tiempo.
+     */
+    void registrarLlegadaTiempo(Integer idOrden);
+
+    /**
+     * Control de SLA - Bodeguero: Reporta un retraso en la entrega.
+     */
+    void reportarRetraso(Integer idOrden, String motivo);
+
+    /**
+     * Control de SLA - Supervisor: Cancela la orden tras un retraso.
+     */
+    void cancelarOrdenCompra(Integer idOrden);
 }

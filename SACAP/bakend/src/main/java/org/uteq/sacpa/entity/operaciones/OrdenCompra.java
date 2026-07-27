@@ -62,6 +62,23 @@ public class OrdenCompra {
     @Column(name = "estado", length = 20)
     private String estado;
 
+    // --- Campos de Control SLA y Recepciones (Dock Scheduling) ---
+    @Column(name = "fecha_llegada_estimada")
+    private LocalDate fechaLlegadaEstimada;
+
+    @Column(name = "ventana_horaria", length = 50)
+    private String ventanaHoraria;
+
+    @Column(name = "fecha_llegada_real")
+    private LocalDateTime fechaLlegadaReal;
+
+    @Column(name = "estado_cumplimiento", length = 20)
+    private String estadoCumplimiento; // PENDIENTE, A_TIEMPO, RETRASADO, NO_ENTREGADO
+
+    @Column(name = "observacion_retraso", columnDefinition = "text")
+    private String observacionRetraso;
+    // -------------------------------------------------------------
+
     @Column(name = "fecha_registro")
     private LocalDateTime fechaRegistro;
 

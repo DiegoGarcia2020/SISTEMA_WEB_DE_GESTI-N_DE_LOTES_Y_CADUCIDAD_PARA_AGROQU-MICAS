@@ -41,4 +41,8 @@ public class OrdenCompraRequestDTO {
     @NotEmpty(message = "La orden debe tener al menos un detalle")
     @Valid
     private List<DetalleCompraRequestDTO> detalles;
+
+    // SLA Fields
+    private LocalDate fechaLlegadaEstimada;
+    private String ventanaHoraria;
 }

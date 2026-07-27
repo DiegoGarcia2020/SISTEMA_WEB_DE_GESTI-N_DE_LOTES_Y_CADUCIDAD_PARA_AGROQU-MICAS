@@ -34,6 +34,13 @@ public class OrdenCompraResponseDTO {
     private String estado;
     private LocalDateTime fechaRegistro;
 
+    // SLA Fields
+    private LocalDate fechaLlegadaEstimada;
+    private String ventanaHoraria;
+    private LocalDateTime fechaLlegadaReal;
+    private String estadoCumplimiento;
+    private String observacionRetraso;
+
     private List<DetalleCompraResponseDTO> detalles;
 
     /**

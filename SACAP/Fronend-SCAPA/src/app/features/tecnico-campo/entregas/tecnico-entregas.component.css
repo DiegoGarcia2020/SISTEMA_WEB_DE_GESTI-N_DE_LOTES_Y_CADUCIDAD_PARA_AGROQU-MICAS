@@ -1,0 +1,237 @@
+/* =================================================================
+   TÉCNICO DE CAMPO - ENTREGAS Y DEVOLUCIONES
+   ================================================================= */
+.entregas-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 2rem;
+  background-color: var(--bg-app, #f8f9fa);
+  font-family: 'Inter', 'Roboto', sans-serif;
+  color: var(--text-dark, #111827);
+}
+
+.entregas-header {
+  margin-bottom: 2rem;
+}
+
+.entregas-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  color: #15803d;
+}
+
+.entregas-header p {
+  color: #6b7280;
+  margin: 0;
+}
+
+/* =================================================================
+   HISTORIAL DE ENTREGAS (TARJETAS)
+   ================================================================= */
+.entregas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.entrega-card {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.entrega-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid #f3f4f6;
+  padding-bottom: 0.75rem;
+}
+
+.entrega-card__title {
+  font-weight: 700;
+  font-size: 1.125rem;
+  margin: 0;
+}
+
+.entrega-card__subtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0.25rem 0 0 0;
+}
+
+/* BADGES DE ESTADO */
+.badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.badge-preparada {
+  background-color: #ffedd5;
+  color: #c2410c; /* Naranja */
+}
+
+.badge-entregada {
+  background-color: #dcfce7;
+  color: #15803d; /* Verde */
+}
+
+.badge-devuelta {
+  background-color: #fef9c3;
+  color: #a16207; /* Amarillo */
+}
+
+.entrega-card__body {
+  font-size: 0.9375rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.info-label {
+  color: #6b7280;
+  font-weight: 600;
+}
+
+/* BOTONES DE ACCIÓN */
+.btn {
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: opacity 0.2s;
+  width: 100%;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-success {
+  background-color: #15803d;
+  color: #ffffff;
+}
+
+.btn-warning {
+  background-color: #ffffff;
+  border: 1px solid #f59e0b;
+  color: #d97706;
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 4rem;
+  background-color: #ffffff;
+  border: 1px dashed #d1d5db;
+  border-radius: 12px;
+  color: #6b7280;
+}
+
+/* =================================================================
+   MODAL DE DEVOLUCIÓN (CSS PURO)
+   ================================================================= */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 2rem;
+  width: 90%;
+  max-width: 450px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.modal-content h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #111827;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.form-control {
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  outline: none;
+}
+
+.form-control:focus {
+  border-color: #15803d;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.btn-ghost {
+  background-color: transparent;
+  color: #6b7280;
+  border: 1px solid transparent;
+  width: auto;
+}
+
+.btn-ghost:hover {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.btn-primary {
+  background-color: #15803d;
+  color: #ffffff;
+  width: auto;
+}
