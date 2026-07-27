@@ -1,0 +1,272 @@
+/* =================================================================
+   LOGIN COMPONENT - CSS PURO
+   Dirección A: "Etiqueta de Almacén"
+   ================================================================= */
+
+/* Contenedor principal asimétrico */
+.login-wrapper {
+  min-height: 100vh;
+  background-color: var(--c-bone-bg);
+  display: flex;
+  align-items: center;
+  padding: 2rem;
+  /* Espacio negativo a la derecha para romper el centrado genérico */
+  padding-right: 15vw;
+}
+
+/* Tarjeta de login */
+.login-card {
+  width: 100%;
+  max-width: 380px;
+  background-color: var(--c-bone-bg);
+  /* Sin bordes redondeados ni sombras genéricas */
+  border-radius: var(--radius-card);
+  box-shadow: none;
+}
+
+/* Cabecera de la tarjeta */
+.login-header {
+  margin-bottom: 2rem;
+}
+
+.login-header__title {
+  font-size: 1.5rem;
+  margin: 0;
+  color: var(--c-warm-black);
+  /* Usa font-family Slab (definida en estilos globales) */
+  font-family: var(--font-slab);
+}
+
+.login-header__subtitle {
+  font-size: 0.75rem;
+  color: var(--c-sage-border);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.25rem;
+}
+
+/* Formularios */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group__label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--c-warm-black);
+  margin-bottom: 0.5rem;
+}
+
+/* Inputs limpios: solo borde inferior */
+.form-group__input-wrapper {
+  position: relative;
+}
+
+.form-group__input {
+  width: 100%;
+  padding: 0.5rem 0;
+  padding-right: 2rem;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--c-sage-border);
+  color: var(--c-warm-black);
+  font-size: 0.875rem;
+  font-family: var(--font-sans);
+  transition: border-color 0.15s ease-out;
+  border-radius: 0;
+  outline: none;
+}
+
+.form-group__input--password {
+  font-family: monospace;
+}
+
+.form-group__input:focus {
+  border-bottom-color: var(--c-cacao-accent);
+}
+
+/* Botón revelar contraseña */
+.btn-reveal {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--c-sage-border);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s;
+}
+
+.btn-reveal:hover,
+.btn-reveal:focus {
+  color: var(--c-cacao-accent);
+  outline: none;
+}
+
+/* Mensajes de error */
+.form-group__error {
+  font-size: 0.75rem;
+  color: var(--c-error);
+  margin-top: 0.25rem;
+}
+
+/* Opciones secundarias (Recordar, Olvidé) */
+.login-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  margin-top: -0.5rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--c-warm-black);
+  cursor: pointer;
+}
+
+.checkbox-input {
+  accent-color: var(--c-dark-green);
+}
+
+.link-forgot {
+  color: var(--c-warm-black);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s;
+}
+
+.link-forgot:hover {
+  border-bottom-color: var(--c-cacao-accent);
+}
+
+/* Botón principal */
+.btn-primary {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: var(--c-dark-green);
+  color: var(--c-bone-bg);
+  border: none;
+  border-radius: var(--radius-btn);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--c-mid-green);
+}
+
+.btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Lista de roles */
+.role-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.role-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: transparent;
+  border: 1px solid var(--c-sage-border);
+  border-radius: var(--radius-input);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+}
+
+.role-btn:hover {
+  border-color: var(--c-cacao-accent);
+}
+
+.role-btn__info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.role-btn__icon {
+  color: var(--c-dark-green);
+}
+
+.role-btn__text {
+  display: flex;
+  flex-direction: column;
+}
+
+.role-btn__name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--c-warm-black);
+}
+
+.role-btn__desc {
+  font-size: 0.6875rem;
+  color: var(--c-sage-border);
+}
+
+/* Footer / Link de registro */
+.login-footer {
+  margin-top: 3rem;
+  border-top: 1px solid var(--c-sage-border);
+  padding-top: 1rem;
+}
+
+.link-register {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--c-warm-black);
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: color 0.15s;
+}
+
+.link-register:hover {
+  color: var(--c-cacao-accent);
+}
+
+.login-copyright {
+  font-size: 0.6875rem;
+  color: var(--c-sage-border);
+  margin-top: 0.5rem;
+}
+
+/* Layout Responsivo */
+@media (max-width: 768px) {
+  .login-wrapper {
+    justify-content: center;
+    padding-right: 2rem; /* Quitar espacio asimétrico en móvil */
+  }
+}

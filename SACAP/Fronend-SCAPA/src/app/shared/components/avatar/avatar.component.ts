@@ -5,10 +5,36 @@ import { CommonModule } from '@angular/common';
   selector: 'app-avatar',
   standalone: true,
   imports: [CommonModule],
+  styles: [`
+    :host {
+      display: inline-flex;
+      flex-shrink: 0;
+    }
+    .avatar-root {
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 600;
+      flex-shrink: 0;
+      user-select: none;
+      box-shadow: 0 1px 3px rgba(0,0,0,.15);
+      overflow: hidden;
+      position: relative;
+    }
+    .avatar-root img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+      display: block;
+    }
+  `],
   template: `
-    <div [class]="avatarClass()" class="rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0 select-none shadow-sm overflow-hidden relative">
+    <div class="avatar-root" [style]="avatarStyle()">
       @if (displayUrl()) {
-        <img [src]="displayUrl()" alt="Avatar" class="w-full h-full object-cover rounded-full">
+        <img [src]="displayUrl()" alt="Avatar">
       } @else {
         <span>{{ initials() }}</span>
       }
@@ -34,7 +60,6 @@ export class AvatarComponent {
 
   displayUrl = computed(() => {
     if (this._imageUrl()) return this._imageUrl();
-    // Si el nombre contiene admin o agrosense, intentar leer de localStorage la foto guardada en fase 2
     const n = this._name().toLowerCase();
     if (n.includes('admin') || n.includes('mendoza') || n.includes('agrosense')) {
       const local = localStorage.getItem('sacpa_admin_foto');
@@ -53,14 +78,27 @@ export class AvatarComponent {
       .join('');
   });
 
-  avatarClass = computed(() => {
+  avatarStyle = computed(() => {
     const s = this._size();
-    const sz = s === 'sm' ? 'w-7 h-7 text-[11px]' : s === 'lg' ? 'w-11 h-11 text-base' : s === 'xl' ? 'w-20 h-20 text-2xl' : 'w-9 h-9 text-sm';
-    
-    const colors = ['bg-[#0B4628]', 'bg-blue-600', 'bg-purple-600', 'bg-amber-600', 'bg-slate-600', 'bg-teal-600'];
-    const charCode = this._name().charCodeAt(0) || 0;
-    const color = colors[charCode % colors.length];
+    const sizeMap: Record<string, string> = {
+      sm: '28px',
+      md: '36px',
+      lg: '44px',
+      xl: '80px',
+    };
+    const fontMap: Record<string, string> = {
+      sm: '11px',
+      md: '14px',
+      lg: '16px',
+      xl: '24px',
+    };
+    const dim = sizeMap[s] ?? '36px';
+    const font = fontMap[s] ?? '14px';
 
-    return `${sz} ${color}`;
+    const colors = ['#0B4628', '#2563EB', '#7C3AED', '#D97706', '#475569', '#0D9488'];
+    const charCode = this._name().charCodeAt(0) || 0;
+    const bg = colors[charCode % colors.length];
+
+    return `width:${dim};height:${dim};min-width:${dim};min-height:${dim};font-size:${font};background-color:${bg};`;
   });
 }

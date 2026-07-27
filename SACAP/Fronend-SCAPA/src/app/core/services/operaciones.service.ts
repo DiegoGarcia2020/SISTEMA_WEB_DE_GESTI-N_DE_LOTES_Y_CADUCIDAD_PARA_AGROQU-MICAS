@@ -199,7 +199,7 @@ export class OperacionesService {
 
   // ================= PROMOCIONES & REGLAS IA =================
   listarPromociones(): Observable<PromocionIADTO[]> {
-    return this.http.get<PromocionIADTO[]>(`${this.apiUrl}/promociones`).pipe(
+    return this.http.get<PromocionIADTO[]>(`${this.apiUrl}/ia/promociones`).pipe(
       catchError(err => {
         if (err.status === 0 || err.status === 404) return of([...this.mockPromociones]);
         return throwError(() => err);
@@ -208,7 +208,7 @@ export class OperacionesService {
   }
 
   cambiarEstadoPromocion(idPromocion: number, estado: 'APROBADA' | 'RECHAZADA' | 'ACTIVA'): Observable<void> {
-    return this.http.patch<void>(`${this.apiUrl}/promociones/${idPromocion}/estado`, { estado }).pipe(
+    return this.http.patch<void>(`${this.apiUrl}/ia/promociones/${idPromocion}/estado`, { estado }).pipe(
       catchError(err => {
         if (err.status === 0 || err.status === 404) {
           const p = this.mockPromociones.find(x => x.idPromocion === idPromocion);

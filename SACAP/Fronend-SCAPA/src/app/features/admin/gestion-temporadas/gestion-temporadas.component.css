@@ -1,0 +1,210 @@
+/* =================================================================
+   GESTIÓN DE TEMPORADAS - CSS PURO
+   Dirección A: "Etiqueta de Almacén"
+   ================================================================= */
+
+.temporadas-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+@media (min-width: 1024px) {
+  .temporadas-container {
+    grid-template-columns: 350px 1fr; /* Pantalla dividida: formulario izq, tabla der */
+    align-items: start;
+  }
+}
+
+/* Panel Izquierdo (Formulario) */
+.panel-form {
+  background-color: var(--c-bone-bg);
+  border: 1px solid var(--c-sage-border);
+  padding: 1.5rem;
+  border-radius: var(--radius-card);
+}
+
+.panel-header {
+  margin-bottom: 1.5rem;
+}
+
+.panel-title {
+  font-family: var(--font-slab);
+  font-size: 1.25rem;
+  color: var(--c-warm-black);
+  margin: 0 0 0.5rem 0;
+}
+
+.panel-desc {
+  font-size: 0.75rem;
+  color: var(--c-sage-border);
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--c-warm-black);
+  margin-bottom: 0.5rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.5rem 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--c-sage-border);
+  color: var(--c-warm-black);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.form-input:focus {
+  border-bottom-color: var(--c-dark-green);
+}
+
+.form-error {
+  font-size: 0.6875rem;
+  color: var(--c-error);
+  margin-top: 0.25rem;
+}
+
+.btn-submit {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: var(--c-dark-green);
+  color: var(--c-bone-bg);
+  border: none;
+  border-radius: var(--radius-btn);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background-color: var(--c-mid-green);
+}
+
+.btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.alert-warning {
+  background-color: rgba(199, 127, 61, 0.1); /* c-cacao-accent con opacidad */
+  border-left: 3px solid var(--c-cacao-accent);
+  padding: 0.75rem;
+  margin-top: 1.5rem;
+  font-size: 0.75rem;
+  color: var(--c-warm-black);
+}
+
+.alert-warning p {
+  margin: 0;
+}
+
+/* Panel Derecho (Tabla/Historial) */
+.panel-table {
+  background-color: var(--c-bone-bg);
+  border: 1px solid var(--c-sage-border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.table-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--c-sage-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.table-title {
+  font-family: var(--font-slab);
+  font-size: 1.125rem;
+  color: var(--c-warm-black);
+  margin: 0;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.data-table th, .data-table td {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--c-sage-border); /* Separador sutil */
+}
+
+/* Regla estricta: NO zebra striping */
+.data-table tbody tr {
+  background-color: transparent;
+}
+
+.data-table tbody tr:hover {
+  background-color: rgba(143, 174, 155, 0.1); /* Hover muy sutil */
+}
+
+.data-table th {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--c-sage-border);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background-color: var(--c-bone-bg); /* Fondo sólido igual al contenedor */
+}
+
+.data-table td {
+  font-size: 0.875rem;
+  color: var(--c-warm-black);
+}
+
+/* Badges de estado */
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-active {
+  background-color: rgba(18, 38, 29, 0.1);
+  color: var(--c-dark-green);
+  border: 1px solid var(--c-dark-green);
+}
+
+.badge-inactive {
+  background-color: transparent;
+  color: var(--c-sage-border);
+  border: 1px solid var(--c-sage-border);
+}
+
+.empty-state {
+  padding: 3rem;
+  text-align: center;
+  color: var(--c-sage-border);
+}

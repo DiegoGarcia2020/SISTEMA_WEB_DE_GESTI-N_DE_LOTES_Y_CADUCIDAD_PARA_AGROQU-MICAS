@@ -10,173 +10,124 @@ import { ToastService as TS } from '../../../shared/components/toast/toast.servi
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule, LucideAngularModule],
+  styleUrl: './login.component.css',
   template: `
-    <div class="min-h-screen bg-gradient-to-br from-[#0B4628]/95 via-[#0B4628]/85 to-slate-900 flex items-center justify-center p-4 selection:bg-green-500 selection:text-white relative overflow-hidden">
-      <!-- Efecto decorativo de fondo -->
-      <div class="absolute -top-40 -right-40 w-96 h-96 bg-green-500/10 rounded-full blur-3xl pointer-events-none"></div>
-      <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
-      <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-white/20 z-10 animate-fade-in">
-        <!-- Cabecera Verde Agrícola -->
-        <div class="bg-[#0B4628] p-8 text-center text-white relative">
-          <div class="w-16 h-16 bg-white/15 rounded-2xl mx-auto flex items-center justify-center mb-3 shadow-inner">
-            <lucide-icon name="leaf" class="w-9 h-9 text-green-300"></lucide-icon>
-          </div>
-          <h1 class="text-2xl font-bold tracking-tight">AgroSense LMS</h1>
-          <p class="text-xs text-green-200/80 mt-1 uppercase tracking-widest font-medium">Sistema de Alertas y Caducidad Agrícola</p>
+    <div class="login-wrapper animate-fade-in">
+      <div class="login-card">
+        
+        <div class="login-header">
+          <h1 class="login-header__title">AgroSense</h1>
+          <p class="login-header__subtitle">Sistema de Alertas y Caducidad</p>
         </div>
 
-        <div class="p-8">
-          @if (step() === 'LOGIN') {
-            <!-- Paso 1: Credenciales -->
-            <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="space-y-5">
-              <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Usuario o Correo Electrónico</label>
-                <div class="relative">
-                  <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
-                    <lucide-icon name="mail" class="w-5 h-5"></lucide-icon>
-                  </div>
-                  <input type="text" formControlName="correo" placeholder="ej. anthonyarana173 o c.mendoza@agrosense.ec"
-                         class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-[#0B4628] focus:ring-2 focus:ring-[#0B4628]/20 outline-none transition-all">
-                </div>
-                @if (loginForm.get('correo')?.touched && loginForm.get('correo')?.invalid) {
-                  <p class="text-xs text-red-500 mt-1.5 font-medium">El usuario o correo es requerido</p>
-                }
+        @if (step() === 'LOGIN') {
+          <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="login-form">
+            <div class="form-group">
+              <label class="form-group__label">Usuario o Correo</label>
+              <div class="form-group__input-wrapper">
+                <input type="text" formControlName="correo" class="form-group__input">
               </div>
-
-              <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Contraseña</label>
-                <div class="relative">
-                  <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
-                    <lucide-icon name="lock" class="w-5 h-5"></lucide-icon>
-                  </div>
-                  <input [type]="showPassword() ? 'text' : 'password'" formControlName="contrasena" placeholder="••••••••••••"
-                         class="w-full pl-11 pr-11 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-[#0B4628] focus:ring-2 focus:ring-[#0B4628]/20 outline-none transition-all font-mono">
-                  <button type="button" (click)="showPassword.set(!showPassword())" 
-                          class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
-                    <lucide-icon [name]="showPassword() ? 'eye-off' : 'eye'" class="w-5 h-5"></lucide-icon>
-                  </button>
-                </div>
-                @if (loginForm.get('contrasena')?.touched && loginForm.get('contrasena')?.invalid) {
-                  <p class="text-xs text-red-500 mt-1.5 font-medium">La contraseña es requerida</p>
-                }
-              </div>
-
-              <div class="flex items-center justify-between text-xs pt-1">
-                <label class="flex items-center gap-2 text-gray-600 cursor-pointer select-none">
-                  <input type="checkbox" class="w-4 h-4 rounded text-[#0B4628] focus:ring-[#0B4628]/20 border-gray-300">
-                  <span>Recordar credenciales</span>
-                </label>
-                <a href="javascript:void(0)" (click)="forgotPass()" class="font-semibold text-[#0B4628] hover:underline">¿Olvidaste tu contraseña?</a>
-              </div>
-
-              <button type="submit" [disabled]="loginForm.invalid || isLoading()"
-                      class="w-full py-3.5 px-4 bg-[#0B4628] hover:bg-[#146C43] disabled:opacity-60 text-white font-bold text-sm rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer mt-4">
-                @if (isLoading()) {
-                  <lucide-icon name="loader" class="w-5 h-5 animate-spin"></lucide-icon>
-                  <span>Validando acceso...</span>
-                } @else {
-                  <span>Iniciar Sesión</span>
-                  <lucide-icon name="arrow-right" class="w-5 h-5"></lucide-icon>
-                }
-              </button>
-            </form>
-          } @else if (step() === 'ROLE_SELECT') {
-            <!-- Paso 2: Selección de Rol (Multidirol) -->
-            <div class="space-y-4 animate-slide-up">
-              <div class="text-center mb-6">
-                <span class="inline-block px-3 py-1 bg-green-50 text-[#0B4628] text-xs font-bold rounded-full uppercase tracking-wider mb-2">Multidirol Detectado</span>
-                <h3 class="text-lg font-bold text-gray-900">Seleccione su Perfil de Trabajo</h3>
-                <p class="text-xs text-gray-500 mt-1">Tiene varios roles asignados en el sistema SACPA para esta sesión.</p>
-              </div>
-
-              <div class="grid grid-cols-1 gap-3 max-h-60 overflow-y-auto pr-1">
-                @for (rol of availableRoles(); track rol) {
-                  <button type="button" (click)="onSelectRole(rol)" [disabled]="isLoading()"
-                          class="w-full p-4 text-left border-2 border-gray-100 hover:border-[#0B4628] rounded-2xl bg-gray-50/50 hover:bg-green-50/50 transition-all flex items-center justify-between group cursor-pointer shadow-2xs hover:shadow-sm">
-                    <div class="flex items-center gap-3.5">
-                      <div class="w-10 h-10 rounded-xl bg-white text-[#0B4628] shadow-xs flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <lucide-icon [name]="getRoleIcon(rol)" class="w-5 h-5"></lucide-icon>
-                      </div>
-                      <div>
-                        <div class="text-sm font-bold text-gray-900 group-hover:text-[#0B4628] transition-colors">{{ rol }}</div>
-                        <div class="text-[11px] text-gray-500">Acceso a módulo y permisos de {{ rol }}</div>
-                      </div>
-                    </div>
-                    <lucide-icon name="chevron-right" class="w-5 h-5 text-gray-400 group-hover:text-[#0B4628] group-hover:translate-x-1 transition-all"></lucide-icon>
-                  </button>
-                }
-              </div>
-
-              <button type="button" (click)="step.set('LOGIN')"
-                      class="w-full py-2.5 px-4 text-xs font-semibold text-gray-500 hover:text-gray-800 transition-colors mt-2 text-center block">
-                ← Volver con otra cuenta
-              </button>
+              @if (loginForm.get('correo')?.touched && loginForm.get('correo')?.invalid) {
+                <span class="form-group__error">El usuario o correo es requerido</span>
+              }
             </div>
-          } @else if (step() === 'CHANGE_PASSWORD') {
-            <!-- Paso 3: Cambio Obligatorio de Contraseña -->
-            <form [formGroup]="changePassForm" (ngSubmit)="onChangePassword()" class="space-y-5 animate-slide-up">
-              <div class="text-center mb-6">
-                <span class="inline-block px-3 py-1 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold rounded-full uppercase tracking-wider mb-2 flex items-center justify-center gap-1.5 w-fit mx-auto">
-                  <lucide-icon name="shield-check" class="w-3.5 h-3.5"></lucide-icon>
-                  <span>Seguridad de la Cuenta</span>
-                </span>
-                <h3 class="text-lg font-bold text-gray-900">Actualiza tu Contraseña Temporal</h3>
-                <p class="text-xs text-gray-500 mt-1.5">Has iniciado sesión con una clave temporal. Por tu seguridad y privacidad, establece tu contraseña personal y secreta para acceder al panel.</p>
-              </div>
 
-              <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Nueva Contraseña</label>
-                <div class="relative">
-                  <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
-                    <lucide-icon name="lock" class="w-5 h-5"></lucide-icon>
+            <div class="form-group">
+              <label class="form-group__label">Contraseña</label>
+              <div class="form-group__input-wrapper">
+                <input [type]="showPassword() ? 'text' : 'password'" formControlName="contrasena" class="form-group__input form-group__input--password">
+                <button type="button" (click)="showPassword.set(!showPassword())" class="btn-reveal" title="Mostrar/Ocultar">
+                  <lucide-icon [name]="showPassword() ? 'eye-off' : 'eye'" class="w-5 h-5"></lucide-icon>
+                </button>
+              </div>
+              @if (loginForm.get('contrasena')?.touched && loginForm.get('contrasena')?.invalid) {
+                <span class="form-group__error">La contraseña es requerida</span>
+              }
+            </div>
+
+            <div class="login-options">
+              <label class="checkbox-label">
+                <input type="checkbox" class="checkbox-input">
+                <span>Recordar sesión</span>
+              </label>
+              <a href="javascript:void(0)" (click)="forgotPass()" class="link-forgot">¿Olvidó su clave?</a>
+            </div>
+
+            <button type="submit" [disabled]="loginForm.invalid || isLoading()" class="btn-primary">
+              @if (isLoading()) {
+                <lucide-icon name="loader" class="w-5 h-5 animate-spin"></lucide-icon>
+                <span>Validando...</span>
+              } @else {
+                <span>Ingresar</span>
+                <lucide-icon name="arrow-right" class="w-4 h-4"></lucide-icon>
+              }
+            </button>
+          </form>
+        } @else if (step() === 'ROLE_SELECT') {
+          <div class="login-form">
+            <h3 class="form-group__label" style="font-size: 0.875rem;">Seleccione Perfil</h3>
+            <div class="role-list custom-scrollbar" style="max-height: 250px; overflow-y: auto;">
+              @for (rol of availableRoles(); track rol) {
+                <button type="button" (click)="onSelectRole(rol)" [disabled]="isLoading()" class="role-btn">
+                  <div class="role-btn__info">
+                    <lucide-icon [name]="getRoleIcon(rol)" class="w-5 h-5 role-btn__icon"></lucide-icon>
+                    <div class="role-btn__text">
+                      <span class="role-btn__name">{{ rol }}</span>
+                      <span class="role-btn__desc">Acceder como {{ rol }}</span>
+                    </div>
                   </div>
-                  <input [type]="showPassword() ? 'text' : 'password'" formControlName="nuevaContrasena" placeholder="Mínimo 6 caracteres"
-                         class="w-full pl-11 pr-11 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-[#0B4628] focus:ring-2 focus:ring-[#0B4628]/20 outline-none transition-all font-mono">
-                  <button type="button" (click)="showPassword.set(!showPassword())" 
-                          class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
-                    <lucide-icon [name]="showPassword() ? 'eye-off' : 'eye'" class="w-5 h-5"></lucide-icon>
-                  </button>
-                </div>
-                @if (changePassForm.get('nuevaContrasena')?.touched && changePassForm.get('nuevaContrasena')?.invalid) {
-                  <p class="text-xs text-red-500 mt-1.5 font-medium">La contraseña debe tener al menos 6 caracteres</p>
-                }
+                  <lucide-icon name="chevron-right" class="w-4 h-4"></lucide-icon>
+                </button>
+              }
+            </div>
+            <button type="button" (click)="step.set('LOGIN')" class="link-forgot" style="text-align: center; display: block; margin-top: 1rem; font-size: 0.75rem;">
+              ← Volver
+            </button>
+          </div>
+        } @else if (step() === 'CHANGE_PASSWORD') {
+          <form [formGroup]="changePassForm" (ngSubmit)="onChangePassword()" class="login-form">
+            <h3 class="form-group__label" style="font-size: 0.875rem;">Actualiza tu Contraseña</h3>
+            
+            <div class="form-group">
+              <label class="form-group__label">Nueva Contraseña</label>
+              <div class="form-group__input-wrapper">
+                <input [type]="showPassword() ? 'text' : 'password'" formControlName="nuevaContrasena" class="form-group__input form-group__input--password">
+                <button type="button" (click)="showPassword.set(!showPassword())" class="btn-reveal">
+                  <lucide-icon [name]="showPassword() ? 'eye-off' : 'eye'" class="w-5 h-5"></lucide-icon>
+                </button>
               </div>
+              @if (changePassForm.get('nuevaContrasena')?.touched && changePassForm.get('nuevaContrasena')?.invalid) {
+                <span class="form-group__error">Mínimo 6 caracteres</span>
+              }
+            </div>
 
-              <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Confirmar Nueva Contraseña</label>
-                <div class="relative">
-                  <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
-                    <lucide-icon name="check-circle" class="w-5 h-5"></lucide-icon>
-                  </div>
-                  <input [type]="showPassword() ? 'text' : 'password'" formControlName="confirmarContrasena" placeholder="Repite la nueva contraseña"
-                         class="w-full pl-11 pr-11 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-[#0B4628] focus:ring-2 focus:ring-[#0B4628]/20 outline-none transition-all font-mono">
-                </div>
-                @if (changePassForm.get('confirmarContrasena')?.touched && changePassForm.value.nuevaContrasena !== changePassForm.value.confirmarContrasena) {
-                  <p class="text-xs text-red-500 mt-1.5 font-medium">Las contraseñas no coinciden</p>
-                }
+            <div class="form-group">
+              <label class="form-group__label">Confirmar Contraseña</label>
+              <div class="form-group__input-wrapper">
+                <input [type]="showPassword() ? 'text' : 'password'" formControlName="confirmarContrasena" class="form-group__input form-group__input--password">
               </div>
+              @if (changePassForm.get('confirmarContrasena')?.touched && changePassForm.value.nuevaContrasena !== changePassForm.value.confirmarContrasena) {
+                <span class="form-group__error">Las contraseñas no coinciden</span>
+              }
+            </div>
 
-              <button type="submit" [disabled]="changePassForm.invalid || changePassForm.value.nuevaContrasena !== changePassForm.value.confirmarContrasena || isLoading()"
-                      class="w-full py-3.5 px-4 bg-[#0B4628] hover:bg-[#146C43] disabled:opacity-60 text-white font-bold text-sm rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer mt-4">
-                @if (isLoading()) {
-                  <lucide-icon name="loader" class="w-5 h-5 animate-spin"></lucide-icon>
-                  <span>Actualizando contraseña...</span>
-                } @else {
-                  <span>Guardar Contraseña e Ingresar al Sistema</span>
-                  <lucide-icon name="arrow-right" class="w-5 h-5"></lucide-icon>
-                }
-              </button>
-            </form>
-          }
-        </div>
+            <button type="submit" [disabled]="changePassForm.invalid || changePassForm.value.nuevaContrasena !== changePassForm.value.confirmarContrasena || isLoading()" class="btn-primary">
+              @if (isLoading()) {
+                <lucide-icon name="loader" class="w-5 h-5 animate-spin"></lucide-icon>
+                <span>Guardando...</span>
+              } @else {
+                <span>Guardar y Entrar</span>
+              }
+            </button>
+          </form>
+        }
 
-        <div class="bg-gray-50 px-8 py-4 border-t border-gray-100 flex flex-col items-center justify-center gap-1.5">
-          <a routerLink="/registro" class="text-xs font-bold text-[#0B4628] hover:underline flex items-center gap-1">
-            <lucide-icon name="user-plus" class="w-3.5 h-3.5"></lucide-icon>
-            <span>¿No tiene cuenta institucional? Solicite acceso al sistema</span>
+        <div class="login-footer">
+          <a routerLink="/registro" class="link-register">
+            <lucide-icon name="user-plus" class="w-4 h-4"></lucide-icon>
+            <span>Solicitar acceso al sistema</span>
           </a>
-          <p class="text-[11px] text-gray-400 font-medium">SACPA · Universidad Técnica de Quevedo & AgroSense © 2026</p>
+          <p class="login-copyright">SACPA © 2026</p>
         </div>
       </div>
     </div>

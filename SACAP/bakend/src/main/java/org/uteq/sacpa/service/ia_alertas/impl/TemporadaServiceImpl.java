@@ -9,7 +9,7 @@ import org.uteq.sacpa.service.ia_alertas.ITemporadaService;
 
 import java.util.List;
 
-@Service
+@Service("temporadaServiceImplIA")
 public class TemporadaServiceImpl implements ITemporadaService {
 
     @Autowired

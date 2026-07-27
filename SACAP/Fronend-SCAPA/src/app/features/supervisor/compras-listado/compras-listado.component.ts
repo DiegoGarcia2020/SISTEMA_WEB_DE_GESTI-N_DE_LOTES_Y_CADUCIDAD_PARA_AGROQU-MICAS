@@ -14,19 +14,18 @@ import { ToastService } from '../../../shared/components/toast/toast.service';
   template: `
     <div class="compras-container">
       <!-- Cabecera Hero -->
-      <div class="page-header">
-        <div class="page-header__blur"></div>
-        <div class="page-header__info">
-          <div class="page-header__icon">
+      <div class="alert-warning">
+        <div class="alert-warning__info">
+          <div class="alert-warning__icon">
             <lucide-icon name="file-text" class="w-7 h-7"></lucide-icon>
           </div>
           <div>
-            <span class="page-header__badge">Módulo Compras</span>
-            <h1 class="page-header__title">Órdenes de Compra</h1>
-            <p class="page-header__subtitle">Registro y seguimiento de facturas de proveedores</p>
+            <span class="alert-warning__badge">Módulo Compras</span>
+            <h1 class="alert-warning__title">Órdenes de Compra</h1>
+            <p class="alert-warning__subtitle">Registro y seguimiento de facturas de proveedores</p>
           </div>
         </div>
-        <div class="page-header__actions">
+        <div class="alert-warning__actions">
           <button class="btn btn--ghost" (click)="cargarOrdenes()">
             <lucide-icon name="refresh-cw" class="w-4 h-4"></lucide-icon>
             <span>Actualizar</span>
@@ -116,7 +115,7 @@ import { ToastService } from '../../../shared/components/toast/toast.service';
                     <span class="data-table__total">\${{ orden.totalNeto | number:'1.2-2' }}</span>
                   </td>
                   <td>
-                    <span class="badge"
+                    <span class="badge text-stamped"
                           [class.badge--pendiente]="orden.estado === 'PENDIENTE'"
                           [class.badge--recepcionada]="orden.estado === 'RECEPCIONADA'"
                           [class.badge--anulada]="orden.estado === 'ANULADA'">

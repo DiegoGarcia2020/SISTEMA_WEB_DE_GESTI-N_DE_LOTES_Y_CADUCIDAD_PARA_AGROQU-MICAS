@@ -11,7 +11,7 @@ import org.uteq.sacpa.service.ia_alertas.ITemporadaService;
 import java.util.List;
 import java.util.Map;
 
-@RestController
+@RestController("temporadaControllerGeneral")
 @RequestMapping("/api/temporadas")
 public class TemporadaController {
 

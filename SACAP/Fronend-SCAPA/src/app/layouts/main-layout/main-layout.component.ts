@@ -9,17 +9,18 @@ import { ToastComponent } from '../../shared/components/toast/toast.component';
   selector: 'app-main-layout',
   standalone: true,
   imports: [CommonModule, RouterModule, SidebarComponent, TopbarComponent, ToastComponent],
+  styleUrl: './main-layout.component.css',
   template: `
-    <div class="flex h-screen bg-[#F4F6F8] font-sans text-gray-900 overflow-hidden">
+    <div class="layout-wrapper">
       <!-- Sidebar Fijo -->
       <app-sidebar></app-sidebar>
 
       <!-- Área de contenido principal -->
-      <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div class="layout-content">
         <app-topbar></app-topbar>
 
-        <main class="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar">
-          <div class="max-w-7xl mx-auto">
+        <main class="layout-main custom-scrollbar">
+          <div class="layout-container">
             <router-outlet></router-outlet>
           </div>
         </main>
