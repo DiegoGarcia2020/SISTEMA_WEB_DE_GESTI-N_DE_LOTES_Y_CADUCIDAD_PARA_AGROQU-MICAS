@@ -110,6 +110,78 @@ export interface DocumentoDTO {
   idLote:        number;
 }
 
+// ── Módulo 2: Dashboard del Supervisor ──────────────────────
+
+export interface MiBodegaDTO {
+  idAlmacen:      number;
+  nombre:         string;
+  direccion?:     string;
+  ciudad?:        string;
+  capacidadTotal: number;
+  idEstado:       number;
+}
+
+export interface CategoriaDTO {
+  idCategoria: number;
+  nombre:      string;
+  idEstado?:   number;
+}
+
+export interface ProductoDTO {
+  idProducto:   number;
+  nombre:       string;
+  unidadMedida?: string;
+  categoria?:   { idCategoria: number; nombre: string };
+}
+
+export interface ProveedorDTO {
+  idProveedor: number;
+  nombre:      string;
+  ruc?:        string;
+}
+
+export interface CiudadDTO {
+  idCiudad: number;
+  nombre:   string;
+}
+
+export interface SupervisorOpcionDTO {
+  idSupervisor:   number;
+  nombreCompleto: string;
+  correo?:        string;
+}
+
+export interface AlmacenCompletoDTO {
+  idAlmacen:        number;
+  nombre:           string;
+  direccion?:       string;
+  capacidadTotal:   number;
+  idEstado:         number;
+  ciudad?:          string;
+  idCiudad?:        number;
+  idSupervisor?:    number;
+  nombreSupervisor?: string;
+}
+
+export interface AlmacenGuardarRequest {
+  nombre:           string;
+  direccion:        string;
+  capacidadMaxima:  number;
+  idCiudad:         number;
+  idSupervisor?:    number | null;
+  idEstado?:        number;
+}
+
+export interface LoteSupervisorRequest {
+  numeroLote:       string;
+  idProducto:       number;
+  idProveedor:      number;
+  idAlmacen:        number;
+  fechaFabricacion: string;
+  fechaVencimiento: string;
+  cantidad:         number;
+}
+
 // ─── Mocks (fallback offline) ─────────────────────────────
 const MOCK_ALMACENES: AlmacenDTO[] = [
   { idAlmacen: 1, nombre: 'Bodega Central Quevedo', capacidadTotal: 5000, ciudad: 'Quevedo', idEstado: 1 },
@@ -337,6 +409,71 @@ export class InventarioService {
         };
         return of(mock);
       })
+    );
+  }
+
+  // ── Módulo 2: Configuración global — Bodegas y Supervisores (Admin) ──
+
+  getAlmacenesCompletos(): Observable<AlmacenCompletoDTO[]> {
+    return this.http.get<AlmacenCompletoDTO[]>(`${this.apiUrl}/almacenes`).pipe(
+      catchError(e => e.status === 0 || e.status === 404 ? of([]) : throwError(() => e))
+    );
+  }
+
+  getCiudades(): Observable<CiudadDTO[]> {
+    return this.http.get<CiudadDTO[]>(`${this.apiUrl}/almacenes/ciudades`).pipe(
+      catchError(e => e.status === 0 || e.status === 404 ? of([]) : throwError(() => e))
+    );
+  }
+
+  getSupervisoresDisponibles(): Observable<SupervisorOpcionDTO[]> {
+    return this.http.get<SupervisorOpcionDTO[]>(`${this.apiUrl}/almacenes/supervisores`).pipe(
+      catchError(e => e.status === 0 || e.status === 404 ? of([]) : throwError(() => e))
+    );
+  }
+
+  crearBodega(data: AlmacenGuardarRequest): Observable<any> {
+    return this.http.post(`${this.apiUrl}/almacenes`, data);
+  }
+
+  actualizarBodega(idAlmacen: number, data: AlmacenGuardarRequest): Observable<any> {
+    return this.http.put(`${this.apiUrl}/almacenes/${idAlmacen}`, data);
+  }
+
+  // ── Módulo 2: Dashboard del Supervisor ────────────────────
+
+  getMisBodegas(): Observable<MiBodegaDTO[]> {
+    return this.http.get<MiBodegaDTO[]>(`${this.apiUrl}/supervisor/mis-bodegas`).pipe(
+      catchError(e => e.status === 0 || e.status === 404 ? of([]) : throwError(() => e))
+    );
+  }
+
+  getMisLotes(idAlmacen: number, idCategoria?: number): Observable<LoteDTO[]> {
+    const params = idCategoria ? `?idAlmacen=${idAlmacen}&idCategoria=${idCategoria}` : `?idAlmacen=${idAlmacen}`;
+    return this.http.get<LoteDTO[]>(`${this.apiUrl}/supervisor/lotes${params}`).pipe(
+      catchError(e => e.status === 0 || e.status === 404 ? of([]) : throwError(() => e))
+    );
+  }
+
+  crearLoteSupervisor(data: LoteSupervisorRequest): Observable<LoteDTO> {
+    return this.http.post<LoteDTO>(`${this.apiUrl}/supervisor/lotes`, data);
+  }
+
+  getCategorias(): Observable<CategoriaDTO[]> {
+    return this.http.get<CategoriaDTO[]>(`${this.apiUrl}/supervisor/categorias`).pipe(
+      catchError(e => e.status === 0 || e.status === 404 ? of([]) : throwError(() => e))
+    );
+  }
+
+  getProductos(): Observable<ProductoDTO[]> {
+    return this.http.get<ProductoDTO[]>(`${this.apiUrl}/productos`).pipe(
+      catchError(e => e.status === 0 || e.status === 404 ? of([]) : throwError(() => e))
+    );
+  }
+
+  getProveedores(): Observable<ProveedorDTO[]> {
+    return this.http.get<ProveedorDTO[]>(`${this.apiUrl}/proveedores`).pipe(
+      catchError(e => e.status === 0 || e.status === 404 ? of([]) : throwError(() => e))
     );
   }
 

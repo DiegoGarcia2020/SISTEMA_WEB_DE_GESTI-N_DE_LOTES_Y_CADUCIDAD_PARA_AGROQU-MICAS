@@ -1,15 +1,25 @@
 package org.uteq.sacpa.service.ia_alertas;
 
 import org.uteq.sacpa.dto.ia_modelos.PromocionRequestDTO;
-import org.uteq.sacpa.entity.ia_alertas.Promocion;
+import org.uteq.sacpa.dto.ia_modelos.PromocionResponseDTO;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 public interface IPromocionService {
 
-    void crearPromocion(PromocionRequestDTO dto);
+    PromocionResponseDTO crearPromocion(PromocionRequestDTO dto, Integer idUsuarioAprueba);
 
-    List<Promocion> listarTodas();
+    /** Crea una promoción SUGERIDA ligada a una SugerenciaIA (usado por el flujo "promover alerta") */
+    PromocionResponseDTO crearDesdeSugerencia(Integer idSugerencia, String nombre, String descripcion,
+                                               BigDecimal descuentoGlobal, LocalDate fechaInicio, LocalDate fechaFin,
+                                               Integer idUsuarioAprueba);
+
+    List<PromocionResponseDTO> listarTodas();
+
+    /** Transición SUGERIDA→APROBADA→ACTIVA o →RECHAZADA */
+    void cambiarEstado(Integer idPromocion, String estado);
 
     void desactivarPromocion(Integer idPromocion, Integer idEstadoInactivo);
 }

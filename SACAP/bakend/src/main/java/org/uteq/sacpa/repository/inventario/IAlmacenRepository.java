@@ -8,8 +8,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.uteq.sacpa.entity.inventario.Almacen;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public interface IAlmacenRepository extends JpaRepository<Almacen, Integer> {
+
+    /** Bodegas asignadas a un supervisor (por id del usuario logueado) */
+    List<Almacen> findBySupervisor_Usuario_IdUsuario(Integer idUsuario);
 
     @Modifying
     @Transactional

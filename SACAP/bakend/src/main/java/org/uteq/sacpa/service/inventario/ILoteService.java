@@ -20,6 +20,9 @@ public interface ILoteService {
     /** Validacion (Formulario B — Bodeguero): valida cantidad y asigna ubicacion, pasa a ACTIVO */
     LoteResponseDTO validarLote(Integer idLote, LoteValidacionDTO dto);
 
+    /** Ubica un lote flotante en estanteria con validacion de capacidad maxima y registro de movimiento */
+    LoteResponseDTO ubicarLoteEnEstanteria(Integer idLote, Integer idUbicacion, Integer cantidad, String observacion);
+
     /** Obtiene todos los lotes del sistema */
     List<LoteResponseDTO> listarTodos();
 

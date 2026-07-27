@@ -1,13 +1,15 @@
 package org.uteq.sacpa.service.ia_alertas;
 
 import org.uteq.sacpa.dto.ia_modelos.TemporadaRequestDTO;
-import org.uteq.sacpa.entity.ia_alertas.TemporadaAgricola;
+import org.uteq.sacpa.dto.ia_modelos.TemporadaResponseDTO;
 
 import java.util.List;
 
 public interface ITemporadaService {
 
-    void crearTemporada(TemporadaRequestDTO dto);
+    TemporadaResponseDTO crearTemporada(TemporadaRequestDTO dto);
 
-    List<TemporadaAgricola> listarTodas();
+    List<TemporadaResponseDTO> listarTodas();
+
+    void cambiarEstado(Integer idTemporada, String estado);
 }

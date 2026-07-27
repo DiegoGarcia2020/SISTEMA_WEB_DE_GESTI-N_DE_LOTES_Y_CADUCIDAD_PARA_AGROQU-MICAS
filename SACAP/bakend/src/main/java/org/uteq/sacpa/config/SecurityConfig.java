@@ -133,7 +133,8 @@ public class SecurityConfig {
                     "/api/promociones/**",
                     "/api/temporadas/**",
                     "/api/devoluciones/aprobar/**",
-                    "/api/movimientos/aprobar/**"
+                    "/api/movimientos/aprobar/**",
+                    "/api/supervisor/**"
                 ).hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR")
 
                 // PROVEEDOR — pre-registro de lotes, documentos, perfil y diagnóstico
@@ -162,6 +163,15 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/api/uso-campo/**"
                 ).hasAuthority("TECNICO_CAMPO")
+
+                // TECNICO — Módulo 3: Ventas y Motor IA
+                // Nota: la autoridad JWT es el valor literal de seguridad.rol.nombre (sin transformar,
+                // ver UsuarioPrincipal.getAuthorities()); el rol seed canónico es "TECNICO", no "TECNICO_CAMPO"
+                // (que usa el matcher preexistente de /api/uso-campo/** y no corresponde a ningún rol sembrado).
+                .requestMatchers(
+                    "/api/clientes/**",
+                    "/api/ventas/**"
+                ).hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "TECNICO", "TECNICO_CAMPO")
 
                 // Notificaciones: cualquier usuario autenticado
                 .requestMatchers("/api/notificaciones/**").authenticated()

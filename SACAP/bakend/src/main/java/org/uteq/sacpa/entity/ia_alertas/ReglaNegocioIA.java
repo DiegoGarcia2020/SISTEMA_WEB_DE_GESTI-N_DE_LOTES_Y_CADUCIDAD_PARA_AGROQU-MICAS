@@ -13,4 +13,5 @@ public class ReglaNegocioIA {
     @Column(name = "descuento_maximo", precision = 5, scale = 2) private BigDecimal descuentoMaximo;
     @Column(name = "activar_promociones") private Boolean activarPromociones;
     @Column(name = "activo") private Boolean activo;
+    @Column(name = "dias_alerta_anticipada") private Integer diasAlertaAnticipada;
 }

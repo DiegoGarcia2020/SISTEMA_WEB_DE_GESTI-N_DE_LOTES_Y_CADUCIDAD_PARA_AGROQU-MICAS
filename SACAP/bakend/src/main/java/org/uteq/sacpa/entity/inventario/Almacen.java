@@ -15,7 +15,13 @@ public class Almacen {
     @Column(name = "nombre", nullable = false, length = 200) private String nombre;
     @Column(name = "capacidad_total", precision = 12, scale = 2) private BigDecimal capacidadTotal;
     @Column(name = "id_estado") private Integer idEstado;
+    @Column(name = "direccion", length = 300) private String direccion;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_ciudad") private Ciudad ciudad;
+
+    /** Supervisor responsable de esta bodega (asignado por el Administrador) */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_supervisor") private Supervisor supervisor;
 }
+

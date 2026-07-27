@@ -18,17 +18,14 @@ public class TemporadaRequestDTO {
     @NotBlank(message = "El nombre de la temporada es obligatorio")
     private String nombre;
 
-    private String descripcion;
+    private String cultivo;
 
     @NotNull(message = "La fecha de inicio es obligatoria")
     private LocalDate fechaInicio;
 
     @NotNull(message = "La fecha de fin es obligatoria")
-    private LocalDate fechaFin;
+    private LocalDate fechaFinProyectada;
 
-    @NotNull(message = "El ID de la region (provincia) es obligatorio")
-    private Integer idRegion;
-
-    @NotNull(message = "El ID del estado es obligatorio")
-    private Integer idEstado;
+    /** ACTIVA / CERRADA / PLANIFICADA — opcional, por defecto PLANIFICADA */
+    private String estado;
 }

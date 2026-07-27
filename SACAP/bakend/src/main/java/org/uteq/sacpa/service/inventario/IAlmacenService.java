@@ -9,9 +9,17 @@ public interface IAlmacenService {
 
     void crearAlmacen(AlmacenRequestDTO dto);
 
+    void actualizarAlmacen(Integer idAlmacen, AlmacenRequestDTO dto);
+
     List<Almacen> listarTodos();
 
     void desactivarAlmacen(Integer idAlmacen, Integer idEstadoInactivo);
+
+    /** Ciudades disponibles para el selector del formulario "Nueva Bodega" */
+    List<org.uteq.sacpa.entity.geografia.Ciudad> listarCiudades();
+
+    /** Supervisores existentes para el selector "Asignar Supervisor" */
+    List<SupervisorOpcionDTO> listarSupervisoresDisponibles();
 
     // ── Cascada 3.1 ──────────────────────────────────────────
     List<ZonaAlmacenResponseDTO>   listarZonasPorAlmacen(Integer idAlmacen);

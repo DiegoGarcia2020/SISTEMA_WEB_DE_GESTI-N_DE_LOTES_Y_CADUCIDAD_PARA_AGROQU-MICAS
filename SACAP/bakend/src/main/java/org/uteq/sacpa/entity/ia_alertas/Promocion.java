@@ -2,6 +2,7 @@ package org.uteq.sacpa.entity.ia_alertas;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.uteq.sacpa.entity.catalogos.CatEstadoPromocion;
 import org.uteq.sacpa.entity.seguridad.Usuario;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -17,7 +18,9 @@ public class Promocion {
     @Column(name = "descuento_global", precision = 5, scale = 2) private BigDecimal descuentoGlobal;
     @Column(name = "fecha_inicio") private LocalDate fechaInicio;
     @Column(name = "fecha_fin") private LocalDate fechaFin;
-    @Column(name = "id_estado") private Integer idEstado;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_estado") private CatEstadoPromocion estado;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_sugerencia") private SugerenciaIA sugerencia;

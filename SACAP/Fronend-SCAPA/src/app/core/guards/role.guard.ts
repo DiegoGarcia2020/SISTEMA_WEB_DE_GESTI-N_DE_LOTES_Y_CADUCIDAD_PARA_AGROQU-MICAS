@@ -23,7 +23,8 @@ export const roleGuard: CanActivateFn = (route, state) => {
   const defaultRoutes: { [key: string]: string } = {
     'PROVEEDOR': '/admin/inventario/pre-registro',
     'BODEGUERO': '/admin/inventario/recepcion',
-    'SUPERVISOR': '/admin/alertas',
+    'SUPERVISOR': '/admin/supervisor/dashboard',
+    'TECNICO': '/admin/ventas/dashboard',
     'ADMINISTRADOR': '/admin/dashboard'
   };
   const targetRoute = currentRole ? (defaultRoutes[currentRole.toUpperCase()] || '/admin/dashboard') : '/login';

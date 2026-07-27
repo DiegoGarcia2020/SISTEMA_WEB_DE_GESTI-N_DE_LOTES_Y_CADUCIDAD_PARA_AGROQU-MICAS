@@ -157,7 +157,8 @@ export class OperacionesService {
   }
 
   descartarAlerta(idAlerta: number): Observable<void> {
-    return this.http.patch<void>(`${this.apiUrl}/alertas/${idAlerta}/descartar`, {}).pipe(
+    // El backend requiere el id del catálogo cat_estado_alerta para "DESCARTADA" (seed: 2)
+    return this.http.put<void>(`${this.apiUrl}/alertas/${idAlerta}/descartar?idEstadoDescartado=2`, {}).pipe(
       catchError(err => {
         if (err.status === 0 || err.status === 404) {
           const a = this.mockAlertas.find(x => x.idAlerta === idAlerta);

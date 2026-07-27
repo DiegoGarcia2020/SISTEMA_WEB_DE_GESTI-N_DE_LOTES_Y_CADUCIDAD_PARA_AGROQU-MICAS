@@ -2,6 +2,7 @@ package org.uteq.sacpa.entity.ia_alertas;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.uteq.sacpa.entity.catalogos.CatEstadoTemporada;
 import java.time.LocalDate;
 
 @Entity
@@ -14,5 +15,7 @@ public class TemporadaAgricola {
     @Column(name = "cultivo", length = 150) private String cultivo;
     @Column(name = "fecha_inicio") private LocalDate fechaInicio;
     @Column(name = "fecha_fin") private LocalDate fechaFin;
-    @Column(name = "id_estado") private Integer idEstado;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_estado") private CatEstadoTemporada estado;
 }

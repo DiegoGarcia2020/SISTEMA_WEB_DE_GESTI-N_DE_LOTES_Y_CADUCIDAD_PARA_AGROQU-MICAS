@@ -7,7 +7,11 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 import org.uteq.sacpa.entity.catalogos.CatEstadoAprobacion;
 
+import java.util.Optional;
+
 public interface ICatEstadoAprobacionRepository extends JpaRepository<CatEstadoAprobacion, Integer> {
+    Optional<CatEstadoAprobacion> findByNombreIgnoreCase(String nombre);
+
     @Modifying @Transactional
     @Query(value = "SELECT catalogos.fn_crear_estado_aprobacion(:nombre)", nativeQuery = true)
     void crearEstado(@Param("nombre") String nombre);

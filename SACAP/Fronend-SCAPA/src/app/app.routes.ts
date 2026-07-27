@@ -31,6 +31,15 @@ import { AuditoriaQrComponent } from './features/bodega/auditoria-qr/auditoria-q
 // Componentes de Proveedor
 import { ProveedorDashboardComponent } from './features/proveedor/proveedor-dashboard/proveedor-dashboard.component';
 
+// Dashboard del Supervisor (Módulo 2)
+import { SupervisorDashboardComponent } from './features/bodega/supervisor-dashboard/supervisor-dashboard.component';
+
+// Componentes de Ventas (Módulo 3: Ventas y Motor IA — Técnico de Campo)
+import { VentasDashboardComponent } from './features/ventas/dashboard/ventas-dashboard.component';
+import { MotorSugerenciasComponent } from './features/ventas/motor-sugerencias/motor-sugerencias.component';
+import { CheckoutComponent } from './features/ventas/checkout/checkout.component';
+import { ConfirmacionPedidoComponent } from './features/ventas/confirmacion/confirmacion-pedido.component';
+
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'registro', component: RegistroComponent },
@@ -149,6 +158,38 @@ export const routes: Routes = [
         component: ProveedorDashboardComponent,
         canActivate: [roleGuard],
         data: { roles: ['Proveedor'] }
+      },
+      // -- Dashboard Supervisor (Módulo 2) --
+      {
+        path: 'supervisor/dashboard',
+        component: SupervisorDashboardComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['Supervisor'] }
+      },
+      // -- Módulo 3: Ventas y Motor IA (Técnico de Campo) --
+      {
+        path: 'ventas/dashboard',
+        component: VentasDashboardComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['Tecnico', 'Administrador'] }
+      },
+      {
+        path: 'ventas/sugerencias',
+        component: MotorSugerenciasComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['Tecnico', 'Administrador'] }
+      },
+      {
+        path: 'ventas/checkout',
+        component: CheckoutComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['Tecnico', 'Administrador'] }
+      },
+      {
+        path: 'ventas/confirmacion/:idVenta',
+        component: ConfirmacionPedidoComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['Tecnico', 'Administrador'] }
       },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]

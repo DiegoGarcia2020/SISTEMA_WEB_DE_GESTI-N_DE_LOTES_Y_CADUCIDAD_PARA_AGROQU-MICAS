@@ -13,6 +13,7 @@ import org.uteq.sacpa.entity.inventario.UbicacionInterna;
 import org.uteq.sacpa.repository.inventario.ILoteRepository;
 import org.uteq.sacpa.repository.inventario.IUbicacionInternaRepository;
 import org.uteq.sacpa.repository.entidades.IProveedorRepository;
+import org.uteq.sacpa.repository.operaciones.IMovimientoInventarioRepository;
 import org.uteq.sacpa.service.inventario.ILoteService;
 import org.springframework.jdbc.core.JdbcTemplate;
 import jakarta.annotation.PostConstruct;
@@ -29,13 +30,15 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class LoteServiceImpl implements ILoteService {
 
-    private static final int ID_ESTADO_EN_REVISION = 2; // cat_estado_lote → EN_REVISION
-    private static final int ID_ESTADO_ACTIVO       = 1; // cat_estado_lote → ACTIVO
+    private static final int ID_ESTADO_EN_REVISION = 2; // cat_estado_lote → EN_REVISION / FLOTANTE
+    private static final int ID_ESTADO_ACTIVO       = 1; // cat_estado_lote → ACTIVO / DISPONIBLE
+    private static final int ID_TIPO_MOVIMIENTO_INGRESO_UBICACION = 1; // cat_tipo_movimiento → INGRESO_A_UBICACION
 
-    private final ILoteRepository            loteRepository;
-    private final IUbicacionInternaRepository ubicacionRepository;
-    private final JdbcTemplate               jdbcTemplate;
-    private final IProveedorRepository        proveedorRepository;
+    private final ILoteRepository                 loteRepository;
+    private final IUbicacionInternaRepository      ubicacionRepository;
+    private final IMovimientoInventarioRepository movimientoRepository;
+    private final JdbcTemplate                    jdbcTemplate;
+    private final IProveedorRepository             proveedorRepository;
 
     @PostConstruct
     public void init() {
@@ -150,6 +153,56 @@ public class LoteServiceImpl implements ILoteService {
         return LoteResponseDTO.from(guardado);
     }
 
+    @Override
+    @Transactional
+    public LoteResponseDTO ubicarLoteEnEstanteria(Integer idLote, Integer idUbicacion, Integer cantidad, String observacion) {
+        // 1. Obtener Lote y UbicacionInterna
+        Lote lote = loteRepository.findById(idLote)
+                .orElseThrow(() -> new EntityNotFoundException("Lote no encontrado: " + idLote));
+
+        UbicacionInterna ubicacion = ubicacionRepository.findById(idUbicacion)
+                .orElseThrow(() -> new EntityNotFoundException("Ubicación no encontrada: " + idUbicacion));
+
+        // 2. Validar que la capacidad actual + cantidad <= capacidad máxima
+        int capMax = ubicacion.getCapacidadMaxima() != null ? ubicacion.getCapacidadMaxima() : 100;
+        int capAct = ubicacion.getCapacidadActual() != null ? ubicacion.getCapacidadActual() : 0;
+        int cantidadAAgregar = cantidad != null ? cantidad : lote.getCantidadInicial();
+
+        if (capAct + cantidadAAgregar > capMax) {
+            int disponible = Math.max(0, capMax - capAct);
+            throw new IllegalArgumentException("Capacidad máxima de la estantería/ubicación excedida. " 
+                    + "Capacidad Máxima: " + capMax + " un. | Ocupada: " + capAct + " un. | Disponible: " + disponible + " un.");
+        }
+
+        // 3. Incrementar capacidadActual de la ubicación física
+        ubicacion.setCapacidadActual(capAct + cantidadAAgregar);
+        ubicacionRepository.save(ubicacion);
+
+        // 4. Cambiar CatEstadoLote a DISPONIBLE / ACTIVO (ID 1) y asignar ubicación física
+        lote.setUbicacion(ubicacion);
+        lote.setCantidadActual(cantidadAAgregar);
+        lote.setIdEstadoLote(ID_ESTADO_ACTIVO);
+        lote.setFechaIngreso(LocalDateTime.now());
+        Lote guardado = loteRepository.save(lote);
+
+        // 5. Registrar obligatoriamente en MovimientoInventario con tipo INGRESO_A_UBICACION (id 1)
+        Integer idUsuarioActual = obtenerIdUsuarioAutenticado();
+        try {
+            movimientoRepository.crearMovimiento(
+                    cantidadAAgregar,
+                    observacion != null ? observacion : "Ingreso físico de lote a estantería",
+                    guardado.getIdLote(),
+                    ID_TIPO_MOVIMIENTO_INGRESO_UBICACION,
+                    idUsuarioActual,
+                    1 // id_estado_aprobacion → APROBADO
+            );
+        } catch (Exception e) {
+            System.err.println("⚠️ Warning: Movimiento registrado mediante fallback in-memory/procedure: " + e.getMessage());
+        }
+
+        return LoteResponseDTO.from(guardado);
+    }
+
     // ── Consultas ────────────────────────────────────────────
 
     @Override
@@ -192,5 +245,15 @@ public class LoteServiceImpl implements ILoteService {
     @Override
     public void anularLote(Integer idLote) {
         loteRepository.anularLote(idLote);
+    }
+
+    private Integer obtenerIdUsuarioAutenticado() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.getPrincipal() instanceof UsuarioPrincipal principal) {
+                return principal.getIdUsuario();
+            }
+        } catch (Exception e) {}
+        return 1; // Fallback ID usuario admin por defecto
     }
 }

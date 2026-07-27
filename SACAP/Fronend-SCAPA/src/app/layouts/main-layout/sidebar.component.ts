@@ -42,8 +42,14 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
           </a>
         }
 
-        <!-- Solo Administrador -->
-        @if (hasRole([])) {
+        <!-- Solo Administrador: Configuración Estructural -->
+        @if (hasExactRole(['ADMINISTRADOR'])) {
+          <a routerLink="/admin/bodega/topologia" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
+             class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
+            <lucide-icon name="network" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+            <span>Topología y Almacenes</span>
+          </a>
+
           <a routerLink="/admin/roles" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
              class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
             <lucide-icon name="key" class="w-4 h-4 flex-shrink-0"></lucide-icon>
@@ -58,10 +64,10 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
         }
 
         <!-- Categoría: MÓDULO 3 - INVENTARIO (Proveedores y Bodegueros) -->
-        @if (hasRole(['PROVEEDOR', 'BODEGUERO'])) {
+        @if (hasExactRole(['PROVEEDOR', 'BODEGUERO'])) {
           <div class="pt-4 px-3 pb-1.5 text-[10px] font-bold text-green-200/60 uppercase tracking-wider">Módulo Inventario</div>
 
-          @if (hasRole(['PROVEEDOR'])) {
+          @if (hasExactRole(['PROVEEDOR'])) {
             <a routerLink="/admin/proveedor/dashboard" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
                class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
               <lucide-icon name="layout-dashboard" class="w-4 h-4 flex-shrink-0"></lucide-icon>
@@ -75,11 +81,17 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
             </a>
           }
 
-          @if (hasRole(['BODEGUERO'])) {
+          @if (hasExactRole(['BODEGUERO'])) {
+            <a routerLink="/admin/inventario/recepcion" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
+               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
+              <lucide-icon name="box" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+              <span>Recepción y Validación</span>
+            </a>
+
             <a routerLink="/admin/bodega/topologia" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
                class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
-              <lucide-icon name="network" class="w-4 h-4 flex-shrink-0"></lucide-icon>
-              <span>Gestor de Topología</span>
+              <lucide-icon name="grid" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+              <span>Topología de Bodega</span>
             </a>
 
             <a routerLink="/admin/bodega/asignacion" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
@@ -94,6 +106,40 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
               <span>Auditoría QR (Móvil)</span>
             </a>
           }
+        }
+
+        <!-- Solo Supervisor: Mi Bodega -->
+        @if (hasExactRole(['SUPERVISOR'])) {
+          <div class="pt-4 px-3 pb-1.5 text-[10px] font-bold text-green-200/60 uppercase tracking-wider">Mi Bodega</div>
+
+          <a routerLink="/admin/supervisor/dashboard" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
+             class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
+            <lucide-icon name="package" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+            <span>Dashboard Supervisor</span>
+          </a>
+        }
+
+        <!-- Solo Técnico de Campo: Ventas (Módulo 3) -->
+        @if (hasExactRole(['TECNICO'])) {
+          <div class="pt-4 px-3 pb-1.5 text-[10px] font-bold text-green-200/60 uppercase tracking-wider">Ventas</div>
+
+          <a routerLink="/admin/ventas/dashboard" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
+             class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
+            <lucide-icon name="layout-dashboard" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+            <span>Mi Panel</span>
+          </a>
+
+          <a routerLink="/admin/ventas/sugerencias" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
+             class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
+            <lucide-icon name="sparkles" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+            <span>Motor de Sugerencias</span>
+          </a>
+
+          <a routerLink="/admin/ventas/checkout" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
+             class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
+            <lucide-icon name="dollar-sign" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+            <span>Punto de Venta</span>
+          </a>
         }
 
         <!-- Categoría: OPERACIONES & IA (Supervisores y Gerentes) -->
@@ -173,5 +219,10 @@ export class SidebarComponent {
     const currentRole = this.authService.currentRole()?.toUpperCase() || '';
     if (currentRole === 'ADMINISTRADOR') return true;
     return allowedRoles.includes(currentRole);
+  }
+
+  hasExactRole(allowedRoles: string[]): boolean {
+    const currentRole = this.authService.currentRole()?.toUpperCase() || '';
+    return allowedRoles.map(r => r.toUpperCase()).includes(currentRole);
   }
 }

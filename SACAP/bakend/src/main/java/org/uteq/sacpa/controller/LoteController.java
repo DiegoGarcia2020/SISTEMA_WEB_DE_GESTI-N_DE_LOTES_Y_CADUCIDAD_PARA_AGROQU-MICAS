@@ -49,6 +49,15 @@ public class LoteController {
         return ResponseEntity.ok(loteService.validarLote(idLote, request));
     }
 
+    @PutMapping("/{idLote}/ubicar")
+    public ResponseEntity<LoteResponseDTO> ubicarLoteEnEstanteria(
+            @PathVariable Integer idLote,
+            @RequestParam("idUbicacion") Integer idUbicacion,
+            @RequestParam(value = "cantidad", required = false) Integer cantidad,
+            @RequestParam(value = "observaciones", required = false) String observaciones) {
+        return ResponseEntity.ok(loteService.ubicarLoteEnEstanteria(idLote, idUbicacion, cantidad, observaciones));
+    }
+
     // ── Creación directa (admin) ──────────────────────────────
 
     @PostMapping

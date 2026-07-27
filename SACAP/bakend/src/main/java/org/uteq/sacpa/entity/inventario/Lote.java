@@ -44,6 +44,10 @@ public class Lote {
     @Column(name = "cantidad_actual")
     private Integer cantidadActual;
 
+    /** Unidades ya reservadas por ventas confirmadas pero aún no despachadas. Disponible = cantidadActual - cantidadReservada. */
+    @Column(name = "cantidad_reservada")
+    private Integer cantidadReservada;
+
     @Column(name = "fecha_ingreso")
     private LocalDateTime fechaIngreso;
 
@@ -61,4 +65,12 @@ public class Lote {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_ubicacion")
     private UbicacionInterna ubicacion;
+
+    /**
+     * Bodega de destino para lotes creados por el Supervisor que aún no tienen
+     * ubicación física asignada por el Bodeguero (lote "flotante").
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_almacen")
+    private Almacen almacen;
 }

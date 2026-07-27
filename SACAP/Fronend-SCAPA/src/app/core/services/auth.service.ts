@@ -32,10 +32,8 @@ export class AuthService {
             this.currentUser.set(res.usuario);
             localStorage.setItem(this.USER_KEY, JSON.stringify(res.usuario));
           }
-          // Si solo tiene 1 rol, auto seleccionar
-          if (res.rolesDisponibles && res.rolesDisponibles.length === 1) {
-            this.selectRole(res.rolesDisponibles[0]).subscribe();
-          }
+          // Auto-selección de rol único ahora se maneja en login.component.ts
+          // para poder mostrar errores al usuario correctamente
         } else if (res.tipoFase === 'FINAL') {
           this.setFinalSession(res.token, res.usuario, 'ADMINISTRADOR');
         }
@@ -100,7 +98,8 @@ export class AuthService {
     const defaultRoutes: { [key: string]: string } = {
       'PROVEEDOR': '/admin/proveedor/dashboard',
       'BODEGUERO': '/admin/inventario/recepcion',
-      'SUPERVISOR': '/admin/alertas',
+      'SUPERVISOR': '/admin/supervisor/dashboard',
+      'TECNICO': '/admin/ventas/dashboard',
       'ADMINISTRADOR': '/admin/dashboard'
     };
     const targetRoute = defaultRoutes[rol.toUpperCase()] || '/admin/dashboard';

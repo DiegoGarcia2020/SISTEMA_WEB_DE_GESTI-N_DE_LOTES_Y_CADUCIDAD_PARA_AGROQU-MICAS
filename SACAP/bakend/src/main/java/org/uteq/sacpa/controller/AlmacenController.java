@@ -30,6 +30,13 @@ public class AlmacenController {
         return ResponseEntity.ok(Map.of("mensaje", "Almacén creado exitosamente"));
     }
 
+    @PutMapping("/{idAlmacen}")
+    public ResponseEntity<Map<String, String>> actualizarAlmacen(
+            @PathVariable Integer idAlmacen, @Valid @RequestBody AlmacenRequestDTO request) {
+        almacenService.actualizarAlmacen(idAlmacen, request);
+        return ResponseEntity.ok(Map.of("mensaje", "Almacén actualizado exitosamente"));
+    }
+
     @GetMapping
     public ResponseEntity<List<AlmacenResponseDTO>> listarAlmacenes() {
         List<AlmacenResponseDTO> lista = almacenService.listarTodos()
@@ -43,6 +50,21 @@ public class AlmacenController {
             @RequestParam("idEstadoInactivo") Integer idEstadoInactivo) {
         almacenService.desactivarAlmacen(idAlmacen, idEstadoInactivo);
         return ResponseEntity.ok(Map.of("mensaje", "Almacén desactivado exitosamente"));
+    }
+
+    // ── Datos de apoyo para el formulario "Nueva Bodega" (solo Admin) ──
+
+    @GetMapping("/ciudades")
+    public ResponseEntity<List<Map<String, Object>>> listarCiudades() {
+        List<Map<String, Object>> lista = almacenService.listarCiudades().stream()
+                .map(c -> Map.<String, Object>of("idCiudad", c.getIdCiudad(), "nombre", c.getNombre()))
+                .toList();
+        return ResponseEntity.ok(lista);
+    }
+
+    @GetMapping("/supervisores")
+    public ResponseEntity<List<SupervisorOpcionDTO>> listarSupervisoresDisponibles() {
+        return ResponseEntity.ok(almacenService.listarSupervisoresDisponibles());
     }
 
     // ── CASCADA ──────────────────────────────────────────────

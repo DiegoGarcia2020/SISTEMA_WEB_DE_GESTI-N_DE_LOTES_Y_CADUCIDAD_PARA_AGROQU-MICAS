@@ -152,10 +152,24 @@ export class LoginComponent {
       next: res => {
         this.isLoading.set(false);
         if (res.tipoFase === 'PRE_AUTH' && res.rolesDisponibles && res.rolesDisponibles.length > 1) {
+          // Múltiples roles → mostrar pantalla de selección
           this.availableRoles.set(res.rolesDisponibles);
           this.step.set('ROLE_SELECT');
           this.toast.info('Autenticación preliminar exitosa', 'Por favor seleccione con qué rol desea trabajar.');
-        } else if (res.tipoFase === 'FINAL' || (res.rolesDisponibles && res.rolesDisponibles.length === 1)) {
+        } else if (res.tipoFase === 'PRE_AUTH' && res.rolesDisponibles && res.rolesDisponibles.length === 1) {
+          // Un solo rol → auto-seleccionar con manejo de error visible
+          const rolUnico = res.rolesDisponibles[0];
+          this.toast.info('Verificando perfil...', `Ingresando como ${rolUnico}...`);
+          this.authService.selectRole(rolUnico).subscribe({
+            next: () => {
+              this.toast.success('¡Bienvenido al sistema!', `Sesión iniciada correctamente.`);
+            },
+            error: err => {
+              this.isLoading.set(false);
+              this.toast.error('Error al activar sesión', err.error?.message || 'No se pudo activar el perfil. Intente nuevamente.');
+            }
+          });
+        } else if (res.tipoFase === 'FINAL') {
           this.toast.success('¡Bienvenido al sistema!', `Inició sesión correctamente como ${res.usuario?.correo}`);
         } else {
           this.toast.error('Sin roles asignados', 'El usuario se autenticó pero no tiene ningún rol registrado en la base de datos (tabla usuario_rol).');
@@ -167,6 +181,7 @@ export class LoginComponent {
       }
     });
   }
+
 
   onSelectRole(rol: string): void {
     this.isLoading.set(true);

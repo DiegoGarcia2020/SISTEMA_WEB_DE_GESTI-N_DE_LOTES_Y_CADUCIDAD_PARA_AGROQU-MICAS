@@ -4,14 +4,19 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import jakarta.persistence.EntityNotFoundException;
 import org.uteq.sacpa.dto.inventario.*;
+import org.uteq.sacpa.entity.geografia.Ciudad;
 import org.uteq.sacpa.entity.inventario.Almacen;
 import org.uteq.sacpa.entity.inventario.Estanteria;
+import org.uteq.sacpa.entity.inventario.Supervisor;
 import org.uteq.sacpa.entity.inventario.UbicacionInterna;
 import org.uteq.sacpa.entity.inventario.ZonaAlmacen;
+import org.uteq.sacpa.repository.geografia.ICiudadRepository;
 import org.uteq.sacpa.repository.inventario.IAlmacenRepository;
 import org.uteq.sacpa.repository.inventario.IEstanteriaRepository;
 import org.uteq.sacpa.repository.inventario.ILoteRepository;
+import org.uteq.sacpa.repository.inventario.ISupervisorRepository;
 import org.uteq.sacpa.repository.inventario.IUbicacionInternaRepository;
 import org.uteq.sacpa.repository.inventario.IZonaAlmacenRepository;
 import org.uteq.sacpa.service.inventario.IAlmacenService;
@@ -30,10 +35,62 @@ public class AlmacenServiceImpl implements IAlmacenService {
     private final IUbicacionInternaRepository  ubicacionRepository;
     private final ILoteRepository             loteRepository;
     private final IQrService                  qrService;
+    private final ICiudadRepository           ciudadRepository;
+    private final ISupervisorRepository       supervisorRepository;
 
+    /**
+     * Crea una bodega nueva (configuración global del Administrador).
+     * El supervisor es opcional en este punto: puede asignarse aquí mismo o luego
+     * con {@link #actualizarAlmacen}.
+     */
     @Override
+    @Transactional
     public void crearAlmacen(AlmacenRequestDTO dto) {
-        almacenRepository.crearAlmacen(dto.getNombre(), dto.getCapacidadMaxima(), dto.getIdCiudad());
+        Ciudad ciudad = ciudadRepository.findById(dto.getIdCiudad())
+                .orElseThrow(() -> new EntityNotFoundException("Ciudad no encontrada: " + dto.getIdCiudad()));
+
+        Supervisor supervisor = null;
+        if (dto.getIdSupervisor() != null) {
+            supervisor = supervisorRepository.findById(dto.getIdSupervisor())
+                    .orElseThrow(() -> new EntityNotFoundException("Supervisor no encontrado: " + dto.getIdSupervisor()));
+        }
+
+        Almacen almacen = Almacen.builder()
+                .nombre(dto.getNombre())
+                .direccion(dto.getDireccion())
+                .capacidadTotal(dto.getCapacidadMaxima())
+                .idEstado(dto.getIdEstado() != null ? dto.getIdEstado() : 1)
+                .ciudad(ciudad)
+                .supervisor(supervisor)
+                .build();
+
+        almacenRepository.save(almacen);
+    }
+
+    /** Edita una bodega existente, incluyendo reasignar/quitar su Supervisor responsable. */
+    @Override
+    @Transactional
+    public void actualizarAlmacen(Integer idAlmacen, AlmacenRequestDTO dto) {
+        Almacen almacen = almacenRepository.findById(idAlmacen)
+                .orElseThrow(() -> new EntityNotFoundException("Almacén no encontrado: " + idAlmacen));
+
+        Ciudad ciudad = ciudadRepository.findById(dto.getIdCiudad())
+                .orElseThrow(() -> new EntityNotFoundException("Ciudad no encontrada: " + dto.getIdCiudad()));
+
+        Supervisor supervisor = null;
+        if (dto.getIdSupervisor() != null) {
+            supervisor = supervisorRepository.findById(dto.getIdSupervisor())
+                    .orElseThrow(() -> new EntityNotFoundException("Supervisor no encontrado: " + dto.getIdSupervisor()));
+        }
+
+        almacen.setNombre(dto.getNombre());
+        almacen.setDireccion(dto.getDireccion());
+        almacen.setCapacidadTotal(dto.getCapacidadMaxima());
+        if (dto.getIdEstado() != null) almacen.setIdEstado(dto.getIdEstado());
+        almacen.setCiudad(ciudad);
+        almacen.setSupervisor(supervisor);
+
+        almacenRepository.save(almacen);
     }
 
     @Override
@@ -45,6 +102,18 @@ public class AlmacenServiceImpl implements IAlmacenService {
     @Override
     public void desactivarAlmacen(Integer idAlmacen, Integer idEstadoInactivo) {
         almacenRepository.desactivarAlmacen(idAlmacen);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Ciudad> listarCiudades() {
+        return ciudadRepository.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SupervisorOpcionDTO> listarSupervisoresDisponibles() {
+        return supervisorRepository.findAll().stream().map(SupervisorOpcionDTO::from).toList();
     }
 
     // ── Cascada 3.1 ──────────────────────────────────────────

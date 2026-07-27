@@ -2,6 +2,7 @@ package org.uteq.sacpa.entity.ia_alertas;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.uteq.sacpa.entity.catalogos.CatEstadoAlerta;
 import org.uteq.sacpa.entity.catalogos.CatNivelAlerta;
 import org.uteq.sacpa.entity.inventario.Lote;
 import java.time.LocalDateTime;
@@ -33,8 +34,9 @@ public class AlertaCaducidad {
     @Column(name = "fecha_generacion")
     private LocalDateTime fechaGeneracion;
 
-    @Column(name = "id_estado")
-    private Integer idEstado;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_estado")
+    private CatEstadoAlerta estado;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_lote")

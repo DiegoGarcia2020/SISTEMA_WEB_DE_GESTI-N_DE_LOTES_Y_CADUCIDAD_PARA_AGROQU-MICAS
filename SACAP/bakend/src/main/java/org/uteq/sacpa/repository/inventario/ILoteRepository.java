@@ -51,6 +51,37 @@ public interface ILoteRepository extends JpaRepository<Lote, Integer> {
     @Query("SELECT l FROM Lote l WHERE l.producto.idProducto = :idProducto ORDER BY l.fechaVencimiento ASC")
     List<Lote> findByProducto(@Param("idProducto") Integer idProducto);
 
+    /**
+     * Lotes de un almacén específico (Supervisor: ver lotes de mis bodegas asignadas).
+     * Incluye lotes ya ubicados físicamente (navega lote → ubicacion → estanteria → zona → almacen)
+     * y lotes "flotantes" creados por el Supervisor que aún no tienen ubicación asignada
+     * por el Bodeguero (navega lote → almacen directamente).
+     */
+    @Query("SELECT l FROM Lote l WHERE " +
+           "(l.ubicacion IS NOT NULL AND l.ubicacion.estanteria.zona.almacen.idAlmacen = :idAlmacen) OR " +
+           "(l.ubicacion IS NULL AND l.almacen.idAlmacen = :idAlmacen) " +
+           "ORDER BY l.fechaVencimiento ASC")
+    List<Lote> findByAlmacen(@Param("idAlmacen") Integer idAlmacen);
+
+    /** Lotes de un almacén (ubicados o flotantes) filtrados por categoría de producto */
+    @Query("SELECT l FROM Lote l WHERE " +
+           "((l.ubicacion IS NOT NULL AND l.ubicacion.estanteria.zona.almacen.idAlmacen = :idAlmacen) OR " +
+           "(l.ubicacion IS NULL AND l.almacen.idAlmacen = :idAlmacen)) " +
+           "AND l.producto.categoria.idCategoria = :idCategoria ORDER BY l.fechaVencimiento ASC")
+    List<Lote> findByAlmacenYCategoria(@Param("idAlmacen") Integer idAlmacen, @Param("idCategoria") Integer idCategoria);
+
+    /**
+     * Lotes disponibles para vender (Módulo 3): solo lotes ya ubicados físicamente por el
+     * Bodeguero (nunca "flotantes"), de la categoría pedida, con stock realmente libre
+     * (cantidad_actual - cantidad_reservada > 0). Orden FEFO.
+     */
+    @Query("SELECT l FROM Lote l WHERE l.ubicacion IS NOT NULL " +
+           "AND l.producto.categoria.idCategoria = :idCategoria " +
+           "AND l.idEstadoLote = :idEstadoActivo " +
+           "AND (l.cantidadActual - COALESCE(l.cantidadReservada, 0)) > 0 " +
+           "ORDER BY l.fechaVencimiento ASC")
+    List<Lote> findDisponiblesParaVenta(@Param("idCategoria") Integer idCategoria, @Param("idEstadoActivo") Integer idEstadoActivo);
+
     // ============================================================
     // Llamadas a funciones PL/pgSQL del esquema inventario
     // ============================================================

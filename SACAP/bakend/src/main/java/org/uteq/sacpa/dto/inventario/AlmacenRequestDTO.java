@@ -29,9 +29,8 @@ public class AlmacenRequestDTO {
     @NotNull(message = "El ID de la ciudad es obligatorio")
     private Integer idCiudad;
 
-    @NotNull(message = "El ID de la empresa es obligatorio")
-    private Integer idEmpresa;
+    /** Supervisor responsable de esta bodega. Opcional: puede asignarse luego. */
+    private Integer idSupervisor;
 
-    @NotNull(message = "El ID del estado es obligatorio")
     private Integer idEstado;
 }
