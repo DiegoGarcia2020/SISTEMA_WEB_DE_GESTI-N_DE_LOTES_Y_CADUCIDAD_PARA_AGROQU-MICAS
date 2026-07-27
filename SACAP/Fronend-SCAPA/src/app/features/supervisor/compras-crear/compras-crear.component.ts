@@ -17,7 +17,6 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
     <div class="crear-container">
       <!-- Cabecera -->
       <div class="page-header">
-        <div class="page-header__blur"></div>
         <div class="page-header__info">
           <div class="page-header__icon">
             <lucide-icon name="file-plus" class="w-7 h-7"></lucide-icon>
@@ -79,7 +78,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
               <p class="section-card__subtitle">Agregue los ítems comprados y las bonificaciones (regalos)</p>
             </div>
             <div class="detalles-actions">
-               <button type="button" class="btn btn--gift btn--sm" (click)="agregarDetalle(true)">
+               <button type="button" class="btn btn--gift btn--sm" (click)="agregarRegalo()">
                 <lucide-icon name="gift" class="w-3.5 h-3.5"></lucide-icon> Añadir Regalo
               </button>
               <button type="button" class="btn btn--outline btn--sm" (click)="agregarDetalle()">
@@ -167,8 +166,10 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
                 <input type="number" class="form-group__input" formControlName="costoTransporte" step="0.01" min="0">
               </div>
               <div class="form-group">
-                <label class="form-group__label">Impuestos Aplicados ($)</label>
-                <input type="number" class="form-group__input" formControlName="impuestos" step="0.01" min="0">
+                <label class="form-group__label">IVA (15%) Aplicado</label>
+                <div class="readonly-value">
+                  \${{ totalesCalculados.iva | number:'1.2-2' }}
+                </div>
               </div>
             </div>
 
@@ -183,12 +184,20 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
                 <span class="total-row__value">-\${{ totalesCalculados.totalDescuentos | number:'1.2-2' }}</span>
               </div>
               <div class="total-row">
-                <span class="total-row__label">Transporte e Impuestos</span>
-                <span class="total-row__value">\${{ (ordenForm.get('costoTransporte')?.value || 0) + (ordenForm.get('impuestos')?.value || 0) | number:'1.2-2' }}</span>
+                <span class="total-row__label">Base Imponible</span>
+                <span class="total-row__value">\${{ totalesCalculados.baseImponible | number:'1.2-2' }}</span>
+              </div>
+              <div class="total-row">
+                <span class="total-row__label">IVA (15%)</span>
+                <span class="total-row__value">\${{ totalesCalculados.iva | number:'1.2-2' }}</span>
+              </div>
+              <div class="total-row">
+                <span class="total-row__label">Transporte</span>
+                <span class="total-row__value">\${{ ordenForm.get('costoTransporte')?.value || 0 | number:'1.2-2' }}</span>
               </div>
               <div class="total-row total-row--grand">
                 <span class="total-row__label">TOTAL A PAGAR</span>
-                <span class="total-row__value">\${{ calcularTotalNeto() | number:'1.2-2' }}</span>
+                <span class="total-row__value">\${{ totalesCalculados.granTotal | number:'1.2-2' }}</span>
               </div>
             </div>
 
@@ -211,6 +220,8 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 })
 export class ComprasCrearComponent implements OnInit {
   
+  readonly IVA_RATE = 0.15;
+
   private fb = inject(FormBuilder);
   private operacionesService = inject(OperacionesService);
   private toast = inject(ToastService);
@@ -222,7 +233,10 @@ export class ComprasCrearComponent implements OnInit {
 
   totalesCalculados = {
     subtotalBruto: 0,
-    totalDescuentos: 0
+    totalDescuentos: 0,
+    baseImponible: 0,
+    iva: 0,
+    granTotal: 0
   };
 
   ngOnInit(): void {
@@ -237,7 +251,6 @@ export class ComprasCrearComponent implements OnInit {
       numeroFactura: ['', Validators.required],
       fechaEmision: [new Date().toISOString().substring(0, 10), Validators.required],
       costoTransporte: [0, [Validators.required, Validators.min(0)]],
-      impuestos: [0, [Validators.required, Validators.min(0)]],
       detalles: this.fb.array([], Validators.required)
     });
   }
@@ -256,6 +269,10 @@ export class ComprasCrearComponent implements OnInit {
     });
 
     this.detallesFormArray.push(detalleGroup);
+  }
+
+  agregarRegalo(): void {
+    this.agregarDetalle(true);
   }
 
   eliminarDetalle(index: number): void {
@@ -322,6 +339,13 @@ export class ComprasCrearComponent implements OnInit {
     ).subscribe(() => {
       this.recalcularTotales();
     });
+
+    // Escuchar cambios en transporte
+    this.ordenForm.get('costoTransporte')?.valueChanges.pipe(
+      debounceTime(300)
+    ).subscribe(() => {
+      this.recalcularTotales();
+    });
   }
 
   calcularSubtotalFila(index: number): number {
@@ -356,18 +380,18 @@ export class ComprasCrearComponent implements OnInit {
       }
     });
 
-    this.totalesCalculados.subtotalBruto = subtotal;
-    this.totalesCalculados.totalDescuentos = descuentos;
-  }
+    const baseImponible = subtotal - descuentos;
+    const iva = baseImponible * this.IVA_RATE;
+    const costoTransporte = this.ordenForm.get('costoTransporte')?.value || 0;
+    const granTotal = baseImponible + iva + costoTransporte;
 
-  calcularTotalNeto(): number {
-    const transporte = this.ordenForm.get('costoTransporte')?.value || 0;
-    const impuestos = this.ordenForm.get('impuestos')?.value || 0;
-    
-    return this.totalesCalculados.subtotalBruto 
-         - this.totalesCalculados.totalDescuentos 
-         + transporte 
-         + impuestos;
+    this.totalesCalculados = {
+      subtotalBruto: subtotal,
+      totalDescuentos: descuentos,
+      baseImponible,
+      iva,
+      granTotal
+    };
   }
 
   campoInvalido(campo: string): boolean {
@@ -400,7 +424,7 @@ export class ComprasCrearComponent implements OnInit {
       numeroFactura: formValue.numeroFactura,
       fechaEmision: formValue.fechaEmision,
       costoTransporte: formValue.costoTransporte,
-      impuestos: formValue.impuestos,
+      impuestos: this.totalesCalculados.iva,
       detalles: formValue.detalles.map((d: any) => ({
         idProducto: d.idProducto,
         cantidad: d.cantidad,

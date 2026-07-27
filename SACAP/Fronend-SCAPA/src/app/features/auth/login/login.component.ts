@@ -12,21 +12,19 @@ import { ToastService as TS } from '../../../shared/components/toast/toast.servi
   imports: [CommonModule, ReactiveFormsModule, RouterModule, LucideAngularModule],
   styleUrl: './login.component.css',
   template: `
-    <div class="login-wrapper animate-fade-in">
-      <div class="login-card">
+    <div class="auth-wrapper animate-fade-in">
+      <div class="auth-card">
         
-        <div class="login-header">
-          <h1 class="login-header__title">AgroSense</h1>
-          <p class="login-header__subtitle">Sistema de Alertas y Caducidad</p>
+        <div class="auth-header">
+          <h1 class="auth-header__title">AgroSense</h1>
+          <p class="auth-header__subtitle">Sistema de Alertas y Caducidad</p>
         </div>
 
         @if (step() === 'LOGIN') {
-          <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="login-form">
+          <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="auth-form">
             <div class="form-group">
               <label class="form-group__label">Usuario o Correo</label>
-              <div class="form-group__input-wrapper">
-                <input type="text" formControlName="correo" class="form-group__input">
-              </div>
+              <input type="text" formControlName="correo" class="form-group__input">
               @if (loginForm.get('correo')?.touched && loginForm.get('correo')?.invalid) {
                 <span class="form-group__error">El usuario o correo es requerido</span>
               }
@@ -34,44 +32,40 @@ import { ToastService as TS } from '../../../shared/components/toast/toast.servi
 
             <div class="form-group">
               <label class="form-group__label">Contraseña</label>
-              <div class="form-group__input-wrapper">
-                <input [type]="showPassword() ? 'text' : 'password'" formControlName="contrasena" class="form-group__input form-group__input--password">
-                <button type="button" (click)="showPassword.set(!showPassword())" class="btn-reveal" title="Mostrar/Ocultar">
-                  <lucide-icon [name]="showPassword() ? 'eye-off' : 'eye'" class="w-5 h-5"></lucide-icon>
-                </button>
-              </div>
+              <input [type]="showPassword() ? 'text' : 'password'" formControlName="contrasena" class="form-group__input">
+              <button type="button" (click)="showPassword.set(!showPassword())" class="btn-reveal" title="Mostrar/Ocultar">
+                <lucide-icon [name]="showPassword() ? 'eye-off' : 'eye'" class="w-5 h-5"></lucide-icon>
+              </button>
               @if (loginForm.get('contrasena')?.touched && loginForm.get('contrasena')?.invalid) {
                 <span class="form-group__error">La contraseña es requerida</span>
               }
             </div>
 
-            <div class="login-options">
-              <label class="checkbox-label">
-                <input type="checkbox" class="checkbox-input">
-                <span>Recordar sesión</span>
+            <div class="auth-options">
+              <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; color:#374151;">
+                <input type="checkbox" style="accent-color:#15803d"> Recordar sesión
               </label>
-              <a href="javascript:void(0)" (click)="forgotPass()" class="link-forgot">¿Olvidó su clave?</a>
+              <a href="javascript:void(0)" (click)="forgotPass()" class="auth-link">¿Olvidó su clave?</a>
             </div>
 
-            <button type="submit" [disabled]="loginForm.invalid || isLoading()" class="btn-primary">
+            <button type="submit" [disabled]="loginForm.invalid || isLoading()" class="auth-btn">
               @if (isLoading()) {
                 <lucide-icon name="loader" class="w-5 h-5 animate-spin"></lucide-icon>
                 <span>Validando...</span>
               } @else {
                 <span>Ingresar</span>
-                <lucide-icon name="arrow-right" class="w-4 h-4"></lucide-icon>
               }
             </button>
           </form>
         } @else if (step() === 'ROLE_SELECT') {
-          <div class="login-form">
-            <h3 class="form-group__label" style="font-size: 0.875rem;">Seleccione Perfil</h3>
-            <div class="role-list custom-scrollbar" style="max-height: 250px; overflow-y: auto;">
+          <div class="auth-form">
+            <h3 class="form-group__label" style="text-align: center; margin-bottom: 0;">Seleccione Perfil</h3>
+            <div class="role-list" style="max-height: 250px; overflow-y: auto;">
               @for (rol of availableRoles(); track rol) {
                 <button type="button" (click)="onSelectRole(rol)" [disabled]="isLoading()" class="role-btn">
                   <div class="role-btn__info">
                     <lucide-icon [name]="getRoleIcon(rol)" class="w-5 h-5 role-btn__icon"></lucide-icon>
-                    <div class="role-btn__text">
+                    <div>
                       <span class="role-btn__name">{{ rol }}</span>
                       <span class="role-btn__desc">Acceder como {{ rol }}</span>
                     </div>
@@ -80,22 +74,22 @@ import { ToastService as TS } from '../../../shared/components/toast/toast.servi
                 </button>
               }
             </div>
-            <button type="button" (click)="step.set('LOGIN')" class="link-forgot" style="text-align: center; display: block; margin-top: 1rem; font-size: 0.75rem;">
+            <button type="button" (click)="step.set('LOGIN')" class="auth-link" style="text-align: center; display: block; background:none; border:none; width:100%; cursor:pointer;">
               ← Volver
             </button>
           </div>
         } @else if (step() === 'CHANGE_PASSWORD') {
-          <form [formGroup]="changePassForm" (ngSubmit)="onChangePassword()" class="login-form">
-            <h3 class="form-group__label" style="font-size: 0.875rem;">Actualiza tu Contraseña</h3>
+          <form [formGroup]="changePassForm" (ngSubmit)="onChangePassword()" class="auth-form">
+            <div class="auth-header" style="margin-bottom: 1rem;">
+              <h3 class="auth-header__title" style="font-size: 1.25rem;">Actualiza tu Contraseña</h3>
+            </div>
             
             <div class="form-group">
               <label class="form-group__label">Nueva Contraseña</label>
-              <div class="form-group__input-wrapper">
-                <input [type]="showPassword() ? 'text' : 'password'" formControlName="nuevaContrasena" class="form-group__input form-group__input--password">
-                <button type="button" (click)="showPassword.set(!showPassword())" class="btn-reveal">
-                  <lucide-icon [name]="showPassword() ? 'eye-off' : 'eye'" class="w-5 h-5"></lucide-icon>
-                </button>
-              </div>
+              <input [type]="showPassword() ? 'text' : 'password'" formControlName="nuevaContrasena" class="form-group__input" placeholder="Mínimo 6 caracteres">
+              <button type="button" (click)="showPassword.set(!showPassword())" class="btn-reveal">
+                <lucide-icon [name]="showPassword() ? 'eye-off' : 'eye'" class="w-5 h-5"></lucide-icon>
+              </button>
               @if (changePassForm.get('nuevaContrasena')?.touched && changePassForm.get('nuevaContrasena')?.invalid) {
                 <span class="form-group__error">Mínimo 6 caracteres</span>
               }
@@ -103,15 +97,13 @@ import { ToastService as TS } from '../../../shared/components/toast/toast.servi
 
             <div class="form-group">
               <label class="form-group__label">Confirmar Contraseña</label>
-              <div class="form-group__input-wrapper">
-                <input [type]="showPassword() ? 'text' : 'password'" formControlName="confirmarContrasena" class="form-group__input form-group__input--password">
-              </div>
+              <input [type]="showPassword() ? 'text' : 'password'" formControlName="confirmarContrasena" class="form-group__input" placeholder="Repite tu contraseña">
               @if (changePassForm.get('confirmarContrasena')?.touched && changePassForm.value.nuevaContrasena !== changePassForm.value.confirmarContrasena) {
                 <span class="form-group__error">Las contraseñas no coinciden</span>
               }
             </div>
 
-            <button type="submit" [disabled]="changePassForm.invalid || changePassForm.value.nuevaContrasena !== changePassForm.value.confirmarContrasena || isLoading()" class="btn-primary">
+            <button type="submit" [disabled]="changePassForm.invalid || changePassForm.value.nuevaContrasena !== changePassForm.value.confirmarContrasena || isLoading()" class="auth-btn">
               @if (isLoading()) {
                 <lucide-icon name="loader" class="w-5 h-5 animate-spin"></lucide-icon>
                 <span>Guardando...</span>
@@ -122,12 +114,12 @@ import { ToastService as TS } from '../../../shared/components/toast/toast.servi
           </form>
         }
 
-        <div class="login-footer">
-          <a routerLink="/registro" class="link-register">
+        <div class="auth-footer">
+          <a routerLink="/registro" class="auth-link">
             <lucide-icon name="user-plus" class="w-4 h-4"></lucide-icon>
             <span>Solicitar acceso al sistema</span>
           </a>
-          <p class="login-copyright">SACPA © 2026</p>
+          <p style="color: #9ca3af; margin-top: 0.5rem;">SACPA © 2026</p>
         </div>
       </div>
     </div>
