@@ -1,0 +1,189 @@
+<div class="au-page">
+
+  <!-- Header -->
+  <div class="au-header">
+    <div class="au-header-left">
+      <div class="au-header-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          <polyline points="7.5 4.21 12 6.81 16.5 4.21"/><polyline points="7.5 19.79 7.5 14.6 3 12"/>
+          <polyline points="21 12 16.5 14.6 16.5 19.79"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+          <line x1="12" y1="22.08" x2="12" y2="12"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="au-title">Asignación de Ubicación Física</h1>
+        <p class="au-subtitle">Dominio del Bodeguero — Transición de Lotes Flotantes / En Revisión a Ubicación Física en Almacén</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alertas -->
+  @if (exito()) {
+    <div class="au-alert au-alert--success">✅ {{ exito() }}</div>
+  }
+  @if (error()) {
+    <div class="au-alert au-alert--error">⚠️ {{ error() }}</div>
+  }
+
+  <!-- Layout Dividido 2 Columnas -->
+  <div class="au-split-layout">
+
+    <!-- COLUMNA IZQUIERDA: Lotes Flotantes / Por Ubicar -->
+    <div class="au-col-left">
+      <div class="au-card">
+        <div class="au-card-header">
+          <h2>📦 Lotes Flotantes / Pendientes ({{ lotesFlotantes().length }})</h2>
+          <span class="au-badge-flotante">POR UBICAR</span>
+        </div>
+
+        @if (cargandoLotes()) {
+          <div class="au-loading">
+            <div class="au-spin"></div>
+            <span>Buscando lotes flotantes...</span>
+          </div>
+        } @else if (lotesFlotantes().length === 0) {
+          <div class="au-empty">
+            <div class="au-empty-icon">✨</div>
+            <p class="au-empty-title">No hay lotes flotantes pendientes</p>
+            <p class="au-empty-sub">Todos los lotes ingresados ya están físicamente ubicados en estantería.</p>
+          </div>
+        } @else {
+          <div class="au-lote-list">
+            @for (lote of lotesFlotantes(); track lote.idLote) {
+              <div class="au-lote-card"
+                   [class.active]="loteSeleccionado()?.idLote === lote.idLote"
+                   (click)="seleccionarLote(lote)">
+                <div class="au-lote-card-top">
+                  <span class="au-lote-num">{{ lote.numeroLote }}</span>
+                  <span class="au-lote-cant">{{ lote.cantidadActual || lote.cantidadInicial }} un.</span>
+                </div>
+                <div class="au-lote-card-prod">{{ lote.nombreProducto }}</div>
+                <div class="au-lote-card-bot">
+                  <span class="au-lote-prov">🏪 {{ lote.nombreProveedor || 'Proveedor' }}</span>
+                  <span class="au-lote-venc">Vence: {{ lote.fechaVencimiento }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- COLUMNA DERECHA: Selector de Ubicación Física -->
+    <div class="au-col-right">
+      <div class="au-card">
+        <div class="au-card-header">
+          <h2>📍 Asignar a Ubicación Física</h2>
+        </div>
+
+        @if (loteSeleccionado()) {
+          <div class="au-selected-summary">
+            <div class="au-summary-icon">📦</div>
+            <div>
+              <span class="au-summary-label">Lote Seleccionado:</span>
+              <h3 class="au-summary-title">{{ loteSeleccionado()?.numeroLote }}</h3>
+              <p class="au-summary-sub">{{ loteSeleccionado()?.nombreProducto }} ({{ loteSeleccionado()?.cantidadInicial }} un.)</p>
+            </div>
+          </div>
+        } @else {
+          <div class="au-notice-box">
+            👉 Seleccione un lote de la columna izquierda para comenzar la asignación física.
+          </div>
+        }
+
+        <!-- Selector en cascada -->
+        <div class="au-form-group">
+          <label class="au-label">1. Seleccionar Almacén *</label>
+          <select class="au-select" (change)="onAlmacenChange($event)">
+            <option value="">— Seleccione Almacén —</option>
+            @for (alm of almacenes(); track alm.idAlmacen) {
+              <option [value]="alm.idAlmacen">{{ alm.nombre }} ({{ alm.ciudad }})</option>
+            }
+          </select>
+        </div>
+
+        <div class="au-form-group">
+          <label class="au-label">2. Seleccionar Zona *</label>
+          <select class="au-select" (change)="onZonaChange($event)" [disabled]="!idAlmacenSel()">
+            <option value="">— Seleccione Zona —</option>
+            @for (zona of zonas(); track zona.idZona) {
+              <option [value]="zona.idZona">{{ zona.nombre }} ({{ zona.condicionClimatica }})</option>
+            }
+          </select>
+        </div>
+
+        <div class="au-form-group">
+          <label class="au-label">3. Seleccionar Estantería *</label>
+          <select class="au-select" (change)="onEstanteriaChange($event)" [disabled]="!idZonaSel()">
+            <option value="">— Seleccione Estantería —</option>
+            @for (est of estanterias(); track est.idEstanteria) {
+              <option [value]="est.idEstanteria">Estantería {{ est.codigo }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="au-form-group">
+          <label class="au-label">4. Seleccionar Ubicación Física *</label>
+          <select class="au-select" (change)="onUbicacionChange($event)" [disabled]="!idEstanteriaSel()">
+            <option value="">— Seleccione Nivel / Posición —</option>
+            @for (u of ubicaciones(); track u.idUbicacion) {
+              <option [value]="u.idUbicacion">
+                {{ u.descripcionCompleta }} (Libre: {{ (u.capacidadMaxima || 100) - (u.capacidadActual || 0) }} un.)
+              </option>
+            }
+          </select>
+        </div>
+
+        <!-- Indicador de Capacidad de la Ubicación Seleccionada -->
+        @if (ubicacionSel()) {
+          <div class="au-cap-box">
+            <div class="au-cap-box-top">
+              <span>Capacidad de {{ ubicacionSel()?.descripcionCompleta }}</span>
+              <strong>{{ ubicacionSel()?.capacidadActual || 0 }} / {{ ubicacionSel()?.capacidadMaxima || 100 }} un.</strong>
+            </div>
+            <div class="au-cap-progress">
+              <div class="au-cap-fill" [style.width.%]="ubicacionSel()?.porcentajeOcupacion || 0"></div>
+            </div>
+            <span class="au-cap-free">
+              Espacio disponible: <strong>{{ (ubicacionSel()?.capacidadMaxima || 100) - (ubicacionSel()?.capacidadActual || 0) }} unidades</strong>
+            </span>
+          </div>
+        }
+
+        <!-- Cantidad y Observaciones -->
+        <div class="au-grid-2">
+          <div class="au-form-group">
+            <label class="au-label">Cantidad a Ubicar *</label>
+            <input type="number" [(ngModel)]="cantidadAUbicar" class="au-input" min="1" />
+          </div>
+
+          <div class="au-form-group">
+            <label class="au-label">Observaciones (Opcional)</label>
+            <input type="text" [(ngModel)]="observaciones" placeholder="Ej: Lote recibido en buen estado" class="au-input" />
+          </div>
+        </div>
+
+        <!-- Acciones -->
+        <button class="au-btn-submit"
+                [disabled]="!loteSeleccionado() || !ubicacionSel() || guardando()"
+                (click)="asignarUbicacion()">
+          @if (guardando()) {
+            <div class="au-spin"></div>
+            <span>Guardando asignación...</span>
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span>Confirmar Asignación Física</span>
+          }
+        </button>
+
+      </div>
+    </div>
+
+  </div>
+
+</div>

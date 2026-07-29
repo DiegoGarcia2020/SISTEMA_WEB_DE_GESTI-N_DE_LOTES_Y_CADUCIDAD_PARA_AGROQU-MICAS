@@ -1,0 +1,65 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+.vt-bg { font-family: 'Inter', system-ui, sans-serif; min-height: 100vh; padding: 2rem 2.5rem 3rem; max-width: 1200px; margin: 0 auto; color: #0f172a; }
+
+.vt-hero {
+  display: flex; align-items: center; justify-content: space-between;
+  background: linear-gradient(135deg, #0B4628 0%, #166534 50%, #15803d 100%);
+  border-radius: 20px; padding: 1.5rem 2rem; margin-bottom: 1.5rem; color: #fff;
+  box-shadow: 0 8px 32px rgba(11,70,40,.35); gap: 1rem; flex-wrap: wrap;
+}
+.vt-hero-title { font-size: 1.5rem; font-weight: 800; margin: 0 0 .3rem; }
+.vt-hero-sub { margin: 0; font-size: .85rem; color: rgba(255,255,255,.7); }
+
+.vt-cta-btn {
+  display: inline-flex; align-items: center; gap: .5rem; position: relative;
+  background: rgba(255,255,255,.15); border: 1.5px solid rgba(255,255,255,.3);
+  color: #fff; border-radius: 12px; padding: .7rem 1.4rem; font-size: .85rem; font-weight: 700;
+  cursor: pointer; transition: all .2s; font-family: inherit;
+}
+.vt-cta-btn:hover { background: rgba(255,255,255,.25); }
+.vt-cart-badge { position: absolute; top: -8px; right: -8px; background: #f59e0b; color: #fff; border-radius: 100px; font-size: .68rem; font-weight: 800; padding: .1rem .4rem; }
+
+.vt-section { background: #fff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+.vt-section-title { font-size: 1rem; font-weight: 700; margin: 0 0 1rem; }
+
+.vt-chip-row { display: flex; flex-wrap: wrap; gap: .5rem; }
+.vt-chip { border: 1px solid #e2e8f0; background: #f8fafc; color: #64748b; border-radius: 100px; padding: .5rem 1.1rem; font-size: .82rem; font-weight: 600; cursor: pointer; transition: all .15s; font-family: inherit; }
+.vt-chip:hover { border-color: #10b981; color: #059669; }
+.vt-chip.activo { background: #0B4628; border-color: #0B4628; color: #fff; }
+
+.vt-loading { display: flex; align-items: center; justify-content: center; gap: .75rem; padding: 3rem; background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; }
+.vt-spin { width: 20px; height: 20px; border: 2px solid rgba(16,185,129,.3); border-top-color: #10b981; border-radius: 50%; animation: vt-spin .7s linear infinite; }
+@keyframes vt-spin { to { transform: rotate(360deg); } }
+.vt-empty-text { font-size: .85rem; color: #94a3b8; }
+
+.vt-sugerencias-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.1rem; }
+
+.vt-sug-card { background: #fff; border: 2px solid #e2e8f0; border-radius: 18px; padding: 1.25rem; display: flex; flex-direction: column; gap: .6rem; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
+.vt-sug-card.combo { border-color: #f59e0b; background: linear-gradient(180deg, #fffbeb 0%, #fff 100%); }
+
+.vt-sug-header { display: flex; align-items: center; justify-content: space-between; }
+.vt-sug-tag { background: #f59e0b; color: #fff; font-size: .68rem; font-weight: 800; padding: .2rem .6rem; border-radius: 100px; }
+.vt-sug-score { font-size: .75rem; font-weight: 800; padding: .2rem .6rem; border-radius: 100px; }
+.score-critico { background: #fee2e2; color: #dc2626; }
+.score-alto { background: #ffedd5; color: #ea580c; }
+.score-medio { background: #fef3c7; color: #d97706; }
+.score-bajo { background: #f1f5f9; color: #64748b; }
+
+.vt-sug-title { font-size: 1rem; font-weight: 700; margin: 0; color: #0f172a; }
+
+.vt-sug-lotes { display: flex; flex-direction: column; gap: .35rem; }
+.vt-sug-lote { display: flex; flex-direction: column; background: #f8fafc; border-radius: 10px; padding: .5rem .7rem; }
+.vt-sug-lote span:first-child { font-size: .8rem; font-weight: 600; color: #334155; }
+.vt-sug-lote-meta { font-size: .7rem; color: #94a3b8; }
+.vt-sug-instrucciones { font-size: .72rem; color: #166534; margin-top: .25rem; line-height: 1.35; }
+
+.vt-sug-justificacion { font-size: .78rem; color: #64748b; line-height: 1.4; margin: 0; }
+
+.vt-sug-footer { display: flex; align-items: center; justify-content: space-between; margin-top: .3rem; }
+.vt-badge { padding: .25rem .7rem; border-radius: 100px; font-size: .72rem; font-weight: 700; }
+.vt-badge--descuento { background: #fee2e2; color: #dc2626; }
+
+.vt-btn { display: inline-flex; align-items: center; gap: .4rem; padding: .55rem 1rem; border-radius: 10px; border: none; font-size: .8rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+.vt-btn--primary { background: linear-gradient(135deg, #059669, #10b981); color: #fff; }
+.vt-btn--primary:hover { transform: translateY(-1px); }

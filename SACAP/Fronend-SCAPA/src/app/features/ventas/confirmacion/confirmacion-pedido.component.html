@@ -1,0 +1,52 @@
+<div class="vt-bg">
+
+  @if (cargando()) {
+    <div class="vt-loading"><div class="vt-spin"></div><span>Cargando orden...</span></div>
+  } @else if (error()) {
+    <div class="vt-section"><p class="vt-empty-text">{{ error() }}</p></div>
+  } @else if (venta(); as v) {
+
+    <div class="vt-confirm-card">
+      <div class="vt-confirm-icon">✅</div>
+      <h1 class="vt-confirm-title">¡Venta Confirmada!</h1>
+      <p class="vt-confirm-orden">Orden {{ v.numeroOrden }}</p>
+      <span class="vt-badge vt-badge--pendiente">{{ v.estado }}</span>
+      <p class="vt-confirm-nota">El pedido quedó pendiente de despacho — la bodega lo preparará próximamente.</p>
+    </div>
+
+    <div class="vt-section">
+      <h2 class="vt-section-title">Detalle del pedido</h2>
+      <div class="vt-resumen-cliente">
+        <div><span class="vt-label">Cliente</span><strong>{{ v.nombreCliente }}</strong></div>
+        <div><span class="vt-label">Técnico</span><strong>{{ v.nombreTecnico }}</strong></div>
+        <div><span class="vt-label">Fecha</span><strong>{{ v.fechaVenta | date:'medium' }}</strong></div>
+      </div>
+
+      <div class="vt-lineas-list">
+        @for (l of v.lineas; track l.idDetalle) {
+          <div class="vt-linea-item">
+            <div>
+              <strong>{{ l.nombreProducto }}</strong>
+              <span>{{ l.numeroLote }} · {{ l.cantidad }} un. @if (l.esComboIA) { · <span class="vt-tag-combo">Combo IA</span> } </span>
+              @if (l.instruccionesAplicacion) {
+                <p class="vt-linea-instrucciones">💊 {{ l.instruccionesAplicacion }}</p>
+              }
+            </div>
+            <span class="vt-linea-precio">${{ l.subtotalLinea.toFixed(2) }}</span>
+          </div>
+        }
+      </div>
+
+      <div class="vt-resumen-row"><span>Subtotal</span><span>${{ v.subtotal.toFixed(2) }}</span></div>
+      <div class="vt-resumen-row vt-resumen-descuento"><span>Descuento</span><span>-${{ v.descuentoTotal.toFixed(2) }}</span></div>
+      <div class="vt-resumen-row vt-resumen-total"><span>Total</span><span>${{ v.total.toFixed(2) }}</span></div>
+    </div>
+
+    <div class="vt-confirm-actions">
+      <button class="vt-btn vt-btn--ghost" (click)="volverDashboard()">Volver al Panel</button>
+      <button class="vt-btn vt-btn--primary" (click)="nuevaVenta()">+ Nueva Venta</button>
+    </div>
+
+  }
+
+</div>

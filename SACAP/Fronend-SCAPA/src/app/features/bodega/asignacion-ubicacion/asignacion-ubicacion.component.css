@@ -1,0 +1,134 @@
+/* ═══════════════════════════════════════════════════════
+   ASIGNACIÓN DE UBICACIÓN — CSS Split Layout
+   ═══════════════════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+.au-page {
+  font-family: 'Inter', system-ui, sans-serif;
+  padding: 2rem 2.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  color: #0f172a;
+}
+
+/* Header */
+.au-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.75rem;
+}
+.au-header-left { display: flex; align-items: center; gap: 1rem; }
+.au-header-icon {
+  width: 50px; height: 50px; border-radius: 14px;
+  background: linear-gradient(135deg, #059669, #10b981);
+  color: #fff; display: grid; place-items: center;
+  box-shadow: 0 6px 20px rgba(16,185,129,.3);
+  flex-shrink: 0;
+}
+.au-title { font-size: 1.5rem; font-weight: 800; color: #0f172a; margin: 0 0 .2rem; }
+.au-subtitle { margin: 0; color: #64748b; font-size: .85rem; }
+
+/* Alerts */
+.au-alert {
+  padding: .85rem 1.2rem; border-radius: 12px; margin-bottom: 1.25rem; font-size: .875rem;
+}
+.au-alert--success { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; }
+.au-alert--error   { background: #fef2f2; border: 1px solid #fca5a5; color: #dc2626; }
+
+/* Split Layout */
+.au-split-layout {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+@media (max-width: 900px) { .au-split-layout { grid-template-columns: 1fr; } }
+
+/* Cards */
+.au-card {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 20px;
+  padding: 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,.05);
+}
+.au-card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.25rem; padding-bottom: .85rem; border-bottom: 1px solid #f1f5f9;
+}
+.au-card-header h2 { font-size: 1rem; font-weight: 700; color: #0f172a; margin: 0; }
+
+.au-badge-flotante {
+  background: #fef3c7; color: #d97706; border-radius: 100px;
+  padding: .2rem .65rem; font-size: .72rem; font-weight: 700;
+}
+
+/* Lote list */
+.au-loading, .au-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 2.5rem 1rem; text-align: center; color: #94a3b8;
+}
+.au-spin {
+  width: 20px; height: 20px; border: 2px solid rgba(16,185,129,.3);
+  border-top-color: #10b981; border-radius: 50%; animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.au-empty-icon { font-size: 2rem; margin-bottom: .5rem; }
+.au-empty-title { font-size: .95rem; font-weight: 700; color: #334155; margin: 0 0 .2rem; }
+.au-empty-sub   { font-size: .8rem; color: #94a3b8; margin: 0; }
+
+.au-lote-list { display: flex; flex-direction: column; gap: .75rem; max-height: 540px; overflow-y: auto; }
+.au-lote-card {
+  background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 14px;
+  padding: 1rem; cursor: pointer; transition: all .2s;
+}
+.au-lote-card:hover { border-color: #10b981; background: #f0fdf4; }
+.au-lote-card.active { border-color: #059669; background: #ecfdf5; box-shadow: 0 4px 12px rgba(16,185,129,.2); }
+
+.au-lote-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: .25rem; }
+.au-lote-num { font-size: .92rem; font-weight: 800; color: #0f172a; }
+.au-lote-cant { background: #dcfce7; color: #16a34a; padding: .1rem .5rem; border-radius: 6px; font-size: .75rem; font-weight: 700; }
+.au-lote-card-prod { font-size: .84rem; color: #334155; font-weight: 600; margin-bottom: .5rem; }
+.au-lote-card-bot { display: flex; justify-content: space-between; font-size: .75rem; color: #64748b; }
+
+/* Right col elements */
+.au-notice-box {
+  background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af;
+  border-radius: 12px; padding: .85rem 1.1rem; font-size: .84rem; margin-bottom: 1.25rem;
+}
+.au-selected-summary {
+  display: flex; align-items: center; gap: 1rem; background: #ecfdf5;
+  border: 1px solid #a7f3d0; border-radius: 14px; padding: 1rem 1.25rem; margin-bottom: 1.25rem;
+}
+.au-summary-icon { font-size: 1.8rem; }
+.au-summary-label { font-size: .72rem; font-weight: 700; color: #10b981; text-transform: uppercase; }
+.au-summary-title { font-size: 1.1rem; font-weight: 800; color: #065f46; margin: .1rem 0; }
+.au-summary-sub   { font-size: .8rem; color: #047857; margin: 0; }
+
+.au-form-group { display: flex; flex-direction: column; gap: .35rem; margin-bottom: 1rem; }
+.au-label { font-size: .8rem; font-weight: 600; color: #475569; }
+.au-select, .au-input {
+  background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 10px;
+  padding: .65rem .9rem; font-size: .875rem; color: #334155; width: 100%; box-sizing: border-box;
+  transition: all .2s; font-family: inherit;
+}
+.au-select:focus, .au-input:focus { outline: none; border-color: #10b981; background: #fff; }
+.au-select:disabled { opacity: .5; cursor: not-allowed; }
+
+.au-cap-box {
+  background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;
+  padding: 1rem; margin-bottom: 1.25rem;
+}
+.au-cap-box-top { display: flex; justify-content: space-between; font-size: .82rem; color: #475569; margin-bottom: .4rem; }
+.au-cap-progress { width: 100%; height: 8px; background: #e2e8f0; border-radius: 100px; overflow: hidden; margin-bottom: .4rem; }
+.au-cap-fill { height: 100%; background: linear-gradient(90deg, #10b981, #059669); transition: width .3s; }
+.au-cap-free { font-size: .78rem; color: #059669; }
+
+.au-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+.au-btn-submit {
+  display: flex; align-items: center; justify-content: center; gap: .5rem;
+  width: 100%; padding: .85rem; border-radius: 12px; border: none;
+  background: linear-gradient(135deg, #059669, #10b981); color: #fff;
+  font-size: .9rem; font-weight: 700; cursor: pointer; transition: all .2s;
+  box-shadow: 0 4px 16px rgba(16,185,129,.3); font-family: inherit; margin-top: .5rem;
+}
+.au-btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(16,185,129,.4); }
+.au-btn-submit:disabled { opacity: .5; cursor: not-allowed; }

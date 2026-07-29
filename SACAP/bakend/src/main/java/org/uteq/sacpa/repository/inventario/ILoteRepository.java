@@ -82,6 +82,19 @@ public interface ILoteRepository extends JpaRepository<Lote, Integer> {
            "ORDER BY l.fechaVencimiento ASC")
     List<Lote> findDisponiblesParaVenta(@Param("idCategoria") Integer idCategoria, @Param("idEstadoActivo") Integer idEstadoActivo);
 
+    /**
+     * Lotes disponibles para vender (Módulo 3 — diagnóstico por plaga): igual que
+     * findDisponiblesParaVenta pero el filtro duro es la plaga que trata el producto
+     * (etiqueta N:M producto_plaga), con cultivo opcional para acotar más el diagnóstico.
+     */
+    @Query("SELECT DISTINCT l FROM Lote l JOIN l.producto.plagas pl WHERE l.ubicacion IS NOT NULL " +
+           "AND pl.idPlaga = :idPlaga " +
+           "AND (:idCultivo IS NULL OR EXISTS (SELECT 1 FROM l.producto.cultivos c WHERE c.idCultivo = :idCultivo)) " +
+           "AND l.idEstadoLote = :idEstadoActivo " +
+           "AND (l.cantidadActual - COALESCE(l.cantidadReservada, 0)) > 0 " +
+           "ORDER BY l.fechaVencimiento ASC")
+    List<Lote> findDisponiblesParaVentaPorPlaga(@Param("idPlaga") Integer idPlaga, @Param("idCultivo") Integer idCultivo, @Param("idEstadoActivo") Integer idEstadoActivo);
+
     // ============================================================
     // Llamadas a funciones PL/pgSQL del esquema inventario
     // ============================================================

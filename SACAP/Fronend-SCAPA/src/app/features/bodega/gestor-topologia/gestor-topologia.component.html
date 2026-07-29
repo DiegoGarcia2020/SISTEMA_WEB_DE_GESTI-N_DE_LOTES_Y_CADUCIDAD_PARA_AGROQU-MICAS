@@ -1,0 +1,326 @@
+<div class="gt-page">
+
+  <!-- Header -->
+  <div class="gt-header">
+    <div class="gt-header-left">
+      <div class="gt-header-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="gt-title">Gestor de Topología de Almacén</h1>
+        <p class="gt-subtitle">Estructura jerárquica: Almacén → Zona → Estantería → Ubicación (Impresión de QR)</p>
+      </div>
+    </div>
+    <div class="gt-header-actions">
+      @if (esAdmin) {
+        <button class="gt-btn gt-btn--primary" (click)="abrirModalNuevaBodega()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Nueva Bodega
+        </button>
+      }
+      <button class="gt-btn gt-btn--ghost" (click)="cargarArbol()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+        </svg>
+        Actualizar Árbol
+      </button>
+    </div>
+  </div>
+
+  <!-- Alertas -->
+  @if (exito()) {
+    <div class="gt-alert gt-alert--success">✅ {{ exito() }}</div>
+  }
+  @if (error()) {
+    <div class="gt-alert gt-alert--error">⚠️ {{ error() }}</div>
+  }
+
+  <!-- Contenido principal: Árbol -->
+  @if (cargando()) {
+    <div class="gt-loading">
+      <div class="gt-spin"></div>
+      <span>Cargando topología de almacenes...</span>
+    </div>
+  } @else if (arbol().length === 0) {
+    <div class="gt-empty">
+      <p>No se encontraron almacenes registrados en la base de datos.</p>
+    </div>
+  } @else {
+
+    <div class="gt-tree-card">
+      <div class="gt-tree-header">
+        <h2>Árbol de Distribución Física</h2>
+        <span class="gt-badge-total">{{ arbol().length }} Almacén(es)</span>
+      </div>
+
+      <div class="gt-tree-body">
+
+        <!-- Nivel 1: Almacén -->
+        @for (alm of arbol(); track alm.id) {
+          <div class="gt-tree-node gt-node--almacen">
+            
+            <div class="gt-node-content" (click)="toggleNodo(alm.id)">
+              <button class="gt-toggle-btn">
+                {{ estaExpandido(alm.id) ? '▼' : '▶' }}
+              </button>
+              <div class="gt-node-icon almacen">🏢</div>
+              <div class="gt-node-info">
+                <span class="gt-node-title">{{ alm.nombre }}</span>
+                <span class="gt-node-sub">{{ alm.subtitulo }}</span>
+              </div>
+              @if (esAdmin) {
+                <button class="gt-add-btn gt-add-btn--outline" (click)="$event.stopPropagation(); abrirModalEditarBodega(alm.idReal)" title="Asignar / cambiar Supervisor">
+                  ✎ Supervisor
+                </button>
+              }
+              @if (esBodeguero) {
+                <button class="gt-add-btn" (click)="$event.stopPropagation(); abrirModalZona(alm.idReal, alm.nombre)" title="Agregar nueva Zona">
+                  + Nueva Zona
+                </button>
+              }
+            </div>
+
+            <!-- Nivel 2: Zonas -->
+            @if (estaExpandido(alm.id)) {
+              <div class="gt-children">
+                @for (zona of alm.hijos; track zona.id) {
+                  <div class="gt-tree-node gt-node--zona">
+                    
+                    <div class="gt-node-content" (click)="toggleNodo(zona.id)">
+                      <button class="gt-toggle-btn">
+                        {{ estaExpandido(zona.id) ? '▼' : '▶' }}
+                      </button>
+                      <div class="gt-node-icon zona">📦</div>
+                      <div class="gt-node-info">
+                        <span class="gt-node-title">{{ zona.nombre }}</span>
+                        <span class="gt-node-sub">{{ zona.subtitulo }}</span>
+                      </div>
+                      @if (esBodeguero) {
+                        <button class="gt-add-btn" (click)="$event.stopPropagation(); abrirModalEstanteria(zona.idReal, zona.nombre)" title="Agregar Estantería">
+                          + Estantería
+                        </button>
+                      }
+                    </div>
+
+                    <!-- Nivel 3: Estanterías -->
+                    @if (estaExpandido(zona.id)) {
+                      <div class="gt-children">
+                        @for (est of zona.hijos; track est.id) {
+                          <div class="gt-tree-node gt-node--estanteria">
+                            
+                            <div class="gt-node-content" (click)="toggleNodo(est.id)">
+                              <button class="gt-toggle-btn">
+                                {{ estaExpandido(est.id) ? '▼' : '▶' }}
+                              </button>
+                              <div class="gt-node-icon estanteria">📑</div>
+                              <div class="gt-node-info">
+                                <span class="gt-node-title">{{ est.nombre }}</span>
+                                <span class="gt-node-sub">{{ est.hijos.length }} ubicación(es)</span>
+                              </div>
+                              @if (esBodeguero) {
+                                <button class="gt-add-btn" (click)="$event.stopPropagation(); abrirModalUbicacion(est.idReal, est.nombre)" title="Agregar Ubicación">
+                                  + Ubicación
+                                </button>
+                              }
+                            </div>
+
+                            <!-- Nivel 4: Ubicación Interna (Hoja) -->
+                            @if (estaExpandido(est.id)) {
+                              <div class="gt-children">
+                                @for (u of est.hijos; track u.id) {
+                                  <div class="gt-tree-node gt-node--ubicacion">
+                                    <div class="gt-node-content gt-node-content--leaf">
+                                      <div class="gt-node-icon ubicacion">📍</div>
+                                      <div class="gt-node-info">
+                                        <span class="gt-node-title">{{ u.nombre }}</span>
+                                        <div class="gt-cap-bar-wrapper">
+                                          <div class="gt-cap-bar">
+                                            <div class="gt-cap-fill" [style.width.%]="u.porcentajeOcupacion || 0"
+                                                 [class.high]="(u.porcentajeOcupacion || 0) > 85"></div>
+                                          </div>
+                                          <span class="gt-node-sub">{{ u.subtitulo }}</span>
+                                        </div>
+                                      </div>
+
+                                      <!-- Botón Imprimir QR -->
+                                      <button class="gt-qr-btn" (click)="abrirQrModal(u.idReal, u.nombre, u.codigoQr || '')">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                                          <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                                        </svg>
+                                        Imprimir QR
+                                      </button>
+                                    </div>
+                                  </div>
+                                }
+                              </div>
+                            }
+
+                          </div>
+                        }
+                      </div>
+                    }
+
+                  </div>
+                }
+              </div>
+            }
+
+          </div>
+        }
+
+      </div>
+    </div>
+
+  }
+
+  <!-- ══════════════════════════════════════
+       MODAL DE VISTA PREVIA E IMPRESIÓN QR
+       ══════════════════════════════════════ -->
+  @if (qrModalVisible()) {
+    <div class="gt-modal-overlay" (click)="cerrarQrModal()">
+      <div class="gt-modal-card print-area" (click)="$event.stopPropagation()">
+        <div class="gt-modal-header">
+          <h3>Código QR de Ubicación Física</h3>
+          <button class="gt-close-btn" (click)="cerrarQrModal()">✕</button>
+        </div>
+
+        <div class="gt-modal-body">
+          <p class="gt-qr-label-title">AGROSENSE LMS — SACPA</p>
+          <h2 class="gt-qr-location-name">{{ ubicacionSeleccionadaQr()?.nombre }}</h2>
+          <span class="gt-qr-code-text">{{ ubicacionSeleccionadaQr()?.qrCode }}</span>
+
+          <div class="gt-qr-img-box">
+            @if (qrCargando()) {
+              <div class="gt-spin"></div>
+              <span>Generando código QR...</span>
+            } @else {
+              <img [src]="qrBase64()" alt="Código QR Ubicación" class="gt-qr-img" />
+            }
+          </div>
+
+          <p class="gt-qr-instructions">Pegue esta etiqueta en la estantería física para escaneo rápido con colector o móvil.</p>
+        </div>
+
+        <div class="gt-modal-actions">
+          <button class="gt-btn gt-btn--ghost" (click)="cerrarQrModal()">Cerrar</button>
+          <button class="gt-btn gt-btn--primary" (click)="imprimirQr()">
+            🖨️ Imprimir Etiqueta PDF
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ══════════════════════════════════════
+       MODAL DE CREACIÓN DINÁMICA (Zona / Estantería / Ubicación)
+       ══════════════════════════════════════ -->
+  @if (modalTipo()) {
+    <div class="gt-modal-overlay" (click)="cerrarModalCreacion()">
+      <div class="gt-modal-card" (click)="$event.stopPropagation()">
+        <div class="gt-modal-header">
+          @if (modalTipo() === 'ALMACEN') {
+            <h3>{{ almacenEditandoId() ? 'Editar Bodega' : 'Nueva Bodega' }}</h3>
+          } @else {
+            <h3>Crear {{ modalTipo() }} en {{ nodoPadreSeleccionado()?.nombre }}</h3>
+          }
+          <button class="gt-close-btn" (click)="cerrarModalCreacion()">✕</button>
+        </div>
+
+        <div class="gt-modal-body">
+
+          @if (modalTipo() === 'ALMACEN') {
+            <div class="gt-field">
+              <label>Nombre de la Bodega *</label>
+              <input type="text" [(ngModel)]="formAlmacen.nombre" placeholder="Ej: Bodega Central San Camilo" class="gt-input" />
+            </div>
+            <div class="gt-field">
+              <label>Dirección *</label>
+              <input type="text" [(ngModel)]="formAlmacen.direccion" placeholder="Ej: Km 3.5 vía San Camilo" class="gt-input" />
+            </div>
+            <div class="gt-grid-2">
+              <div class="gt-field">
+                <label>Ciudad *</label>
+                <select [(ngModel)]="formAlmacen.idCiudad" class="gt-input">
+                  <option [ngValue]="null">Seleccione...</option>
+                  @for (c of ciudades(); track c.idCiudad) {
+                    <option [ngValue]="c.idCiudad">{{ c.nombre }}</option>
+                  }
+                </select>
+              </div>
+              <div class="gt-field">
+                <label>Capacidad Total (unidades) *</label>
+                <input type="number" [(ngModel)]="formAlmacen.capacidadMaxima" min="1" class="gt-input" />
+              </div>
+            </div>
+            <div class="gt-field">
+              <label>Supervisor responsable</label>
+              <select [(ngModel)]="formAlmacen.idSupervisor" class="gt-input">
+                <option [ngValue]="null">Sin asignar (puede asignarse después)</option>
+                @for (s of supervisores(); track s.idSupervisor) {
+                  <option [ngValue]="s.idSupervisor">{{ s.nombreCompleto }} @if (s.correo) { ({{ s.correo }}) }</option>
+                }
+              </select>
+              @if (supervisores().length === 0) {
+                <p class="gt-hint">No hay supervisores registrados todavía. Créelos desde Gestión de Usuarios.</p>
+              }
+            </div>
+          }
+
+          @if (modalTipo() === 'ZONA') {
+            <div class="gt-field">
+              <label>Nombre de la Zona *</label>
+              <input type="text" [(ngModel)]="formZona.nombre" placeholder="Ej: Zona C — Agroquímicos Líquidos" class="gt-input" />
+            </div>
+            <div class="gt-field">
+              <label>Condición Climática</label>
+              <input type="text" [(ngModel)]="formZona.condicionClimatica" placeholder="Ej: Temperatura 18°C / Ambiente Seco" class="gt-input" />
+            </div>
+          }
+
+          @if (modalTipo() === 'ESTANTERIA') {
+            <div class="gt-field">
+              <label>Código de Estantería *</label>
+              <input type="text" [(ngModel)]="formEstanteria.codigo" placeholder="Ej: EST-C1" class="gt-input" />
+            </div>
+          }
+
+          @if (modalTipo() === 'UBICACION') {
+            <div class="gt-grid-2">
+              <div class="gt-field">
+                <label>Nivel *</label>
+                <input type="text" [(ngModel)]="formUbicacion.nivel" placeholder="Ej: 1, 2, A, B" class="gt-input" />
+              </div>
+              <div class="gt-field">
+                <label>Posición *</label>
+                <input type="text" [(ngModel)]="formUbicacion.posicion" placeholder="Ej: A, B, C" class="gt-input" />
+              </div>
+            </div>
+            <div class="gt-field">
+              <label>Capacidad Máxima (unidades) *</label>
+              <input type="number" [(ngModel)]="formUbicacion.capacidadMaxima" placeholder="Ej: 100" class="gt-input" min="1" />
+            </div>
+          }
+
+        </div>
+
+        <div class="gt-modal-actions">
+          <button class="gt-btn gt-btn--ghost" (click)="cerrarModalCreacion()">Cancelar</button>
+          <button class="gt-btn gt-btn--primary" [disabled]="guardandoBodega()" (click)="guardarElemento()">
+            {{ guardandoBodega() ? 'Guardando...' : 'Guardar en Sistema' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

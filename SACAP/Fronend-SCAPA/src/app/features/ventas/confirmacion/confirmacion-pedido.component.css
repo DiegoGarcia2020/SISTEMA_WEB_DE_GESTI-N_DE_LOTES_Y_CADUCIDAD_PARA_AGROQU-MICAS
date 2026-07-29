@@ -1,0 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+.vt-bg { font-family: 'Inter', system-ui, sans-serif; min-height: 100vh; padding: 2rem 2.5rem 3rem; max-width: 720px; margin: 0 auto; color: #0f172a; }
+
+.vt-loading { display: flex; align-items: center; justify-content: center; gap: .75rem; padding: 3rem; background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; }
+.vt-spin { width: 20px; height: 20px; border: 2px solid rgba(16,185,129,.3); border-top-color: #10b981; border-radius: 50%; animation: vt-spin .7s linear infinite; }
+@keyframes vt-spin { to { transform: rotate(360deg); } }
+.vt-empty-text { font-size: .85rem; color: #94a3b8; }
+
+.vt-confirm-card {
+  text-align: center; background: linear-gradient(135deg, #0B4628 0%, #166534 60%, #15803d 100%);
+  border-radius: 20px; padding: 2.5rem 2rem; color: #fff; margin-bottom: 1.5rem; box-shadow: 0 8px 32px rgba(11,70,40,.35);
+}
+.vt-confirm-icon { font-size: 2.5rem; margin-bottom: .5rem; }
+.vt-confirm-title { font-size: 1.5rem; font-weight: 800; margin: 0 0 .3rem; }
+.vt-confirm-orden { font-size: .9rem; color: rgba(255,255,255,.75); margin: 0 0 .75rem; }
+.vt-confirm-nota { font-size: .8rem; color: rgba(255,255,255,.65); margin: .75rem 0 0; }
+
+.vt-badge { padding: .3rem .8rem; border-radius: 100px; font-size: .75rem; font-weight: 700; }
+.vt-badge--pendiente { background: rgba(255,255,255,.2); color: #fff; }
+
+.vt-section { background: #fff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,.05); margin-bottom: 1.5rem; }
+.vt-section-title { font-size: 1rem; font-weight: 700; margin: 0 0 1rem; }
+
+.vt-resumen-cliente { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.25rem; }
+.vt-resumen-cliente .vt-label { display: block; font-size: .7rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; }
+.vt-resumen-cliente strong { font-size: .85rem; color: #0f172a; }
+
+.vt-lineas-list { display: flex; flex-direction: column; gap: .5rem; margin-bottom: 1rem; }
+.vt-linea-item { display: flex; justify-content: space-between; align-items: flex-start; background: #f8fafc; border-radius: 10px; padding: .6rem .85rem; }
+.vt-linea-item strong { display: block; font-size: .85rem; }
+.vt-linea-item span { font-size: .74rem; color: #94a3b8; }
+.vt-tag-combo { color: #d97706; font-weight: 700; }
+.vt-linea-instrucciones { font-size: .72rem; color: #166534; margin: .3rem 0 0; line-height: 1.35; }
+.vt-linea-precio { font-weight: 700; font-size: .85rem; }
+
+.vt-resumen-row { display: flex; justify-content: space-between; font-size: .85rem; color: #475569; padding: .4rem 0; }
+.vt-resumen-descuento span:last-child { color: #dc2626; }
+.vt-resumen-total { border-top: 1px solid #e2e8f0; margin-top: .4rem; padding-top: .8rem; font-size: 1.05rem; font-weight: 800; color: #0f172a; }
+
+.vt-confirm-actions { display: flex; gap: .75rem; justify-content: center; }
+.vt-btn { display: inline-flex; align-items: center; gap: .4rem; padding: .7rem 1.4rem; border-radius: 10px; border: none; font-size: .85rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+.vt-btn--primary { background: linear-gradient(135deg, #059669, #10b981); color: #fff; }
+.vt-btn--ghost { background: #f1f5f9; color: #475569; }

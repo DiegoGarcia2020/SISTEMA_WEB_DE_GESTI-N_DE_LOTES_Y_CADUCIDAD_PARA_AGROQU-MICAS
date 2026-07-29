@@ -1,0 +1,281 @@
+<div class="pd-bg">
+
+  <!-- ── Hero Greeting ─────────────────────── -->
+  <div class="pd-hero">
+    <div class="pd-hero-text">
+      <p class="pd-greeting">{{ horaDelDia }}, <strong>{{ perfil()?.nombre || 'Proveedor' }}</strong> 👋</p>
+      <h1 class="pd-hero-title">Panel de Proveedor</h1>
+      <p class="pd-hero-sub">Gestione sus lotes, documentos y estado de registros en tiempo real</p>
+    </div>
+    <button class="pd-cta-btn" id="btn-nuevo-pre-registro" (click)="irAPreRegistro()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      Nuevo Pre-registro
+    </button>
+  </div>
+
+  <!-- ── Perfil del Proveedor ───────────────── -->
+  @if (cargandoPerfil()) {
+    <div class="pd-shimmer-card"></div>
+  } @else if (perfil()) {
+    <div class="pd-perfil-card">
+      <div class="pd-perfil-avatar">{{ perfil()!.nombre.charAt(0).toUpperCase() }}</div>
+      <div class="pd-perfil-info">
+        <span class="pd-perfil-role">PROVEEDOR REGISTRADO</span>
+        <h2 class="pd-perfil-nombre">{{ perfil()!.nombre }}</h2>
+        <div class="pd-perfil-meta">
+          @if (perfil()!.ruc) {
+            <span class="pd-meta-chip">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+              </svg>
+              RUC: {{ perfil()!.ruc }}
+            </span>
+          }
+          @if (perfil()!.telefono) {
+            <span class="pd-meta-chip">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.59 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.81a16 16 0 0 0 6.29 6.29l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+              {{ perfil()!.telefono }}
+            </span>
+          }
+          <span class="pd-meta-chip pd-meta-chip--green">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Cuenta activa
+          </span>
+        </div>
+      </div>
+      <div class="pd-perfil-id">#{{ perfil()!.idProveedor }}</div>
+    </div>
+  }
+
+  <!-- ── Stats Cards ───────────────────────── -->
+  <div class="pd-stats-grid">
+    <div class="pd-stat-card pd-stat--total">
+      <div class="pd-stat-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+          <line x1="12" y1="22.08" x2="12" y2="12"/>
+        </svg>
+      </div>
+      <div>
+        <span class="pd-stat-num">{{ cargandoLotes() ? '—' : totalLotes }}</span>
+        <span class="pd-stat-label">Total de Lotes</span>
+      </div>
+    </div>
+
+    <div class="pd-stat-card pd-stat--revision">
+      <div class="pd-stat-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+      </div>
+      <div>
+        <span class="pd-stat-num">{{ cargandoLotes() ? '—' : enRevision }}</span>
+        <span class="pd-stat-label">En Revisión</span>
+      </div>
+    </div>
+
+    <div class="pd-stat-card pd-stat--activo">
+      <div class="pd-stat-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+      </div>
+      <div>
+        <span class="pd-stat-num">{{ cargandoLotes() ? '—' : activos }}</span>
+        <span class="pd-stat-label">Lotes Activos</span>
+      </div>
+    </div>
+
+    <div class="pd-stat-card pd-stat--alerta">
+      <div class="pd-stat-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <div>
+        <span class="pd-stat-num">{{ cargandoLotes() ? '—' : proxVencer }}</span>
+        <span class="pd-stat-label">Próx. a Vencer</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Contenido principal ───────────────── -->
+  <div class="pd-content-grid">
+
+    <!-- Lista de lotes -->
+    <div class="pd-section">
+      <div class="pd-section-header">
+        <h2 class="pd-section-title">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+            <line x1="8" y1="18" x2="21" y2="18"/>
+            <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/>
+            <line x1="3" y1="18" x2="3.01" y2="18"/>
+          </svg>
+          Mis Lotes Recientes
+        </h2>
+        <a routerLink="/admin/inventario/pre-registro" class="pd-ver-todos">
+          Registrar nuevo +
+        </a>
+      </div>
+
+      @if (cargandoLotes()) {
+        <div class="pd-loading-list">
+          <div class="pd-shimmer-row"></div>
+          <div class="pd-shimmer-row"></div>
+          <div class="pd-shimmer-row"></div>
+        </div>
+      } @else if (lotes().length === 0) {
+        <div class="pd-empty">
+          <div class="pd-empty-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none"
+                 stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            </svg>
+          </div>
+          <p class="pd-empty-title">Aún no tiene lotes registrados</p>
+          <p class="pd-empty-sub">Comience registrando su primer lote de productos</p>
+          <button class="pd-btn pd-btn--primary" (click)="irAPreRegistro()">
+            Registrar primer lote →
+          </button>
+        </div>
+      } @else {
+        <div class="pd-lote-list">
+          @for (lote of lotes(); track lote.idLote) {
+            <div class="pd-lote-item">
+              <div class="pd-lote-code">
+                <span class="pd-lote-num">{{ lote.numeroLote }}</span>
+                <span class="pd-lote-prod">{{ lote.nombreProducto }}</span>
+              </div>
+              <div class="pd-lote-dates">
+                <span class="pd-date-label">Vence</span>
+                <span class="pd-date-val" [class]="getVencimientoClass(lote.diasHastaVencimiento)">
+                  {{ lote.fechaVencimiento }}
+                  @if (lote.diasHastaVencimiento !== undefined) {
+                    <span class="pd-dias">{{ lote.diasHastaVencimiento }}d</span>
+                  }
+                </span>
+              </div>
+              <span class="pd-badge" [class]="'pd-badge--' + getEstadoBadge(lote.estadoLote)">
+                {{ getEstadoLabel(lote.estadoLote) }}
+              </span>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Acciones rápidas + Info -->
+    <div class="pd-right-col">
+
+      <!-- Acciones rápidas -->
+      <div class="pd-quick-card">
+        <h3 class="pd-quick-title">Acciones Rápidas</h3>
+        <div class="pd-quick-list">
+          <a routerLink="/admin/inventario/pre-registro" class="pd-quick-item">
+            <div class="pd-quick-icon green">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="12" y1="18" x2="12" y2="12"/>
+                <line x1="9" y1="15" x2="15" y2="15"/>
+              </svg>
+            </div>
+            <div class="pd-quick-text">
+              <strong>Pre-registrar Lote</strong>
+              <span>Formulario A — Declarar nuevo ingreso</span>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </a>
+
+          <div class="pd-quick-item pd-quick-item--disabled">
+            <div class="pd-quick-icon blue">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            </div>
+            <div class="pd-quick-text">
+              <strong>Ver mis Lotes</strong>
+              <span>Historial completo de registros</span>
+            </div>
+            <span class="pd-coming">Próx.</span>
+          </div>
+
+          <div class="pd-quick-item pd-quick-item--disabled">
+            <div class="pd-quick-icon amber">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+            </div>
+            <div class="pd-quick-text">
+              <strong>Mis Documentos</strong>
+              <span>Guías de remisión y certificados</span>
+            </div>
+            <span class="pd-coming">Próx.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Flujo del proceso -->
+      <div class="pd-flow-card">
+        <h3 class="pd-quick-title">Flujo del Proceso</h3>
+        <div class="pd-flow">
+          <div class="pd-flow-step pd-flow-step--done">
+            <div class="pd-flow-circle">1</div>
+            <div class="pd-flow-text">
+              <strong>Pre-registro</strong>
+              <span>Declara datos del lote</span>
+            </div>
+          </div>
+          <div class="pd-flow-line"></div>
+          <div class="pd-flow-step">
+            <div class="pd-flow-circle pd-flow-circle--pending">2</div>
+            <div class="pd-flow-text">
+              <strong>Bodeguero valida</strong>
+              <span>Confirma cantidad física</span>
+            </div>
+          </div>
+          <div class="pd-flow-line"></div>
+          <div class="pd-flow-step">
+            <div class="pd-flow-circle pd-flow-circle--pending">3</div>
+            <div class="pd-flow-text">
+              <strong>Lote activo</strong>
+              <span>Disponible en inventario</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>

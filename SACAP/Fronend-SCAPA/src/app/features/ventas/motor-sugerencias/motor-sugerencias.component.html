@@ -1,0 +1,89 @@
+<div class="vt-bg">
+
+  <div class="vt-hero vt-hero--sm">
+    <div>
+      <h1 class="vt-hero-title">Motor de Sugerencias</h1>
+      <p class="vt-hero-sub">Selecciona el cultivo y la plaga del cliente y te sugerimos qué vender primero</p>
+    </div>
+    <button class="vt-cta-btn" (click)="irACheckout()">
+      Ir al carrito
+      @if (carrito.cantidadItems() > 0) { <span class="vt-cart-badge">{{ carrito.cantidadItems() }}</span> }
+    </button>
+  </div>
+
+  <div class="vt-section" style="margin-bottom: 1.5rem;">
+    <div class="vt-chip-row" style="margin-bottom: 1rem;">
+      <button class="vt-chip" [class.activo]="modo() === 'diagnostico'" (click)="cambiarModo('diagnostico')">Por cultivo y plaga</button>
+      <button class="vt-chip" [class.activo]="modo() === 'categoria'" (click)="cambiarModo('categoria')">Por categoría</button>
+    </div>
+
+    @if (modo() === 'diagnostico') {
+      <h2 class="vt-section-title">¿Qué cultivo tiene el cliente? <span class="vt-empty-text" style="font-weight: normal;">(opcional)</span></h2>
+      <div class="vt-chip-row" style="margin-bottom: 1rem;">
+        @for (c of cultivos(); track c.idCultivo) {
+          <button class="vt-chip" [class.activo]="cultivoSeleccionado() === c.idCultivo" (click)="seleccionarCultivo(c.idCultivo)">
+            {{ c.nombre }}
+          </button>
+        }
+      </div>
+      <h2 class="vt-section-title">¿Qué plaga o enfermedad tiene?</h2>
+      <div class="vt-chip-row">
+        @for (p of plagas(); track p.idPlaga) {
+          <button class="vt-chip" [class.activo]="plagaSeleccionada() === p.idPlaga" (click)="seleccionarPlaga(p.idPlaga)">
+            {{ p.nombre }}
+          </button>
+        }
+      </div>
+    } @else {
+      <h2 class="vt-section-title">¿Qué problema tiene el cliente?</h2>
+      <div class="vt-chip-row">
+        @for (c of categorias(); track c.idCategoria) {
+          <button class="vt-chip" [class.activo]="categoriaSeleccionada() === c.idCategoria" (click)="seleccionarCategoria(c.idCategoria)">
+            {{ c.nombre }}
+          </button>
+        }
+      </div>
+    }
+  </div>
+
+  @if (cargando()) {
+    <div class="vt-loading"><div class="vt-spin"></div><span>Calculando sugerencias...</span></div>
+  } @else if (buscado() && sugerencias().length === 0) {
+    <div class="vt-section">
+      <p class="vt-empty-text">No hay lotes disponibles con urgencia suficiente en esta categoría por ahora.</p>
+    </div>
+  } @else if (sugerencias().length > 0) {
+    <div class="vt-sugerencias-grid">
+      @for (s of sugerencias(); track s.titulo) {
+        <div class="vt-sug-card" [class.combo]="s.esCombo">
+          <div class="vt-sug-header">
+            @if (s.esCombo) { <span class="vt-sug-tag">🎁 COMBO IA</span> }
+            <span class="vt-sug-score" [class]="'score-' + claseUrgencia(s.score)">{{ s.score }}/100</span>
+          </div>
+          <h3 class="vt-sug-title">{{ s.titulo }}</h3>
+          <div class="vt-sug-lotes">
+            @for (l of s.lotes; track l.idLote) {
+              <div class="vt-sug-lote">
+                <span>{{ l.numeroLote }} — {{ l.nombreProducto }}</span>
+                <span class="vt-sug-lote-meta">{{ l.diasHastaVencimiento }}d · {{ l.cantidadDisponible }} disp. · {{ l.nombreBodega }}</span>
+                @if (l.instruccionesAplicacion) {
+                  <span class="vt-sug-instrucciones">💊 {{ l.instruccionesAplicacion }}</span>
+                }
+              </div>
+            }
+          </div>
+          <p class="vt-sug-justificacion">{{ s.justificacionIA }}</p>
+          <div class="vt-sug-footer">
+            <span class="vt-badge vt-badge--descuento">-{{ s.descuentoSugerido }}%</span>
+            <button class="vt-btn vt-btn--primary" (click)="agregarAlCarrito(s)">+ Agregar al carrito</button>
+          </div>
+        </div>
+      }
+    </div>
+  } @else if (!buscado()) {
+    <div class="vt-section">
+      <p class="vt-empty-text">Selecciona una categoría arriba para ver las sugerencias del motor IA.</p>
+    </div>
+  }
+
+</div>

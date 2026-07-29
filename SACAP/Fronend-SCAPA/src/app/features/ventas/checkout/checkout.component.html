@@ -1,0 +1,133 @@
+<div class="vt-bg">
+
+  <div class="vt-hero vt-hero--sm">
+    <div>
+      <h1 class="vt-hero-title">Punto de Venta</h1>
+      <p class="vt-hero-sub">Selecciona el cliente y confirma el pedido</p>
+    </div>
+    <button class="vt-cta-btn" (click)="irASugerencias()">+ Agregar más productos</button>
+  </div>
+
+  <div class="vt-checkout-grid">
+
+    <!-- Columna izquierda: Cliente + Carrito -->
+    <div class="vt-col-main">
+
+      <!-- Cliente -->
+      <div class="vt-section">
+        <h2 class="vt-section-title">Cliente</h2>
+
+        @if (carrito.clienteSeleccionado(); as cli) {
+          <div class="vt-cliente-card">
+            <div>
+              <strong>{{ cli.nombre }}</strong>
+              <span>{{ cli.cedulaRuc || 'Sin cédula/RUC' }} @if (cli.telefono) { · {{ cli.telefono }} }</span>
+            </div>
+            <button class="vt-btn vt-btn--ghost" (click)="quitarCliente()">Cambiar</button>
+          </div>
+        } @else {
+          <div class="vt-buscador">
+            <input type="text" placeholder="Buscar cliente por nombre..." [(ngModel)]="textoBusqueda"
+                   (ngModelChange)="buscarCliente()" class="vt-input" />
+          </div>
+
+          @if (buscando()) {
+            <p class="vt-empty-text">Buscando...</p>
+          } @else if (resultadosCliente().length > 0) {
+            <div class="vt-resultado-list">
+              @for (c of resultadosCliente(); track c.idCliente) {
+                <div class="vt-resultado-item" (click)="seleccionarCliente(c)">
+                  <strong>{{ c.nombre }}</strong>
+                  <span>{{ c.cedulaRuc || 'Sin cédula/RUC' }}</span>
+                </div>
+              }
+            </div>
+          } @else if (textoBusqueda().length > 0) {
+            <p class="vt-empty-text">No se encontraron clientes con ese nombre.</p>
+          }
+
+          <button class="vt-btn vt-btn--primary" style="margin-top:.75rem;" (click)="abrirModalNuevoCliente()">
+            + Nuevo Cliente / Finquero
+          </button>
+        }
+      </div>
+
+      <!-- Carrito -->
+      <div class="vt-section">
+        <h2 class="vt-section-title">Carrito ({{ carrito.cantidadItems() }})</h2>
+
+        @if (carrito.items().length === 0) {
+          <p class="vt-empty-text">Aún no has agregado productos. Ve al Motor de Sugerencias para empezar.</p>
+        } @else {
+          <div class="vt-cart-list">
+            @for (item of carrito.items(); track item.idLote) {
+              <div class="vt-cart-item">
+                <div class="vt-cart-item-info">
+                  <strong>{{ item.nombreProducto }}</strong>
+                  <span>{{ item.numeroLote }} @if (item.esComboIA) { · <span class="vt-tag-combo">Combo IA</span> }</span>
+                </div>
+                <input type="number" min="1" class="vt-qty-input" [value]="item.cantidad"
+                       (change)="actualizarCantidad(item.idLote, $any($event.target).value)" />
+                <span class="vt-cart-precio">${{ (item.precioUnitario * item.cantidad).toFixed(2) }}</span>
+                @if (item.descuentoPct) { <span class="vt-badge vt-badge--descuento">-{{ item.descuentoPct }}%</span> }
+                <button class="vt-remove-btn" (click)="quitarItem(item.idLote)">✕</button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+    </div>
+
+    <!-- Columna derecha: Resumen -->
+    <div class="vt-col-side">
+      <div class="vt-section vt-resumen">
+        <h2 class="vt-section-title">Resumen</h2>
+        <div class="vt-resumen-row"><span>Subtotal</span><span>${{ carrito.subtotal().toFixed(2) }}</span></div>
+        <div class="vt-resumen-row vt-resumen-descuento"><span>Descuento</span><span>-${{ carrito.descuentoTotal().toFixed(2) }}</span></div>
+        <div class="vt-resumen-row vt-resumen-total"><span>Total</span><span>${{ carrito.total().toFixed(2) }}</span></div>
+
+        @if (errorCheckout()) { <div class="vt-alert-error">{{ errorCheckout() }}</div> }
+
+        <button class="vt-btn vt-btn--primary vt-btn--block" [disabled]="confirmando()" (click)="confirmarVenta()">
+          {{ confirmando() ? 'Confirmando...' : 'Confirmar Venta' }}
+        </button>
+        <p class="vt-nota">Al confirmar, el pedido queda pendiente de despacho por Bodega.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Modal Nuevo Cliente -->
+  @if (modalNuevoCliente()) {
+    <div class="vt-modal-overlay" (click)="cerrarModalNuevoCliente()">
+      <div class="vt-modal" (click)="$event.stopPropagation()">
+        <div class="vt-modal-header">
+          <h3>Nuevo Cliente / Finquero</h3>
+          <button class="vt-modal-close" (click)="cerrarModalNuevoCliente()">×</button>
+        </div>
+        <div class="vt-modal-body">
+          <label class="vt-field"><span>Nombre completo *</span>
+            <input type="text" [(ngModel)]="formCliente.nombre" class="vt-input" />
+          </label>
+          <label class="vt-field"><span>Cédula / RUC</span>
+            <input type="text" [(ngModel)]="formCliente.cedulaRuc" class="vt-input" />
+          </label>
+          <label class="vt-field"><span>Teléfono</span>
+            <input type="text" [(ngModel)]="formCliente.telefono" class="vt-input" />
+          </label>
+          <label class="vt-field"><span>Ubicación / Finca</span>
+            <textarea [(ngModel)]="formCliente.ubicacionFinca" class="vt-input" rows="2"></textarea>
+          </label>
+        </div>
+        <div class="vt-modal-footer">
+          <button class="vt-btn vt-btn--ghost" (click)="cerrarModalNuevoCliente()">Cancelar</button>
+          <button class="vt-btn vt-btn--primary" [disabled]="guardandoCliente()" (click)="guardarNuevoCliente()">
+            {{ guardandoCliente() ? 'Guardando...' : 'Crear Cliente' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

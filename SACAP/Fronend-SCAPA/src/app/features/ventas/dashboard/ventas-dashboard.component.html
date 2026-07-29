@@ -1,0 +1,84 @@
+<div class="vt-bg">
+
+  <div class="vt-hero">
+    <div class="vt-hero-text">
+      <p class="vt-greeting">{{ horaDelDia }}, <strong>{{ nombreUsuario }}</strong> 👋</p>
+      <h1 class="vt-hero-title">Panel del Técnico de Campo</h1>
+      <p class="vt-hero-sub">Temporadas activas, promociones vigentes y tus ventas de hoy</p>
+    </div>
+    <div class="vt-hero-actions">
+      <button class="vt-cta-btn vt-cta-btn--ghost" (click)="irASugerencias()">Motor de Sugerencias</button>
+      <button class="vt-cta-btn" (click)="irACheckout()">
+        + Nueva Venta
+        @if (carrito.cantidadItems() > 0) { <span class="vt-cart-badge">{{ carrito.cantidadItems() }}</span> }
+      </button>
+    </div>
+  </div>
+
+  @if (cargando()) {
+    <div class="vt-loading"><div class="vt-spin"></div><span>Cargando panel...</span></div>
+  } @else {
+
+    <div class="vt-stats-grid">
+      <div class="vt-stat-card vt-stat--ventas">
+        <div class="vt-stat-icon">🛒</div>
+        <div><span class="vt-stat-num">{{ dashboard()?.ventasHoyCantidad ?? 0 }}</span><span class="vt-stat-label">Ventas Hoy</span></div>
+      </div>
+      <div class="vt-stat-card vt-stat--total">
+        <div class="vt-stat-icon">💵</div>
+        <div><span class="vt-stat-num">${{ (dashboard()?.ventasHoyTotal ?? 0).toFixed(2) }}</span><span class="vt-stat-label">Total Vendido Hoy</span></div>
+      </div>
+      <div class="vt-stat-card vt-stat--temporadas">
+        <div class="vt-stat-icon">🌱</div>
+        <div><span class="vt-stat-num">{{ dashboard()?.temporadasActivas?.length ?? 0 }}</span><span class="vt-stat-label">Temporadas Activas</span></div>
+      </div>
+      <div class="vt-stat-card vt-stat--promos">
+        <div class="vt-stat-icon">🏷️</div>
+        <div><span class="vt-stat-num">{{ dashboard()?.promocionesActivas?.length ?? 0 }}</span><span class="vt-stat-label">Promociones Activas</span></div>
+      </div>
+    </div>
+
+    <div class="vt-content-grid">
+
+      <div class="vt-section">
+        <h2 class="vt-section-title">🌱 Temporadas Agrícolas Activas</h2>
+        @if (!dashboard()?.temporadasActivas?.length) {
+          <p class="vt-empty-text">No hay temporadas activas en este momento.</p>
+        } @else {
+          <div class="vt-temporada-list">
+            @for (t of dashboard()!.temporadasActivas; track t.idTemporada) {
+              <div class="vt-temporada-item">
+                <div>
+                  <strong>{{ t.nombre }}</strong>
+                  <span class="vt-temporada-cultivo">{{ t.cultivo }}</span>
+                </div>
+                <span class="vt-badge vt-badge--activa">{{ t.progresoPorcentaje }}% avance</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="vt-section">
+        <h2 class="vt-section-title">🏷️ Promociones Vigentes Hoy</h2>
+        @if (!dashboard()?.promocionesActivas?.length) {
+          <p class="vt-empty-text">No hay promociones activas todavía.</p>
+        } @else {
+          <div class="vt-promo-list">
+            @for (p of dashboard()!.promocionesActivas; track p.idPromocion) {
+              <div class="vt-promo-item">
+                <div class="vt-promo-info">
+                  <strong>{{ p.titulo }}</strong>
+                  <span>{{ p.nombreProducto }} — {{ p.codigoLote }}</span>
+                </div>
+                <span class="vt-badge vt-badge--descuento">-{{ p.descuentoSugerido }}%</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+    </div>
+  }
+
+</div>

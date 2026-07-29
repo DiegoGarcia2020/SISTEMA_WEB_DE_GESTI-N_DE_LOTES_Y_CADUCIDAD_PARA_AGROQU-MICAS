@@ -1,0 +1,158 @@
+<div class="aq-page">
+
+  <!-- Header Mobile-First -->
+  <div class="aq-header">
+    <div class="aq-header-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+      </svg>
+    </div>
+    <div>
+      <h1 class="aq-title">Auditoría Rápida por QR</h1>
+      <p class="aq-subtitle">Escaneo móvil y verificación de conteo físico en estantería</p>
+    </div>
+  </div>
+
+  <!-- Alertas -->
+  @if (exito()) {
+    <div class="aq-alert aq-alert--success">{{ exito() }}</div>
+  }
+  @if (error()) {
+    <div class="aq-alert aq-alert--error">⚠️ {{ error() }}</div>
+  }
+
+  <!-- Zona de Escaneo / Búsqueda QR -->
+  <div class="aq-card aq-scan-card">
+    <div class="aq-scan-box">
+      <div class="aq-camera-simulation" (click)="activarCamara()" style="cursor: pointer;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+             stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="aq-qr-frame">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+        </svg>
+        <span>📷 Tocar aquí para activar cámara móvil o apunte el lector QR</span>
+      </div>
+
+      <!-- Buscador de respaldo manual o scanner de teclado -->
+      <div class="aq-search-row">
+        <input type="text" [(ngModel)]="codigoQrBusqueda"
+               (keyup.enter)="buscarPorQr()"
+               placeholder="Ingrese o escanee Código QR (Ej: UBIC-EST1-N1-PA)"
+               class="aq-input" />
+        <button class="aq-btn-scan" (click)="buscarPorQr()" [disabled]="buscando()">
+          @if (buscando()) { <div class="aq-spin"></div> } @else { 🔍 Buscar }
+        </button>
+      </div>
+
+      <!-- Accesos Rápidos de Prueba -->
+      <div class="aq-quick-chips">
+        <span class="aq-chip-label">Probar QR demo:</span>
+        <button class="aq-chip" (click)="simularEscaneo('UBIC-EST1-N1-PA')">UBIC-EST1-N1-PA</button>
+        <button class="aq-chip" (click)="simularEscaneo('UBIC-EST1-N1-PB')">UBIC-EST1-N1-PB</button>
+        <button class="aq-chip" (click)="simularEscaneo('1')">ID: 1</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detalle de Ubicación e Inventario Escaneado -->
+  @if (ubicacion()) {
+    <div class="aq-card aq-detail-card">
+      
+      <!-- Banner Ubicación -->
+      <div class="aq-location-banner">
+        <div class="aq-loc-header">
+          <span class="aq-loc-badge">📍 ESTANTERÍA / POSICIÓN</span>
+          <span class="aq-qr-chip">📷 QR: <strong>{{ codigoQrMostrado }}</strong></span>
+        </div>
+        <h2 class="aq-loc-title">{{ descripcionLimpia }}</h2>
+        <div class="aq-loc-sub">
+          <span>🏢 {{ ubicacion()?.nombreAlmacen }}</span> • 
+          <span>📦 {{ ubicacion()?.nombreZona }}</span>
+        </div>
+      </div>
+
+      <!-- Indicadores de Capacidad del Sistema -->
+      <div class="aq-stats-grid">
+        <div class="aq-stat-box">
+          <span class="aq-stat-label">Capacidad Máxima</span>
+          <strong class="aq-stat-val">{{ ubicacion()?.capacidadMaxima }} un.</strong>
+        </div>
+        <div class="aq-stat-box blue">
+          <span class="aq-stat-label">Stock en Sistema</span>
+          <strong class="aq-stat-val">{{ stockSistema }} un.</strong>
+        </div>
+        <div class="aq-stat-box green">
+          <span class="aq-stat-label">% Ocupación</span>
+          <strong class="aq-stat-val">{{ porcentajeOcupacion }}%</strong>
+        </div>
+      </div>
+
+      <!-- Lotes Físicamente Almacenados en esta Ubicación -->
+      <div class="aq-lotes-section">
+        <h3 class="aq-section-subtitle">📋 Lotes registrados en este bloque ({{ ubicacion()?.lotesAlmacenados?.length }})</h3>
+        
+        @if (!ubicacion()?.lotesAlmacenados?.length) {
+          <div class="aq-empty-lotes">
+            Esta ubicación no tiene lotes asignados actualmente en el sistema.
+          </div>
+        } @else {
+          <div class="aq-lotes-list">
+            @for (lote of ubicacion()?.lotesAlmacenados; track lote.idLote) {
+              <div class="aq-lote-item">
+                <div class="aq-lote-info">
+                  <strong class="aq-lote-num">{{ lote.numeroLote }}</strong>
+                  <span class="aq-lote-prod">{{ lote.nombreProducto }}</span>
+                </div>
+                <div class="aq-lote-stock">
+                  <span class="aq-stock-val">{{ lote.cantidadActual }} un.</span>
+                  <span class="aq-stock-venc">Vence: {{ lote.fechaVencimiento }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- CONTEO FÍSICO REAL & AUDITORÍA -->
+      <div class="aq-audit-box">
+        <h3 class="aq-audit-title">📝 Registro de Conteo Físico Real</h3>
+        <p class="aq-audit-desc">Ingrese la cantidad exacta de unidades contadas en la estantería física:</p>
+
+        <div class="aq-conteo-input-row">
+          <div class="aq-field">
+            <label>Conteo Físico Real (unidades)</label>
+            <input type="number" [(ngModel)]="conteoFisicoReal" class="aq-input-num" min="0" />
+          </div>
+
+          <div class="aq-descuadre-card" [class.danger]="descuadre !== 0" [class.success]="descuadre === 0">
+            <span class="aq-descuadre-label">Diferencia / Descuadre</span>
+            <strong class="aq-descuadre-val">
+              {{ descuadre > 0 ? '+' : '' }}{{ descuadre }} un.
+            </strong>
+            <span class="aq-descuadre-tag">
+              {{ descuadre === 0 ? 'CONFORME (0)' : (descuadre < 0 ? 'FALTANTE EN BODEGA' : 'SOBRANTE EN BODEGA') }}
+            </span>
+          </div>
+        </div>
+
+        <div class="aq-field" style="margin-top: 1rem;">
+          <label>Observaciones del Conteo (Opcional)</label>
+          <input type="text" [(ngModel)]="observacionesAudit" placeholder="Ej. 10 frascos con empaque dañado" class="aq-input" />
+        </div>
+
+        <div class="aq-action-row">
+          <button class="aq-btn-sec" (click)="limpiar()">Escanear Otra Ubicación</button>
+          <button class="aq-btn-main" (click)="guardarAuditoria()" [disabled]="guardandoAudit()">
+            @if (guardandoAudit()) { <div class="aq-spin"></div> }
+            @else { 💾 Guardar Auditoría }
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  }
+
+</div>
