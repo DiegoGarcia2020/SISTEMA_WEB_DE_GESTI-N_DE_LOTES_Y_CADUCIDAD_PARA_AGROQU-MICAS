@@ -27,8 +27,10 @@ import { CampoDashboardComponent } from './features/tecnico-campo/campo-dashboar
 import { PuntoVentaComponent } from './features/tecnico-campo/punto-venta/punto-venta.component';
 import { TecnicoEntregasComponent } from './features/tecnico-campo/entregas/tecnico-entregas.component';
 import { SupervisorDashboardComponent } from './features/supervisor/supervisor-dashboard.component';
+import { CentroAprobacionesComponent } from './features/supervisor/centro-aprobaciones/centro-aprobaciones.component';
 import { ComprasListadoComponent } from './features/supervisor/compras-listado/compras-listado.component';
 import { ComprasCrearComponent } from './features/supervisor/compras-crear/compras-crear.component';
+import { ProveedorListComponent } from './features/supervisor/proveedores/proveedor-list.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -62,8 +64,10 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       { path: 'dashboard', component: SupervisorDashboardComponent },
+      { path: 'centro-aprobaciones', component: CentroAprobacionesComponent },
       { path: 'compras', component: ComprasListadoComponent },
       { path: 'compras/nueva', component: ComprasCrearComponent },
+      { path: 'proveedores', component: ProveedorListComponent },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

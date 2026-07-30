@@ -14,12 +14,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ProveedorRequestDTO {
 
-    @NotBlank(message = "El correo es obligatorio")
     @Email(message = "Debe ser un correo valido")
-    private String correo;
-
-    @NotBlank(message = "La contrasena es obligatoria")
-    private String contrasena;
+    private String correoContacto;
 
     @NotBlank(message = "El RUC es obligatorio")
     private String ruc;

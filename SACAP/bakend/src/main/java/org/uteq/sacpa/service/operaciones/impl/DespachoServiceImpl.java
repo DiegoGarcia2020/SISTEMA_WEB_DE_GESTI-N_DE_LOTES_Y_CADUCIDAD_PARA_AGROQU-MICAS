@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.uteq.sacpa.entity.operaciones.Venta;
 import org.uteq.sacpa.repository.operaciones.VentaRepository;
 import org.uteq.sacpa.service.operaciones.IDespachoService;
+import org.uteq.sacpa.util.EstadoVenta;
 
 @Service
 @RequiredArgsConstructor
@@ -21,11 +22,11 @@ public class DespachoServiceImpl implements IDespachoService {
         Venta venta = ventaRepository.findById(idVenta)
                 .orElseThrow(() -> new RuntimeException("Venta no encontrada con ID: " + idVenta));
 
-        if (!"CONFIRMADA".equals(venta.getEstado()) && !"PENDIENTE".equals(venta.getEstado())) {
+        if (!EstadoVenta.CONFIRMADA.name().equals(venta.getEstado()) && !"PENDIENTE".equals(venta.getEstado())) {
             throw new RuntimeException("La venta no está en estado válido para ser preparada.");
         }
 
-        venta.setEstado("PREPARADA");
+        venta.setEstado(EstadoVenta.PREPARADA.name());
         venta = ventaRepository.save(venta);
 
         // Notificar al Técnico vía WebSocket
@@ -42,11 +43,11 @@ public class DespachoServiceImpl implements IDespachoService {
         Venta venta = ventaRepository.findById(idVenta)
                 .orElseThrow(() -> new RuntimeException("Venta no encontrada con ID: " + idVenta));
 
-        if (!"PREPARADA".equals(venta.getEstado())) {
+        if (!EstadoVenta.PREPARADA.name().equals(venta.getEstado())) {
             throw new RuntimeException("La venta debe estar PREPARADA antes de ser entregada.");
         }
 
-        venta.setEstado("ENTREGADA");
+        venta.setEstado(EstadoVenta.ENTREGADA.name());
         venta = ventaRepository.save(venta);
 
         // Notificar al Bodeguero que se entregó (opcional para trazabilidad)

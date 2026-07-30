@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { LucideAngularModule } from 'lucide-angular';
-import { ToastService } from '../../../../shared/components/toast/toast.service';
+import { ToastService } from '../../../shared/components/toast/toast.service';
 import { environment } from '../../../../environments/environment';
 
 export interface OrdenCompraListDTO {

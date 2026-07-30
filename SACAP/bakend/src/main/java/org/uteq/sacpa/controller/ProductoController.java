@@ -24,6 +24,17 @@ public class ProductoController {
         return ResponseEntity.ok(Map.of("mensaje", "Producto creado exitosamente"));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Producto> obtenerPorId(@PathVariable Integer id) {
+        return ResponseEntity.ok(productoService.obtenerPorId(id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Map<String, String>> actualizarProducto(@PathVariable Integer id, @Valid @RequestBody ProductoRequestDTO request) {
+        productoService.actualizarProducto(id, request);
+        return ResponseEntity.ok(Map.of("mensaje", "Producto actualizado exitosamente"));
+    }
+
     @GetMapping
     public ResponseEntity<List<Producto>> listarProductos() {
         return ResponseEntity.ok(productoService.listarTodos());

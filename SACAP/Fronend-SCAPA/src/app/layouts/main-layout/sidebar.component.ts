@@ -50,20 +50,33 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
 
         <!-- SUPERVISOR -->
         @if (isRol('supervis') || currentPath().includes('/supervisor')) {
-          <div class="nav-section-title">Control de Calidad</div>
+          <div class="nav-section-title">Panel de Supervisor</div>
+          
           <a routerLink="/supervisor/dashboard" routerLinkActive="active" class="nav-item">
-            <lucide-icon name="check-circle" class="nav-item__icon"></lucide-icon>
-            <span>Centro de Aprobaciones</span>
+            <lucide-icon name="layout-dashboard" class="nav-item__icon"></lucide-icon>
+            <span>Dashboard Principal</span>
           </a>
-          <!-- Integración Módulo Compras -->
+          
+          <a routerLink="/supervisor/proveedores" routerLinkActive="active" class="nav-item">
+            <lucide-icon name="truck" class="nav-item__icon"></lucide-icon>
+            <span>Gestión de Proveedores</span>
+          </a>
+          
           <a routerLink="/supervisor/compras" routerLinkActive="active" class="nav-item">
             <lucide-icon name="receipt" class="nav-item__icon"></lucide-icon>
             <span>Compras a Proveedores</span>
           </a>
+          
           <a routerLink="/admin/temporadas" routerLinkActive="active" class="nav-item">
             <lucide-icon name="calendar" class="nav-item__icon"></lucide-icon>
             <span>Temporadas Agrícolas</span>
           </a>
+          
+          <a routerLink="/supervisor/centro-aprobaciones" routerLinkActive="active" class="nav-item">
+            <lucide-icon name="check-circle" class="nav-item__icon"></lucide-icon>
+            <span>Centro de Aprobaciones</span>
+          </a>
+          
           <a routerLink="/admin/alertas" routerLinkActive="active" class="nav-item">
             <lucide-icon name="alert-triangle" class="nav-item__icon"></lucide-icon>
             <span>Alertas de Caducidad</span>

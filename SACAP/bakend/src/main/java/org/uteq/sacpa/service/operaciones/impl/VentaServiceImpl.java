@@ -13,14 +13,19 @@ import org.uteq.sacpa.entity.operaciones.Venta;
 import org.uteq.sacpa.entity.seguridad.Usuario;
 import org.uteq.sacpa.repository.entidades.IClienteRepository;
 import org.uteq.sacpa.repository.inventario.IProductoRepository;
+import org.uteq.sacpa.repository.inventario.ILoteRepository;
 import org.uteq.sacpa.repository.operaciones.VentaRepository;
 import org.uteq.sacpa.repository.seguridad.IUsuarioRepository;
 import org.uteq.sacpa.service.operaciones.IVentaService;
+import org.uteq.sacpa.util.EstadoVenta;
+import org.uteq.sacpa.dto.operaciones.VentaResponseDTO;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +35,7 @@ public class VentaServiceImpl implements IVentaService {
     private final IClienteRepository clienteRepository;
     private final IUsuarioRepository usuarioRepository;
     private final IProductoRepository productoRepository;
+    private final ILoteRepository loteRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
     private static final BigDecimal IVA_RATE = new BigDecimal("0.15");
@@ -48,7 +54,7 @@ public class VentaServiceImpl implements IVentaService {
                 .tecnico(tecnico)
                 .fecha(LocalDateTime.now())
                 .numeroComprobante("VEN-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
-                .estado("CONFIRMADA")
+                .estado(EstadoVenta.CONFIRMADA.name())
                 .costoEnvio(request.getCostoEnvio() != null ? request.getCostoEnvio() : BigDecimal.ZERO)
                 .metodoPago(request.getMetodoPago())
                 .referenciaPago(request.getReferenciaPago())
@@ -61,6 +67,16 @@ public class VentaServiceImpl implements IVentaService {
         for (DetalleVentaRequestDTO detReq : request.getDetalles()) {
             Producto producto = productoRepository.findById(detReq.getIdProducto())
                     .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + detReq.getIdProducto()));
+
+            int stockDisponible = loteRepository.findByProducto(detReq.getIdProducto()).stream()
+                    .mapToInt(l -> (l.getCantidadActual() != null ? l.getCantidadActual() : 0) 
+                                 - (l.getCantidadReservada() != null ? l.getCantidadReservada() : 0))
+                    .sum();
+            
+            if (stockDisponible < detReq.getCantidad()) {
+                throw new RuntimeException("Stock insuficiente para " + producto.getNombre() 
+                    + ". Disponible: " + stockDisponible + ", solicitado: " + detReq.getCantidad());
+            }
 
             BigDecimal precio = producto.getPrecio();
             BigDecimal subtotalDetalle = precio.multiply(BigDecimal.valueOf(detReq.getCantidad()));
@@ -92,5 +108,49 @@ public class VentaServiceImpl implements IVentaService {
         messagingTemplate.convertAndSend("/topic/bodega/despachos", mensaje);
 
         return venta;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public VentaResponseDTO obtenerPorId(Integer id) {
+        Venta venta = ventaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Venta no encontrada con ID: " + id));
+        return mapToResponseDTO(venta);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<VentaResponseDTO> listarVentas() {
+        return ventaRepository.findAll().stream()
+                .map(this::mapToResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    private VentaResponseDTO mapToResponseDTO(Venta venta) {
+        List<VentaResponseDTO.DetalleVentaResponseDTO> detallesDTO = venta.getDetalles().stream()
+                .map(d -> VentaResponseDTO.DetalleVentaResponseDTO.builder()
+                        .idProducto(d.getProducto() != null ? d.getProducto().getIdProducto() : null)
+                        .nombreProducto(d.getProducto() != null ? d.getProducto().getNombre() : "Desconocido")
+                        .cantidad(d.getCantidad())
+                        .precioUnitario(d.getPrecioUnitario())
+                        .subtotal(d.getSubtotal())
+                        .build())
+                .collect(Collectors.toList());
+
+        return VentaResponseDTO.builder()
+                .id(venta.getId())
+                .cliente(venta.getCliente() != null ? venta.getCliente().getNombreFinca() : "N/A")
+                .tecnico(venta.getTecnico() != null ? venta.getTecnico().getNombres() : "N/A")
+                .fecha(venta.getFecha())
+                .numeroComprobante(venta.getNumeroComprobante())
+                .estado(venta.getEstado())
+                .subtotal(venta.getSubtotal())
+                .ivaAplicado(venta.getIvaAplicado())
+                .costoEnvio(venta.getCostoEnvio())
+                .total(venta.getTotal())
+                .metodoPago(venta.getMetodoPago())
+                .referenciaPago(venta.getReferenciaPago())
+                .detalles(detallesDTO)
+                .build();
     }
 }

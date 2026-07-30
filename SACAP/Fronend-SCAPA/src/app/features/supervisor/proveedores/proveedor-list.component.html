@@ -1,0 +1,65 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Gestión de Proveedores</h1>
+      <p class="page-subtitle">Administra los proveedores y sus catálogos de productos.</p>
+    </div>
+    <button class="btn btn-primary" (click)="abrirFormulario()">
+      <lucide-icon name="truck"></lucide-icon>
+      Nuevo Proveedor
+    </button>
+  </div>
+
+  <div class="table-container">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>RUC</th>
+          <th>Representante</th>
+          <th>Empresa</th>
+          <th>Teléfono</th>
+          <th>Ciudad</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (prov of proveedores(); track prov.idProveedor) {
+          <tr>
+            <td class="text-stamped">{{ prov.ruc }}</td>
+            <td>{{ prov.nombreRepresentante }}</td>
+            <td>{{ prov.empresa?.nombre || 'N/A' }}</td>
+            <td>{{ prov.telefonoEmpresa || prov.telefono }}</td>
+            <td>{{ prov.ciudad?.nombre || 'N/A' }}</td>
+            <td>
+              <span class="badge" [class.badge-active]="prov.idEstado === 1" [class.badge-inactive]="prov.idEstado !== 1">
+                {{ prov.idEstado === 1 ? 'Activo' : 'Inactivo' }}
+              </span>
+            </td>
+            <td class="actions">
+              <button class="btn-icon" title="Editar" (click)="abrirFormulario(prov.idProveedor)">
+                <lucide-icon name="edit-2"></lucide-icon>
+              </button>
+              <button class="btn-icon btn-icon-danger" title="Eliminar" (click)="desactivarProveedor(prov.idProveedor)">
+                <lucide-icon name="trash-2"></lucide-icon>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7" class="text-center empty-state">
+              No hay proveedores registrados.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+@if (isFormOpen()) {
+  <app-proveedor-form 
+    [proveedorId]="selectedProveedorId()" 
+    (close)="cerrarFormulario($event)">
+  </app-proveedor-form>
+}

@@ -2,16 +2,19 @@ import { Component, computed, inject, signal, OnInit, effect } from '@angular/co
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { AuthService } from '../../../../core/services/auth.service';
-import { ToastService } from '../../../../shared/components/toast/toast.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../shared/components/toast/toast.service';
 import { environment } from '../../../../environments/environment';
+import { ProductoService, ProductoDTO } from '../../../core/services/producto.service';
+import { ClienteService, ClienteDTO } from '../../../core/services/cliente.service';
+import { ComprobanteService, DatosComprobante } from '../../../core/services/comprobante.service';
 
 export interface ProductoCatalog {
   idProducto: number;
   nombre: string;
   unidadMedida: string;
   precio: number;
-  instruccionesAplicacion?: string;
+  instruccionesAplicacion?: string; // We'll map the new agronomic fields here for the UI
   cultivo?: string;
   plaga?: string;
 }
@@ -39,24 +42,18 @@ export class PuntoVentaComponent implements OnInit {
   private authService = inject(AuthService);
   private toast = inject(ToastService);
   private fb = inject(FormBuilder);
+  private productoService = inject(ProductoService);
+  private clienteService = inject(ClienteService);
+  private comprobanteService = inject(ComprobanteService);
 
   isLoading = signal<boolean>(false);
 
-  // Mocks por ahora
-  clientes = signal<ClienteCatalog[]>([
-    { idCliente: 1, nombreFinca: 'Finca La Esperanza', cedula: '0912345678' },
-    { idCliente: 2, nombreFinca: 'Hacienda San José', cedula: '1723456789' }
-  ]);
+  // Mocks para clientes
+  clientes = signal<ClienteCatalog[]>([]);
 
-  // Lista maestra de productos (mock)
-  todosLosProductos: ProductoCatalog[] = [
-    { idProducto: 1, nombre: 'Fertilizante Urea 46%', unidadMedida: 'Saco 50kg', precio: 35.50, instruccionesAplicacion: 'Aplicar 50g por planta al voleo.', cultivo: 'Banano', plaga: 'Nutrición' },
-    { idProducto: 2, nombre: 'Fungicida Carbendazim', unidadMedida: 'Litro', precio: 12.00, instruccionesAplicacion: 'Diluir 2ml por litro de agua. Fumigar foliar.', cultivo: 'Cacao', plaga: 'Monilia' },
-    { idProducto: 3, nombre: 'Herbicida Glifosato', unidadMedida: 'Galón', precio: 22.80, cultivo: 'Cacao', plaga: 'Maleza' },
-    { idProducto: 4, nombre: 'Insecticida Imidacloprid', unidadMedida: 'Litro', precio: 18.00, instruccionesAplicacion: 'Aplicar 1ml por litro al follaje.', cultivo: 'Banano', plaga: 'Pulgón' }
-  ];
+  todosLosProductos: ProductoCatalog[] = [];
 
-  productosFiltrados = signal<ProductoCatalog[]>(this.todosLosProductos);
+  productosFiltrados = signal<ProductoCatalog[]>([]);
   carrito = signal<CartItem[]>([]);
 
   posForm!: FormGroup;
@@ -79,6 +76,47 @@ export class PuntoVentaComponent implements OnInit {
   ngOnInit() {
     this.inicializarFormulario();
     this.suscribirseAFiltros();
+    this.cargarClientes();
+    this.cargarProductos();
+  }
+
+  private cargarClientes() {
+    const idTecnico = this.authService.currentUser()?.idUsuario || 1;
+    this.clienteService.listarPorTecnico(idTecnico).subscribe({
+      next: (clientesDTO) => {
+        const catalog = clientesDTO.map(c => ({
+          idCliente: c.idCliente,
+          nombreFinca: c.nombreFinca || 'Finca (Sin nombre)',
+          cedula: c.cedula
+        }));
+        this.clientes.set(catalog);
+      },
+      error: () => this.toast.error('Error', 'No se pudieron cargar los clientes')
+    });
+  }
+
+  private cargarProductos() {
+    this.isLoading.set(true);
+    this.productoService.listarTodos().subscribe({
+      next: (productos) => {
+        this.todosLosProductos = productos.map(p => ({
+          idProducto: p.idProducto,
+          nombre: p.nombre,
+          unidadMedida: p.unidadMedida,
+          precio: p.precio,
+          // Mapeamos los campos agronómicos para la vista
+          instruccionesAplicacion: p.ingredienteActivo ? `Ingrediente Activo: ${p.ingredienteActivo}. Carencia: ${p.periodoCarenciaDias || 'N/A'} días.` : p.descripcion,
+          cultivo: p.categoria?.nombre, // Usando categoría como cultivo para filtrar temporalmente
+          plaga: p.toxicidad?.nombre // Mapeo temporal
+        }));
+        this.productosFiltrados.set(this.todosLosProductos);
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.toast.error('Error', 'No se pudieron cargar los productos');
+        this.isLoading.set(false);
+      }
+    });
   }
 
   private inicializarFormulario() {
@@ -194,6 +232,32 @@ export class PuntoVentaComponent implements OnInit {
         next: (res: any) => {
           this.isLoading.set(false);
           this.toast.success('Venta Confirmada', 'Venta registrada y notificada a bodega.');
+          
+          // Generar Comprobante PDF
+          const clienteEncontrado = this.clientes().find(c => c.idCliente === formValues.idCliente);
+          const nombreCliente = clienteEncontrado ? clienteEncontrado.nombreFinca : 'Cliente General';
+          
+          const datosComprobante: DatosComprobante = {
+            titulo: 'Comprobante de Venta - Pre-factura',
+            cliente: nombreCliente,
+            fecha: new Date().toLocaleDateString(),
+            items: this.carrito().map(item => ({
+              descripcion: item.producto.nombre,
+              cantidad: item.cantidad,
+              precioUnitario: item.producto.precio,
+              subtotal: item.producto.precio * item.cantidad
+            })),
+            subtotal: this.subtotal(),
+            costoEnvio: this.costoEnvioReactive(),
+            iva: this.iva(),
+            total: this.granTotal(),
+            metodoPago: formValues.metodoPago,
+            referencia: formValues.referenciaPago,
+            idOperacion: res?.id // Si el backend devuelve el ID de la venta
+          };
+          
+          this.comprobanteService.generarComprobanteVenta(datosComprobante, `comprobante_venta_${Date.now()}.pdf`);
+
           this.carrito.set([]);
           this.posForm.reset({ metodoPago: 'EFECTIVO', costoEnvio: 0 });
         },

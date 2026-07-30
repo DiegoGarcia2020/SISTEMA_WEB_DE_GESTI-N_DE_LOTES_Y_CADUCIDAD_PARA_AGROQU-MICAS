@@ -1,7 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { ToastService } from '../../../../shared/components/toast/toast.service';
+import { ToastService } from '../../../shared/components/toast/toast.service';
 import { environment } from '../../../../environments/environment';
 
 export interface OrdenPendienteDTO {

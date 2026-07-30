@@ -8,6 +8,8 @@ import org.uteq.sacpa.repository.operaciones.IMovimientoInventarioRepository;
 import org.uteq.sacpa.service.operaciones.IMovimientoService;
 
 import java.util.List;
+import org.uteq.sacpa.util.TipoMovimiento;
+import org.uteq.sacpa.util.EstadoAprobacion;
 
 @Service
 public class MovimientoServiceImpl implements IMovimientoService {
@@ -43,20 +45,30 @@ public class MovimientoServiceImpl implements IMovimientoService {
     @Override
     @org.springframework.transaction.annotation.Transactional
     public void despacharFefo(org.uteq.sacpa.dto.operaciones.DespachoRequestDTO dto) {
-        List<org.uteq.sacpa.entity.inventario.Lote> lotes = loteRepository.findByProducto(dto.getIdProducto());
+        List<org.uteq.sacpa.entity.inventario.Lote> lotes = loteRepository.findByProductoForUpdate(dto.getIdProducto());
         int cantidadRestante = dto.getCantidad();
 
         for (org.uteq.sacpa.entity.inventario.Lote lote : lotes) {
             if (cantidadRestante <= 0) break;
-            if (lote.getCantidadActual() != null && lote.getCantidadActual() > 0) {
-                int cantidadTomar = Math.min(cantidadRestante, lote.getCantidadActual());
+            
+            int actual = lote.getCantidadActual() != null ? lote.getCantidadActual() : 0;
+            int reservada = lote.getCantidadReservada() != null ? lote.getCantidadReservada() : 0;
+            int disponible = actual - reservada;
+            
+            if (disponible > 0) {
+                int cantidadTomar = Math.min(cantidadRestante, disponible);
+                
+                // Reservar cantidad
+                lote.setCantidadReservada(reservada + cantidadTomar);
+                loteRepository.save(lote);
+                
                 movimientoRepository.crearMovimiento(
                         cantidadTomar,
                         dto.getObservacion() != null ? dto.getObservacion() : "Despacho FEFO automático por Bodeguero",
                         lote.getIdLote(),
-                        2, // 2: Salida / Despacho
+                        TipoMovimiento.SALIDA,
                         dto.getIdUsuario(),
-                        2  // 2: Pendiente de Aprobación por el Supervisor
+                        EstadoAprobacion.PENDIENTE
                 );
                 cantidadRestante -= cantidadTomar;
             }
@@ -71,7 +83,7 @@ public class MovimientoServiceImpl implements IMovimientoService {
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public List<MovimientoInventario> listarPendientes() {
         return movimientoRepository.findAll().stream()
-                .filter(m -> m.getIdEstadoAprobacion() != null && m.getIdEstadoAprobacion() == 2)
+                .filter(m -> m.getIdEstadoAprobacion() != null && m.getIdEstadoAprobacion() == EstadoAprobacion.PENDIENTE)
                 .collect(java.util.stream.Collectors.toList());
     }
 
@@ -87,13 +99,19 @@ public class MovimientoServiceImpl implements IMovimientoService {
         MovimientoInventario mov = movimientoRepository.findById(idMovimiento)
                 .orElseThrow(() -> new RuntimeException("Movimiento no encontrado con ID: " + idMovimiento));
 
-        movimientoRepository.actualizarMovimiento(idMovimiento, observacion != null ? observacion : "Aprobado por el Supervisor", 1); // 1: Aprobado
+        movimientoRepository.actualizarMovimiento(idMovimiento, observacion != null ? observacion : "Aprobado por el Supervisor", EstadoAprobacion.APROBADO);
 
-        // Restar del stock real del lote al aprobarse la salida
+        // Restar del stock real del lote al aprobarse la salida y liberar reserva
         if (mov.getLote() != null && mov.getCantidad() != null) {
             org.uteq.sacpa.entity.inventario.Lote lote = mov.getLote();
-            int nuevoStock = Math.max(0, (lote.getCantidadActual() != null ? lote.getCantidadActual() : 0) - mov.getCantidad());
+            int actual = lote.getCantidadActual() != null ? lote.getCantidadActual() : 0;
+            int reservada = lote.getCantidadReservada() != null ? lote.getCantidadReservada() : 0;
+            
+            int nuevoStock = Math.max(0, actual - mov.getCantidad());
+            int nuevaReserva = Math.max(0, reservada - mov.getCantidad());
+            
             lote.setCantidadActual(nuevoStock);
+            lote.setCantidadReservada(nuevaReserva);
             loteRepository.save(lote);
         }
     }
@@ -101,7 +119,19 @@ public class MovimientoServiceImpl implements IMovimientoService {
     @Override
     @org.springframework.transaction.annotation.Transactional
     public void rechazarDespacho(Integer idMovimiento, String observacion) {
-        movimientoRepository.actualizarMovimiento(idMovimiento, observacion != null ? observacion : "Rechazado por el Supervisor", 3); // 3: Rechazado
+        MovimientoInventario mov = movimientoRepository.findById(idMovimiento)
+                .orElseThrow(() -> new RuntimeException("Movimiento no encontrado con ID: " + idMovimiento));
+                
+        movimientoRepository.actualizarMovimiento(idMovimiento, observacion != null ? observacion : "Rechazado por el Supervisor", EstadoAprobacion.RECHAZADO);
+        
+        // Liberar reserva sin tocar cantidad actual
+        if (mov.getLote() != null && mov.getCantidad() != null) {
+            org.uteq.sacpa.entity.inventario.Lote lote = mov.getLote();
+            int reservada = lote.getCantidadReservada() != null ? lote.getCantidadReservada() : 0;
+            int nuevaReserva = Math.max(0, reservada - mov.getCantidad());
+            lote.setCantidadReservada(nuevaReserva);
+            loteRepository.save(lote);
+        }
     }
 
     @Override

@@ -8,6 +8,10 @@ import java.util.List;
 public interface IProductoService {
 
     void crearProducto(ProductoRequestDTO dto);
+    
+    void actualizarProducto(Integer id, ProductoRequestDTO dto);
+    
+    Producto obtenerPorId(Integer id);
 
     List<Producto> listarTodos();
 

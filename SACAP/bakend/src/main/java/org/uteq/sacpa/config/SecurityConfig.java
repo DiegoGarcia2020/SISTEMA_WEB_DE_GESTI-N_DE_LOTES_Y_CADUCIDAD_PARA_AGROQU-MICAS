@@ -31,8 +31,8 @@ import java.util.Arrays;
 
 /**
  * Configuracion de seguridad SACPA.
- * Roles del sistema: ADMINISTRADOR, GERENTE, BODEGUERO, SUPERVISOR, PROVEEDOR, TECNICO_CAMPO
- * Roles BD: agro_administrador, agro_gerente, agro_bodeguero, agro_supervisor, agro_proveedor, agro_tecnico_campo
+ * Roles del sistema: ADMINISTRADOR, GERENTE, BODEGUERO, SUPERVISOR, TECNICO_CAMPO
+ * Roles BD: agro_administrador, agro_gerente, agro_bodeguero, agro_supervisor, agro_tecnico_campo
  */
 @Configuration
 @EnableWebSecurity
@@ -128,12 +128,13 @@ public class SecurityConfig {
                     "/api/gerencia/**"
                 ).hasAnyAuthority("ADMINISTRADOR", "GERENTE")
 
-                // ADMINISTRADOR y SUPERVISOR — alertas, sugerencias IA, promociones
+                // ADMINISTRADOR y SUPERVISOR — alertas, sugerencias IA, promociones, proveedores
                 .requestMatchers(
                     "/api/alertas/**",
                     "/api/ia/sugerencias/**",
                     "/api/promociones/**",
                     "/api/temporadas/**",
+                    "/api/proveedores/**",
                     "/api/devoluciones/aprobar/**",
                     "/api/movimientos/aprobar/**"
                 ).hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR")
@@ -147,11 +148,6 @@ public class SecurityConfig {
                     "/api/devoluciones/**",
                     "/api/documentos-lote/**"
                 ).hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "BODEGUERO")
-
-                // PROVEEDOR — ver sus lotes y catalogo
-                .requestMatchers(
-                    "/api/proveedores/mis-lotes/**"
-                ).hasAuthority("PROVEEDOR")
 
                 // TECNICO_CAMPO — uso en campo
                 .requestMatchers(

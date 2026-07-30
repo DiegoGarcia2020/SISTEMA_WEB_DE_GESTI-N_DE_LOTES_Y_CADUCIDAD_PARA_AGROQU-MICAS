@@ -5,6 +5,7 @@ import { LucideAngularModule } from 'lucide-angular';
 import { OperacionesService } from '../../core/services/operaciones.service';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { AuthService } from '../../core/services/auth.service';
+import { WebsocketService } from '../../core/services/websocket.service';
 
 @Component({
   selector: 'app-bodega-dashboard',
@@ -435,6 +436,7 @@ export class BodegaDashboardComponent implements OnInit {
   private operacionesService = inject(OperacionesService);
   private toast = inject(ToastService);
   private fb = inject(FormBuilder);
+  private wsService = inject(WebsocketService);
 
   Math = Math;
   activeTab = signal<'PEDIDOS_VENTAS' | 'KITTING' | 'LOTES' | 'DEVOLUCION_CLIENTE'>('PEDIDOS_VENTAS');
@@ -465,6 +467,27 @@ export class BodegaDashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadAll();
+    
+    // Suscripción WebSocket para despachos y recepciones
+    this.wsService.subscribe('/topic/bodega/recepciones', (mensaje) => {
+      if (mensaje.tipo === 'RECEPCION_COMPRA') {
+        this.toast.success(
+          '¡Nueva Recepción de Compra!', 
+          `Orden #${mensaje.idOrden} - ${mensaje.proveedor}: ${mensaje.mensaje}`
+        );
+        this.loadAll(); // Recargar datos si es necesario (ej. si hay que ubicar lotes flotantes)
+      }
+    });
+
+    this.wsService.subscribe('/topic/bodega/devoluciones', (mensaje) => {
+      if (mensaje.tipo === 'DEVOLUCION_EN_TRANSITO') {
+        this.toast.info(
+          'Devolución en Tránsito', 
+          `Se reportó una devolución (ID: ${mensaje.idDevolucion}) de la Venta #${mensaje.idVenta}. Prepare espacio en bodega.`
+        );
+        // Opcional: Recargar o actualizar contadores
+      }
+    });
   }
 
   loadAll(): void {

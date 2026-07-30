@@ -57,4 +57,12 @@ public interface IOrdenCompraRepository extends JpaRepository<OrdenCompra, Integ
                    "LIMIT 1",
            nativeQuery = true)
     Optional<BigDecimal> findUltimoPrecioProducto(@Param("idProducto") Integer idProducto);
+
+    @Query(value = "SELECT dc.precio_unitario FROM operaciones.detalle_compra dc " +
+        "JOIN operaciones.orden_compra oc ON dc.id_orden_compra = oc.id " +
+        "WHERE dc.id_producto = :idProducto AND oc.id_proveedor = :idProveedor " +
+        "AND dc.es_bonificacion = false AND oc.estado != 'ANULADA' " +
+        "ORDER BY oc.fecha_registro DESC LIMIT 1", nativeQuery = true)
+    Optional<BigDecimal> findUltimoPrecioProductoPorProveedor(@Param("idProducto") Integer idProducto,
+                                                              @Param("idProveedor") Integer idProveedor);
 }

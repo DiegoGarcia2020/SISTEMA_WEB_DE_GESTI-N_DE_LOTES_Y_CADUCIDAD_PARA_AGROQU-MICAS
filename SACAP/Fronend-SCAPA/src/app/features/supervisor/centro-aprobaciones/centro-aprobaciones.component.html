@@ -1,0 +1,128 @@
+<div class="aprobaciones-container">
+  <div class="aprobaciones-header">
+    <h1>Centro de Aprobaciones</h1>
+    <p>Revise y autorice operaciones pendientes de validación superior.</p>
+  </div>
+
+  <!-- NAVEGACIÓN POR PESTAÑAS (TABS) HORIZONTALES -->
+  <div class="tabs-container">
+    <button class="tab-btn" [class.active]="tabActiva() === 1" (click)="setTab(1)">
+      Combos & Promociones
+    </button>
+    <button class="tab-btn" [class.active]="tabActiva() === 2" (click)="setTab(2)">
+      Despachos FEFO Críticos
+    </button>
+    <button class="tab-btn" [class.active]="tabActiva() === 3" (click)="setTab(3)">
+      Devoluciones a Proveedor
+    </button>
+  </div>
+
+  <div class="tab-content">
+    
+    <!-- PESTAÑA 1: COMBOS & PROMOCIONES -->
+    @if (tabActiva() === 1) {
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Combo / Ref</th>
+            <th>Título & Detalles</th>
+            <th>Descuento</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (promo of promosPendientes(); track promo.idPromocion) {
+            <tr>
+              <td>PROMO-{{ promo.idPromocion }}</td>
+              <td>{{ promo.nombrePromocion || promo.titulo }}</td>
+              <td>-{{ promo.descuentoGlobal || promo.descuentoSugerido }}%</td>
+              <td>
+                <div class="btn-group">
+                  <button class="btn btn-primary" (click)="aprobarPromo(promo)">Aprobar</button>
+                  <button class="btn btn-danger" (click)="rechazarPromo(promo)">Rechazar</button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4">
+                <div class="empty-state">No hay elementos pendientes de revisión en esta bandeja.</div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+
+    <!-- PESTAÑA 2: DESPACHOS FEFO CRÍTICOS -->
+    @if (tabActiva() === 2) {
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Producto & Lote</th>
+            <th>Cantidad</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (des of despachosPendientes(); track des.idMovimiento) {
+            <tr>
+              <td>MOV-{{ des.idMovimiento }}</td>
+              <td>{{ des.lote?.producto?.nombre || 'Producto' }} (Lote: {{ des.lote?.numeroLote }})</td>
+              <td>{{ des.cantidad }} unds</td>
+              <td>
+                <div class="btn-group">
+                  <button class="btn btn-primary" (click)="aprobarDespacho(des.idMovimiento)">Aprobar</button>
+                  <button class="btn btn-danger" (click)="rechazarDespacho(des.idMovimiento)">Rechazar</button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4">
+                <div class="empty-state">No hay elementos pendientes de revisión en esta bandeja.</div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+
+    <!-- PESTAÑA 3: DEVOLUCIONES A PROVEEDOR -->
+    @if (tabActiva() === 3) {
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Proveedor</th>
+            <th>Motivo</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (dev of devolucionesPendientes(); track dev.idDevolucion) {
+            <tr>
+              <td>DEV-{{ dev.idDevolucion }}</td>
+              <td>{{ dev.proveedor?.nombre || 'Proveedor' }}</td>
+              <td>{{ dev.motivo }}</td>
+              <td>
+                <div class="btn-group">
+                  <button class="btn btn-primary" (click)="aprobarDevolucion(dev.idDevolucion)">Aprobar</button>
+                  <button class="btn btn-danger" (click)="rechazarDevolucion(dev.idDevolucion)">Rechazar</button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4">
+                <div class="empty-state">No hay elementos pendientes de revisión en esta bandeja.</div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+
+  </div>
+</div>

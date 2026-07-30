@@ -2,8 +2,9 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { ToastService } from '../../../../shared/components/toast/toast.service';
+import { ToastService } from '../../../shared/components/toast/toast.service';
 import { environment } from '../../../../environments/environment';
+import { ComprobanteService, DatosComprobante } from '../../../core/services/comprobante.service';
 
 export interface EntregaDTO {
   id: number;
@@ -24,6 +25,7 @@ export class TecnicoEntregasComponent implements OnInit {
   private http = inject(HttpClient);
   private toast = inject(ToastService);
   private fb = inject(FormBuilder);
+  private comprobanteService = inject(ComprobanteService);
 
   entregas = signal<EntregaDTO[]>([]);
   processingIds = signal<Set<number>>(new Set());
@@ -117,5 +119,28 @@ export class TecnicoEntregasComponent implements OnInit {
           this.isProcessingModal.set(false);
         }
       });
+  }
+
+  imprimirComprobante(entrega: EntregaDTO) {
+    const datosComprobante: DatosComprobante = {
+      titulo: 'Comprobante de Entrega',
+      cliente: entrega.cliente,
+      fecha: new Date().toLocaleDateString(),
+      items: [
+        {
+          descripcion: 'Paquete de Insumos (Detalles ocultos en modo offline/mock)',
+          cantidad: 1,
+          precioUnitario: entrega.total,
+          subtotal: entrega.total
+        }
+      ],
+      subtotal: entrega.total,
+      costoEnvio: 0,
+      iva: 0,
+      total: entrega.total,
+      idOperacion: entrega.id
+    };
+    
+    this.comprobanteService.generarComprobanteVenta(datosComprobante, `comprobante_entrega_${entrega.id}.pdf`);
   }
 }

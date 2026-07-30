@@ -3,6 +3,7 @@ package org.uteq.sacpa.service.operaciones.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.uteq.sacpa.dto.operaciones.DetalleCompraRequestDTO;
 import org.uteq.sacpa.dto.operaciones.OrdenCompraRequestDTO;
 import org.uteq.sacpa.dto.operaciones.OrdenCompraResponseDTO;
@@ -57,6 +58,9 @@ public class OrdenCompraServiceImpl implements IOrdenCompraService {
 
     @Autowired
     private ILoteRepository loteRepository;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     // =========================================================================
     // CREAR ORDEN DE COMPRA
@@ -240,6 +244,15 @@ public class OrdenCompraServiceImpl implements IOrdenCompraService {
         // 6. Cambiar estado de la orden a RECEPCIONADA
         orden.setEstado("RECEPCIONADA");
         ordenCompraRepository.save(orden);
+
+        // 7. Notificar a Bodega de que llegó la compra
+        int lotesFlotantes = dto.getLotes().size();
+        String mensaje = String.format(
+            "{\"tipo\": \"RECEPCION_COMPRA\", \"idOrden\": %d, \"proveedor\": \"%s\", " +
+            "\"lotesFlotantes\": %d, \"mensaje\": \"Se recepcionaron %d lotes de %s pendientes de ubicar\"}",
+            orden.getId(), orden.getProveedor().getNombre(),
+            lotesFlotantes, lotesFlotantes, orden.getProveedor().getNombre());
+        messagingTemplate.convertAndSend("/topic/bodega/recepciones", mensaje);
     }
 
     // =========================================================================

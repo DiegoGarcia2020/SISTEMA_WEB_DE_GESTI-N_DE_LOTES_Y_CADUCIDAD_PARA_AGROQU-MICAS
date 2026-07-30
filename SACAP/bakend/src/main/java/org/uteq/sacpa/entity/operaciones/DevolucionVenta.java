@@ -3,6 +3,7 @@ package org.uteq.sacpa.entity.operaciones;
 import jakarta.persistence.*;
 import lombok.*;
 import org.uteq.sacpa.entity.inventario.Producto;
+import org.uteq.sacpa.entity.inventario.Lote;
 
 import java.time.LocalDateTime;
 
@@ -38,4 +39,8 @@ public class DevolucionVenta {
 
     @Column(name = "estado_inventario", length = 30)
     private String estadoInventario; // Ej: CUARENTENA, DISPONIBLE
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_lote")
+    private Lote lote;
 }

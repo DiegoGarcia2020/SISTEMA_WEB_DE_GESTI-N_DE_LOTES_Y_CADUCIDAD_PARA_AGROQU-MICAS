@@ -17,7 +17,6 @@ import org.uteq.sacpa.config.UserContext;
  *  GERENTE        -> agro_gerente
  *  BODEGUERO      -> agro_bodeguero
  *  SUPERVISOR     -> agro_supervisor
- *  PROVEEDOR      -> agro_proveedor
  *  TECNICO_CAMPO  -> agro_tecnico_campo
  */
 @Aspect
@@ -57,7 +56,6 @@ public class DatabaseRoleAspect {
             case "GERENTE"        -> "agro_gerente";
             case "BODEGUERO"      -> "agro_bodeguero";
             case "SUPERVISOR"     -> "agro_supervisor";
-            case "PROVEEDOR"      -> "agro_proveedor";
             case "TECNICO_CAMPO"  -> "agro_tecnico_campo";
             default -> {
                 log.warn("[SACPA-AOP] Rol de aplicacion no reconocido: {}", rolApp);

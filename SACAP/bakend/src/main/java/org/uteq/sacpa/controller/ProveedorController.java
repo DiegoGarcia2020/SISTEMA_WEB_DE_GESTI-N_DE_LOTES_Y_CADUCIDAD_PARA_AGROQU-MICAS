@@ -29,9 +29,42 @@ public class ProveedorController {
         return ResponseEntity.ok(proveedorService.listarTodos());
     }
 
-    @DeleteMapping("/{idUsuario}")
-    public ResponseEntity<Map<String, String>> eliminarProveedor(@PathVariable Integer idUsuario) {
-        proveedorService.eliminarProveedor(idUsuario);
+    @GetMapping("/{id}")
+    public ResponseEntity<Proveedor> obtenerPorId(@PathVariable Integer id) {
+        return ResponseEntity.ok(proveedorService.obtenerPorId(id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Map<String, String>> actualizarProveedor(@PathVariable Integer id, @Valid @RequestBody ProveedorRequestDTO request) {
+        proveedorService.actualizarProveedor(id, request);
+        return ResponseEntity.ok(Map.of("mensaje", "Proveedor actualizado exitosamente"));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, String>> eliminarProveedor(@PathVariable Integer id) {
+        proveedorService.eliminarProveedor(id);
         return ResponseEntity.ok(Map.of("mensaje", "Proveedor eliminado exitosamente"));
+    }
+
+    // ==========================================
+    // PRODUCTOS DEL PROVEEDOR
+    // ==========================================
+
+    @PostMapping("/{id}/productos")
+    public ResponseEntity<Map<String, String>> asociarProducto(@PathVariable Integer id, @Valid @RequestBody org.uteq.sacpa.dto.entidades.ProveedorProductoDTO request) {
+        request.setIdProveedor(id);
+        proveedorService.asociarProducto(request);
+        return ResponseEntity.ok(Map.of("mensaje", "Producto asociado exitosamente"));
+    }
+
+    @DeleteMapping("/{idProveedor}/productos/{idProducto}")
+    public ResponseEntity<Map<String, String>> desasociarProducto(@PathVariable Integer idProveedor, @PathVariable Integer idProducto) {
+        proveedorService.desasociarProducto(idProveedor, idProducto);
+        return ResponseEntity.ok(Map.of("mensaje", "Producto desasociado exitosamente"));
+    }
+
+    @GetMapping("/{id}/productos")
+    public ResponseEntity<List<org.uteq.sacpa.dto.entidades.ProveedorProductoDTO>> listarProductosDeProveedor(@PathVariable Integer id) {
+        return ResponseEntity.ok(proveedorService.listarProductosDeProveedor(id));
     }
 }

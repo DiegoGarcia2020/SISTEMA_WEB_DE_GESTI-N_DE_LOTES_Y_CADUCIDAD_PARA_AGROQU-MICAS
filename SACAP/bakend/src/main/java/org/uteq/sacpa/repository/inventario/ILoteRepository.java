@@ -2,9 +2,11 @@ package org.uteq.sacpa.repository.inventario;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
+import jakarta.persistence.LockModeType;
 import org.uteq.sacpa.entity.inventario.Lote;
 
 import java.time.LocalDate;
@@ -34,6 +36,11 @@ public interface ILoteRepository extends JpaRepository<Lote, Integer> {
     /** Lotes disponibles en stock ordenados por FEFO (Primero en vencer, primero en salir) */
     @Query("SELECT l FROM Lote l WHERE l.cantidadActual > 0 ORDER BY l.fechaVencimiento ASC")
     List<Lote> findLotesDisponiblesFefo();
+
+    /** Lotes para reservar/despachar por FEFO, con bloqueo pesimista */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT l FROM Lote l WHERE l.producto.idProducto = :idProducto AND l.cantidadActual > 0 ORDER BY l.fechaVencimiento ASC")
+    List<Lote> findByProductoForUpdate(@Param("idProducto") Integer idProducto);
 
     // ============================================================
     // Llamadas a funciones PL/pgSQL del esquema inventario

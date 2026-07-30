@@ -1,0 +1,128 @@
+<div class="modal-overlay" (click)="cerrar()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ proveedorId ? 'Editar Proveedor' : 'Nuevo Proveedor' }}</h2>
+      <button class="btn-icon" (click)="cerrar()">
+        <lucide-icon name="x"></lucide-icon>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <form [formGroup]="form" class="form-grid">
+        <div class="form-group">
+          <label>RUC (13 dígitos) *</label>
+          <input type="text" formControlName="ruc" class="form-control" [class.is-invalid]="form.get('ruc')?.invalid && form.get('ruc')?.touched">
+        </div>
+
+        <div class="form-group">
+          <label>Representante *</label>
+          <input type="text" formControlName="nombreRepresentante" class="form-control" [class.is-invalid]="form.get('nombreRepresentante')?.invalid && form.get('nombreRepresentante')?.touched">
+        </div>
+
+        <div class="form-group">
+          <label>Dirección *</label>
+          <input type="text" formControlName="direccion" class="form-control" [class.is-invalid]="form.get('direccion')?.invalid && form.get('direccion')?.touched">
+        </div>
+
+        <div class="form-group">
+          <label>Teléfono Empresa</label>
+          <input type="text" formControlName="telefonoEmpresa" class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label>Correo Contacto</label>
+          <input type="email" formControlName="correoContacto" class="form-control" [class.is-invalid]="form.get('correoContacto')?.invalid && form.get('correoContacto')?.touched">
+        </div>
+
+        <div class="form-group">
+          <label>Empresa *</label>
+          <select formControlName="idEmpresa" class="form-control">
+            @for (emp of empresas(); track emp.idEmpresa) {
+              <option [ngValue]="emp.idEmpresa">{{ emp.nombre }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Ciudad *</label>
+          <select formControlName="idCiudad" class="form-control">
+            @for (ciu of ciudades(); track ciu.idCiudad) {
+              <option [ngValue]="ciu.idCiudad">{{ ciu.nombre }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Estado *</label>
+          <select formControlName="idEstado" class="form-control">
+            <option [ngValue]="1">Activo</option>
+            <option [ngValue]="2">Inactivo</option>
+          </select>
+        </div>
+      </form>
+
+      @if (proveedorId) {
+        <hr class="divider">
+        <div class="association-section">
+          <h3>Productos Asociados</h3>
+          
+          <form [formGroup]="asociarForm" class="association-form" (ngSubmit)="asociarProducto()">
+            <div class="form-group flex-1">
+              <select formControlName="idProducto" class="form-control">
+                <option [ngValue]="null" disabled>Seleccionar Producto...</option>
+                @for (prod of productosMaestros(); track prod.idProducto) {
+                  <option [ngValue]="prod.idProducto">{{ prod.nombre }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-group w-32">
+              <input type="number" formControlName="precioReferencial" class="form-control" placeholder="Precio Ref." step="0.01">
+            </div>
+            <div class="form-group flex-1">
+              <input type="text" formControlName="codigoProductoProveedor" class="form-control" placeholder="Código Prov. (Opcional)">
+            </div>
+            <button type="submit" class="btn btn-secondary" [disabled]="asociarForm.invalid">
+              Asociar
+            </button>
+          </form>
+
+          <div class="table-container mt-4">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>Precio Ref.</th>
+                  <th>Código Prov.</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (pp of productosAsociados(); track pp.idProducto) {
+                  <tr>
+                    <td>{{ pp.nombreProducto }}</td>
+                    <td>\${{ pp.precioReferencial }}</td>
+                    <td class="text-stamped">{{ pp.codigoProductoProveedor || 'N/A' }}</td>
+                    <td>
+                      <button class="btn-icon btn-icon-danger" (click)="desasociarProducto(pp.idProducto)">
+                        <lucide-icon name="trash-2" size="18"></lucide-icon>
+                      </button>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="4" class="text-center text-muted">No hay productos asociados.</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="cerrar()" [disabled]="isLoading()">Cancelar</button>
+      <button class="btn btn-primary" (click)="guardar()" [disabled]="isLoading() || form.invalid">
+        {{ isLoading() ? 'Guardando...' : 'Guardar Proveedor' }}
+      </button>
+    </div>
+  </div>
+</div>

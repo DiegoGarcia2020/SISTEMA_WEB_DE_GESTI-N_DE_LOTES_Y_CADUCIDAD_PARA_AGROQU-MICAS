@@ -3,10 +3,12 @@ package org.uteq.sacpa.entity.inventario;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "categoria", schema = "inventario")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Categoria {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_categoria") private Integer idCategoria;
