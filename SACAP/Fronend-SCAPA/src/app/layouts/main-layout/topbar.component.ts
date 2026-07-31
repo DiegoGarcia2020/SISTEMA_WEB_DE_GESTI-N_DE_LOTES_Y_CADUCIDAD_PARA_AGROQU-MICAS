@@ -13,45 +13,41 @@ import { ToastService } from '../../shared/components/toast/toast.service';
   selector: 'app-topbar',
   standalone: true,
   imports: [CommonModule, FormsModule, LucideAngularModule, AvatarComponent],
+  styleUrl: './topbar.component.css',
   template: `
-    <header class="bg-white border-b border-gray-200/80 px-6 py-3.5 flex items-center justify-between sticky top-0 z-20 shadow-2xs select-none">
+    <header class="topbar">
       <!-- Título de vista y Módulo Dinámico -->
-      <div class="flex items-center gap-3">
-        <div class="w-8 h-8 rounded-lg bg-[#0B4628]/10 text-[#0B4628] flex items-center justify-center font-bold text-sm">
+      <div class="topbar-brand">
+        <div class="topbar-icon-wrapper">
           <lucide-icon [name]="currentRouteInfo().icon" class="w-4 h-4"></lucide-icon>
         </div>
-        <div>
-          <h2 class="text-base font-bold text-gray-900 leading-none">{{ currentRouteInfo().title }}</h2>
-          <span class="text-xs text-gray-500 font-medium">{{ currentRouteInfo().subtitle }}</span>
+        <div class="topbar-titles">
+          <h2 class="topbar-title">{{ currentRouteInfo().title }}</h2>
+          <span class="topbar-subtitle">{{ currentRouteInfo().subtitle }}</span>
         </div>
       </div>
 
       <!-- Acciones Derecha -->
-      <div class="flex items-center gap-4">
+      <div class="topbar-actions">
         <!-- Indicador de Alertas / Campana -->
-        <div class="relative">
-          <button (click)="toast.info('Alertas Operativas', 'Hay 2 lotes urgentes por caducidad que requieren tu revisión.')"
-                  class="w-9 h-9 rounded-xl border border-gray-200/80 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer" 
-                  title="Notificaciones SACPA">
-            <lucide-icon name="bell" class="w-4 h-4"></lucide-icon>
-          </button>
-          <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
-          <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
-        </div>
+        <button (click)="toast.info('Alertas Operativas', 'Hay 2 lotes urgentes por caducidad que requieren tu revisión.')"
+                class="btn-icon" title="Notificaciones SACPA">
+          <lucide-icon name="bell" class="w-4 h-4"></lucide-icon>
+          <span class="indicator-dot indicator-dot--ping"></span>
+          <span class="indicator-dot"></span>
+        </button>
 
-        <div class="h-6 w-px bg-gray-200"></div>
+        <div class="topbar-divider"></div>
 
         <!-- Perfil rápido (Clic para abrir modal de foto) -->
-        <div (click)="openProfileModal()" 
-             class="flex items-center gap-2.5 p-1.5 rounded-xl hover:bg-green-50/50 transition-all cursor-pointer group"
-             title="Haz clic para editar tu foto de perfil">
+        <div (click)="openProfileModal()" class="profile-btn" title="Haz clic para editar tu foto de perfil">
           <app-avatar [name]="authService.currentUser()?.correo || 'Admin'" [imageUrl]="savedPhoto()" size="sm"></app-avatar>
-          <div class="hidden md:block text-left">
-            <div class="text-xs font-bold text-gray-800 leading-none group-hover:text-[#0B4628] transition-colors flex items-center gap-1">
+          <div class="profile-info">
+            <h3 class="profile-name">
               <span>{{ authService.currentUser()?.correo || 'admin@agrosense.ec' }}</span>
-              <lucide-icon name="camera" class="w-3 h-3 text-gray-400 group-hover:text-[#0B4628]"></lucide-icon>
-            </div>
-            <div class="text-[10px] text-[#0B4628] font-semibold uppercase mt-0.5">{{ authService.currentRole() || 'Administrador' }}</div>
+              <lucide-icon name="camera" class="w-3 h-3 text-[var(--c-sage-border)]"></lucide-icon>
+            </h3>
+            <span class="profile-role">{{ authService.currentRole() || 'Administrador' }}</span>
           </div>
         </div>
       </div>
@@ -59,54 +55,51 @@ import { ToastService } from '../../shared/components/toast/toast.service';
 
     <!-- MODAL DE PERFIL Y FOTO -->
     @if (isProfileModalOpen()) {
-      <div class="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 animate-fade-in p-4">
-        <div class="bg-white rounded-2xl shadow-xl border border-gray-200 max-w-md w-full overflow-hidden">
-          <div class="p-6 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-green-50/60 to-white">
-            <div class="flex items-center gap-2.5">
-              <lucide-icon name="user" class="w-5 h-5 text-[#0B4628]"></lucide-icon>
-              <h3 class="font-bold text-base text-gray-900">Configuración de Perfil y Foto</h3>
-            </div>
-            <button (click)="isProfileModalOpen.set(false)" class="p-1 text-gray-400 hover:text-gray-600 rounded-lg cursor-pointer">
+      <div class="modal-overlay animate-fade-in">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-header__title">
+              <lucide-icon name="user" class="w-5 h-5 text-[var(--c-dark-green)]"></lucide-icon>
+              <span>Configuración de Perfil y Foto</span>
+            </h3>
+            <button (click)="isProfileModalOpen.set(false)" class="btn-close">
               <lucide-icon name="x" class="w-5 h-5"></lucide-icon>
             </button>
           </div>
 
-          <div class="p-6 space-y-6 text-center">
+          <div class="modal-body">
             <!-- Vista previa del Avatar -->
-            <div class="flex flex-col items-center justify-center gap-2">
-              <div class="w-24 h-24 rounded-full border-4 border-green-100 shadow-md overflow-hidden relative group">
+            <div class="modal-avatar-preview">
+              <div class="avatar-preview__circle">
                 @if (fotoUrl) {
-                  <img [src]="fotoUrl" alt="Preview" class="w-full h-full object-cover rounded-full">
+                  <img [src]="fotoUrl" alt="Preview">
                 } @else {
-                  <div class="w-full h-full bg-[#0B4628] text-white flex items-center justify-center text-3xl font-bold">
-                    {{ (authService.currentUser()?.correo || 'A')[0].toUpperCase() }}
-                  </div>
+                  <span>{{ (authService.currentUser()?.correo || 'A')[0].toUpperCase() }}</span>
                 }
               </div>
-              <span class="text-xs font-bold text-gray-700 mt-1">{{ authService.currentUser()?.correo }}</span>
-              <span class="bg-green-100 text-[#0B4628] text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">{{ authService.currentRole() || 'ADMINISTRADOR' }}</span>
+              <p class="avatar-preview__name">{{ authService.currentUser()?.correo }}</p>
+              <span class="avatar-preview__role">{{ authService.currentRole() || 'ADMINISTRADOR' }}</span>
             </div>
 
             <!-- Carga de Archivo o URL -->
-            <div class="space-y-3 text-left">
+            <div class="modal-upload-section">
               <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Subir imagen desde tu equipo</label>
-                <label class="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 hover:border-[#0B4628] rounded-xl text-xs font-semibold text-gray-600 hover:text-[#0B4628] bg-gray-50/50 hover:bg-green-50/20 transition-all cursor-pointer">
+                <label class="upload-label">Subir imagen desde tu equipo</label>
+                <label class="upload-box">
                   <lucide-icon name="upload" class="w-4 h-4"></lucide-icon>
                   <span>Hacer clic para seleccionar archivo de foto</span>
-                  <input type="file" (change)="onFileSelected($event)" accept="image/*" class="hidden">
+                  <input type="file" (change)="onFileSelected($event)" accept="image/*" style="display: none;">
                 </label>
               </div>
 
               <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">O pegar URL de imagen</label>
-                <input type="text" [(ngModel)]="fotoUrl" placeholder="https://ejemplo.com/mifoto.jpg"
-                       class="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-sm focus:border-[#0B4628] outline-none">
+                <label class="upload-label">O pegar URL de imagen</label>
+                <input type="text" [(ngModel)]="fotoUrl" placeholder="https://ejemplo.com/mifoto.jpg" class="upload-input-text">
               </div>
 
               @if (fotoUrl) {
-                <div class="text-right">
-                  <button (click)="fotoUrl = ''" class="text-xs text-red-600 hover:underline font-semibold cursor-pointer">
+                <div>
+                  <button (click)="fotoUrl = ''" class="btn-remove-photo">
                     Remover foto (usar iniciales)
                   </button>
                 </div>
@@ -114,11 +107,9 @@ import { ToastService } from '../../shared/components/toast/toast.service';
             </div>
           </div>
 
-          <div class="p-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-2">
-            <button (click)="isProfileModalOpen.set(false)" class="px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer">
-              Cancelar
-            </button>
-            <button (click)="saveFoto()" class="px-5 py-2 bg-[#0B4628] hover:bg-[#146C43] text-white text-sm font-bold rounded-xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer">
+          <div class="modal-footer">
+            <button (click)="isProfileModalOpen.set(false)" class="btn-secondary">Cancelar</button>
+            <button (click)="saveFoto()" class="btn-primary">
               <lucide-icon name="save" class="w-4 h-4"></lucide-icon>
               <span>Guardar Foto en BD</span>
             </button>

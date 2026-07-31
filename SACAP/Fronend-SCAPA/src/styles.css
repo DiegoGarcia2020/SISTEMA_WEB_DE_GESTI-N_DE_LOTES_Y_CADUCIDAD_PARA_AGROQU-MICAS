@@ -1,17 +1,54 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Inter:wght@300;400;500;600;700;800&family=Fraunces:opsz,wght@9..144,300..900&display=swap');
 @import "tailwindcss";
+
+/* =================================================================
+   SISTEMA DE DISEÑO GLOBAL - SACAP
+   Dirección A: "Etiqueta de Almacén"
+   ================================================================= */
+
+:root {
+  /* Paleta "Etiqueta de Almacén" */
+  --c-dark-green: #12261D;
+  --c-mid-green: #2F5D45;
+  --c-sage-border: #8FAE9B;
+  --c-bone-bg: #F6F5F0;
+  --c-cacao-accent: #C77F3D;
+  --c-warm-black: #1A1A16;
+
+  /* Colores de estado (Ajustados para encajar en la paleta cálida) */
+  --c-error: #B93E3E;
+  --c-success: #3D7A58;
+
+  /* Tipografía */
+  --font-sans: 'Inter', -apple-system, sans-serif;
+  --font-slab: 'Fraunces', serif;
+
+  /* Reglas Anti-Cliché */
+  --radius-btn: 4px;
+  --radius-card: 0px; /* Bordes rectos tipo etiqueta/documento técnico */
+  --radius-input: 2px;
+}
 
 @layer base {
   body {
     font-family: 'Inter', sans-serif;
-    background-color: #F4F6F8;
-    color: #212529;
+    background-color: var(--c-bone-bg);
+    color: var(--c-warm-black);
     overflow-x: hidden;
   }
 
   code, pre, .font-mono {
     font-family: 'DM Mono', monospace;
   }
+}
+
+/* Elemento Firma: Etiqueta troquelada para lotes y fechas clave */
+.text-stamped {
+  font-family: var(--font-slab);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--c-warm-black);
+  text-transform: uppercase;
 }
 
 /* Animaciones y utilidades personalizadas */
@@ -42,9 +79,9 @@
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.15);
+  background: var(--c-sage-border);
   border-radius: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.25);
+  background: var(--c-mid-green);
 }
