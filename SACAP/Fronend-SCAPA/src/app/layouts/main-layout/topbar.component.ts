@@ -184,9 +184,6 @@ export class TopbarComponent {
     if (url.includes('/inventario/pre-registro')) {
       return { title: 'Pre-registro de Lotes', subtitle: 'Formulario A para proveedores', icon: 'clipboard-check' };
     }
-    if (url.includes('/inventario/recepcion')) {
-      return { title: 'Recepción y Validación', subtitle: 'Recepción física y activación por Bodeguero', icon: 'box' };
-    }
     if (url.includes('/inventario/estructura')) {
       return { title: 'Estructura Física', subtitle: 'Navegación en cascada de almacenes', icon: 'layers' };
     }

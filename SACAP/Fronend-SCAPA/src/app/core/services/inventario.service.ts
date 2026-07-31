@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 // ─── Tipos ────────────────────────────────────────────────
@@ -182,32 +182,6 @@ export interface LoteSupervisorRequest {
   cantidad:         number;
 }
 
-// ─── Mocks (fallback offline) ─────────────────────────────
-const MOCK_ALMACENES: AlmacenDTO[] = [
-  { idAlmacen: 1, nombre: 'Bodega Central Quevedo', capacidadTotal: 5000, ciudad: 'Quevedo', idEstado: 1 },
-  { idAlmacen: 2, nombre: 'Almacén Agroquímicos Norte', capacidadTotal: 2500, ciudad: 'Babahoyo', idEstado: 1 }
-];
-
-const MOCK_ZONAS: ZonaDTO[] = [
-  { idZona: 1, nombre: 'Zona A — Líquidos', condicionClimatica: 'Temperatura controlada 18°C', idAlmacen: 1 },
-  { idZona: 2, nombre: 'Zona B — Sólidos / Granos', condicionClimatica: 'Ambiente seco < 65% HR', idAlmacen: 1 },
-  { idZona: 3, nombre: 'Zona Norte — Fertilizantes', condicionClimatica: 'Ventilado natural', idAlmacen: 2 }
-];
-
-const MOCK_ESTANTERIAS: EstanteriaDTO[] = [
-  { idEstanteria: 1, codigo: 'EST-A1', idZona: 1 },
-  { idEstanteria: 2, codigo: 'EST-A2', idZona: 1 },
-  { idEstanteria: 3, codigo: 'EST-B1', idZona: 2 },
-  { idEstanteria: 4, codigo: 'EST-N1', idZona: 3 }
-];
-
-const MOCK_UBICACIONES: UbicacionDTO[] = [
-  { idUbicacion: 1, nivel: '1', posicion: 'A', descripcionCompleta: 'EST-A1 / Nivel 1 / Pos. A', codigoEstanteria: 'EST-A1' },
-  { idUbicacion: 2, nivel: '1', posicion: 'B', descripcionCompleta: 'EST-A1 / Nivel 1 / Pos. B', codigoEstanteria: 'EST-A1' },
-  { idUbicacion: 3, nivel: '2', posicion: 'A', descripcionCompleta: 'EST-A1 / Nivel 2 / Pos. A', codigoEstanteria: 'EST-A1' },
-  { idUbicacion: 4, nivel: '1', posicion: 'A', descripcionCompleta: 'EST-A2 / Nivel 1 / Pos. A', codigoEstanteria: 'EST-A2' }
-];
-
 // ─── Servicio ─────────────────────────────────────────────
 @Injectable({ providedIn: 'root' })
 export class InventarioService {
@@ -217,33 +191,28 @@ export class InventarioService {
   // Almacenes
   getAlmacenes(): Observable<AlmacenDTO[]> {
     return this.http.get<AlmacenDTO[]>(`${this.apiUrl}/almacenes`).pipe(
-      map(lista => lista?.length ? lista : MOCK_ALMACENES),
-      catchError(() => of(MOCK_ALMACENES))
+      catchError(e => e.status === 0 || e.status === 404 ? of([]) : throwError(() => e))
     );
   }
 
   // Cascada: Zonas por Almacén
   getZonas(idAlmacen: number): Observable<ZonaDTO[]> {
     return this.http.get<ZonaDTO[]>(`${this.apiUrl}/almacenes/${idAlmacen}/zonas`).pipe(
-      map(lista => lista?.length ? lista : MOCK_ZONAS.filter(z => z.idAlmacen === idAlmacen)),
-      catchError(() => of(MOCK_ZONAS.filter(z => z.idAlmacen === idAlmacen)))
+      catchError(e => e.status === 0 || e.status === 404 ? of([]) : throwError(() => e))
     );
   }
 
   // Cascada: Estanterías por Zona
   getEstanterias(idZona: number): Observable<EstanteriaDTO[]> {
     return this.http.get<EstanteriaDTO[]>(`${this.apiUrl}/almacenes/zonas/${idZona}/estanterias`).pipe(
-      map(lista => lista?.length ? lista : MOCK_ESTANTERIAS.filter(est => est.idZona === idZona)),
-      catchError(() => of(MOCK_ESTANTERIAS.filter(est => est.idZona === idZona)))
+      catchError(e => e.status === 0 || e.status === 404 ? of([]) : throwError(() => e))
     );
   }
 
   // Cascada: Ubicaciones por Estantería
   getUbicaciones(idEstanteria: number): Observable<UbicacionDTO[]> {
     return this.http.get<UbicacionDTO[]>(`${this.apiUrl}/almacenes/estanterias/${idEstanteria}/ubicaciones`).pipe(
-      catchError(e => e.status === 0 || e.status === 404
-        ? of(MOCK_UBICACIONES.filter(u => u.codigoEstanteria === MOCK_ESTANTERIAS.find(es => es.idEstanteria === idEstanteria)?.codigo))
-        : throwError(() => e))
+      catchError(e => e.status === 0 || e.status === 404 ? of([]) : throwError(() => e))
     );
   }
 
@@ -268,61 +237,11 @@ export class InventarioService {
   }
 
   preRegistrarLote(data: LotePreRegistroRequest): Observable<LoteDTO> {
-    return this.http.post<LoteDTO>(`${this.apiUrl}/lotes/pre-registro`, data).pipe(
-      catchError(e => {
-        if (e.status === 0 || e.status === 404 || e.status === 401 || e.status === 403) {
-          console.warn('⚠️ Usando mock local para preRegistrarLote.');
-          const mockLote: LoteDTO = {
-            idLote: Math.floor(Math.random() * 1000) + 100,
-            numeroLote: data.numeroLote,
-            fechaFabricacion: data.fechaFabricacion,
-            fechaVencimiento: data.fechaVencimiento,
-            cantidadInicial: data.cantidadDeclarada,
-            cantidadActual: data.cantidadDeclarada,
-            fechaIngreso: new Date().toISOString(),
-            idEstadoLote: 1, // EN REVISION
-            idProducto: data.idProducto,
-            nombreProducto: 'Producto Demo',
-            idProveedor: data.idProveedor,
-            nombreProveedor: 'Proveedor Demo',
-            idUbicacion: 0,
-            descripcionUbicacion: 'Pendiente de asignación',
-            diasHastaVencimiento: 300
-          };
-          return of(mockLote);
-        }
-        return throwError(() => e);
-      })
-    );
+    return this.http.post<LoteDTO>(`${this.apiUrl}/lotes/pre-registro`, data);
   }
 
   validarLote(idLote: number, data: LoteValidacionRequest): Observable<LoteDTO> {
-    return this.http.put<LoteDTO>(`${this.apiUrl}/lotes/${idLote}/validar`, data).pipe(
-      catchError(e => {
-        if (e.status === 0 || e.status === 404 || e.status === 401 || e.status === 403) {
-          console.warn('⚠️ Usando mock local para validarLote.');
-          const mockLote: LoteDTO = {
-            idLote: idLote,
-            numeroLote: 'LOTE-VALIDADO-MOCK',
-            fechaFabricacion: '2025-01-01',
-            fechaVencimiento: '2026-01-01',
-            cantidadInicial: data.cantidadValidada,
-            cantidadActual: data.cantidadValidada,
-            fechaIngreso: new Date().toISOString(),
-            idEstadoLote: 2, // ACTIVO
-            idProducto: 1,
-            nombreProducto: 'Producto Demo',
-            idProveedor: 1,
-            nombreProveedor: 'Proveedor Demo',
-            idUbicacion: data.idUbicacion,
-            descripcionUbicacion: 'Ubicación Validada',
-            diasHastaVencimiento: 300
-          };
-          return of(mockLote);
-        }
-        return throwError(() => e);
-      })
-    );
+    return this.http.put<LoteDTO>(`${this.apiUrl}/lotes/${idLote}/validar`, data);
   }
 
   // Documentos
@@ -330,23 +249,7 @@ export class InventarioService {
     const form = new FormData();
     form.append('archivo', archivo);
     form.append('tipoDocumento', tipoDocumento);
-    return this.http.post<DocumentoDTO>(`${this.apiUrl}/documentos-lote/${idLote}/upload`, form).pipe(
-      catchError(e => {
-        if (e.status === 0 || e.status === 404 || e.status === 401 || e.status === 403) {
-          console.warn('⚠️ Usando mock local para subirDocumento.');
-          const docMock: DocumentoDTO = {
-            idDocumento: Math.floor(Math.random() * 1000) + 1,
-            nombreArchivo: archivo.name,
-            rutaArchivo: 'https://mock-url.com/' + archivo.name,
-            tipoDocumento: tipoDocumento,
-            fechaSubida: new Date().toISOString(),
-            idLote: idLote
-          };
-          return of(docMock);
-        }
-        return throwError(() => e);
-      })
-    );
+    return this.http.post<DocumentoDTO>(`${this.apiUrl}/documentos-lote/${idLote}/upload`, form);
   }
 
   getDocumentos(idLote: number): Observable<DocumentoDTO[]> {
@@ -363,7 +266,7 @@ export class InventarioService {
 
   getArbolTopologia(): Observable<NodoTopologiaDTO[]> {
     return this.http.get<NodoTopologiaDTO[]>(`${this.apiUrl}/almacenes/arbol`).pipe(
-      catchError(() => of([]))
+      catchError(e => e.status === 0 || e.status === 404 ? of([]) : throwError(() => e))
     );
   }
 
@@ -380,36 +283,11 @@ export class InventarioService {
   }
 
   getQrUbicacionBase64(idUbicacion: number): Observable<{ qrBase64: string }> {
-    return this.http.get<{ qrBase64: string }>(`${this.apiUrl}/almacenes/ubicaciones/${idUbicacion}/qr`).pipe(
-      catchError(() => of({ qrBase64: '' }))
-    );
+    return this.http.get<{ qrBase64: string }>(`${this.apiUrl}/almacenes/ubicaciones/${idUbicacion}/qr`);
   }
 
   getUbicacionPorQr(codigoQr: string): Observable<UbicacionDetalleQrDTO> {
-    return this.http.get<UbicacionDetalleQrDTO>(`${this.apiUrl}/almacenes/ubicaciones/qr/${codigoQr}`).pipe(
-      catchError(e => {
-        console.warn('⚠️ Usando mock local para getUbicacionPorQr.');
-        const qrClean = codigoQr && codigoQr.length > 2 ? codigoQr : 'UBIC-EST1-N1-PA';
-        const mock: UbicacionDetalleQrDTO = {
-          idUbicacion: 1,
-          codigoQr: qrClean,
-          descripcionCompleta: 'EST-A1 / Nivel 1 / Posición A',
-          nombreAlmacen: 'Centro de Distribución Guayas',
-          nombreZona: 'Zona A - Secos',
-          codigoEstanteria: 'EST-A1',
-          nivel: '1',
-          posicion: 'A',
-          capacidadMaxima: 1000,
-          capacidadActual: 500,
-          capacidadDisponible: 500,
-          porcentajeOcupacion: 50,
-          lotesAlmacenados: [
-            { idLote: 1, numeroLote: 'LT-001', fechaFabricacion: '2024-01-01', fechaVencimiento: '2026-06-30', cantidadInicial: 500, cantidadActual: 500, fechaIngreso: '2024-01-10', idEstadoLote: 1, idProducto: 1, nombreProducto: 'Urea Granulada 46%', idProveedor: 1, nombreProveedor: 'AgroInsumos S.A.', idUbicacion: 1, descripcionUbicacion: 'EST-A1 / Nivel 1 / Posición A', diasHastaVencimiento: 700 }
-          ]
-        };
-        return of(mock);
-      })
-    );
+    return this.http.get<UbicacionDetalleQrDTO>(`${this.apiUrl}/almacenes/ubicaciones/qr/${codigoQr}`);
   }
 
   // ── Módulo 2: Configuración global — Bodegas y Supervisores (Admin) ──
@@ -481,26 +359,6 @@ export class InventarioService {
     return this.http.post<UbicacionDetalleQrDTO>(`${this.apiUrl}/almacenes/ubicaciones/${idUbicacion}/conteo-fisico`, {
       conteoFisico,
       observaciones
-    }).pipe(
-      catchError(e => {
-        console.warn('⚠️ Usando mock local para registrarConteoFisico.');
-        const mock: UbicacionDetalleQrDTO = {
-          idUbicacion: idUbicacion,
-          codigoQr: 'UBIC-EST1-N1-PA',
-          descripcionCompleta: 'EST-A1 / Nivel 1 / Posición A',
-          nombreAlmacen: 'Centro de Distribución Guayas',
-          nombreZona: 'Zona A - Secos',
-          codigoEstanteria: 'EST-A1',
-          nivel: '1',
-          posicion: 'A',
-          capacidadMaxima: 1000,
-          capacidadActual: conteoFisico,
-          capacidadDisponible: Math.max(0, 1000 - conteoFisico),
-          porcentajeOcupacion: Math.min(100, Math.round((conteoFisico / 1000) * 100)),
-          lotesAlmacenados: []
-        };
-        return of(mock);
-      })
-    );
+    });
   }
 }

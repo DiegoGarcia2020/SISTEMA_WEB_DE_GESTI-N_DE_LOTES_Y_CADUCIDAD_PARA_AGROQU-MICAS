@@ -39,9 +39,7 @@ public class AlmacenController {
 
     @GetMapping
     public ResponseEntity<List<AlmacenResponseDTO>> listarAlmacenes() {
-        List<AlmacenResponseDTO> lista = almacenService.listarTodos()
-                .stream().map(AlmacenResponseDTO::from).toList();
-        return ResponseEntity.ok(lista);
+        return ResponseEntity.ok(almacenService.listarTodos());
     }
 
     @PutMapping("/{idAlmacen}/desactivar")

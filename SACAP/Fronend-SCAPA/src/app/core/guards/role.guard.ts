@@ -22,7 +22,7 @@ export const roleGuard: CanActivateFn = (route, state) => {
   // Redirigir si no tiene permisos a su ruta por defecto o al login
   const defaultRoutes: { [key: string]: string } = {
     'PROVEEDOR': '/admin/inventario/pre-registro',
-    'BODEGUERO': '/admin/inventario/recepcion',
+    'BODEGUERO': '/admin/bodega/asignacion',
     'SUPERVISOR': '/admin/supervisor/dashboard',
     'TECNICO': '/admin/ventas/dashboard',
     'ADMINISTRADOR': '/admin/dashboard'

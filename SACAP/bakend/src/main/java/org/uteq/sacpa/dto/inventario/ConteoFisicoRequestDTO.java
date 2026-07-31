@@ -9,7 +9,8 @@ import lombok.NoArgsConstructor;
 
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class ConteoFisicoRequestDTO {
-    @NotNull(message = "El ID de ubicación es obligatorio")
+    // No lleva @NotNull: llega por la ruta (@PathVariable), no en el cuerpo del request —
+    // el controlador lo asigna con setIdUbicacion() después de la validación de @Valid.
     private Integer idUbicacion;
 
     @NotNull(message = "El conteo físico real es obligatorio")

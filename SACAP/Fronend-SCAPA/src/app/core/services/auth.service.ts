@@ -97,7 +97,7 @@ export class AuthService {
 
     const defaultRoutes: { [key: string]: string } = {
       'PROVEEDOR': '/admin/proveedor/dashboard',
-      'BODEGUERO': '/admin/inventario/recepcion',
+      'BODEGUERO': '/admin/bodega/asignacion',
       'SUPERVISOR': '/admin/supervisor/dashboard',
       'TECNICO': '/admin/ventas/dashboard',
       'ADMINISTRADOR': '/admin/dashboard'

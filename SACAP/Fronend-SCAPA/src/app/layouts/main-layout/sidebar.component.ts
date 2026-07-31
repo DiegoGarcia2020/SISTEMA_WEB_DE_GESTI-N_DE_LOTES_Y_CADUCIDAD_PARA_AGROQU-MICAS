@@ -82,12 +82,6 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
           }
 
           @if (hasExactRole(['BODEGUERO'])) {
-            <a routerLink="/admin/inventario/recepcion" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
-               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
-              <lucide-icon name="box" class="w-4 h-4 flex-shrink-0"></lucide-icon>
-              <span>Recepción y Validación</span>
-            </a>
-
             <a routerLink="/admin/bodega/topologia" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
                class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
               <lucide-icon name="grid" class="w-4 h-4 flex-shrink-0"></lucide-icon>

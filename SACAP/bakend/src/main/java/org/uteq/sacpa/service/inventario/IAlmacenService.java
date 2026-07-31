@@ -1,7 +1,6 @@
 package org.uteq.sacpa.service.inventario;
 
 import org.uteq.sacpa.dto.inventario.*;
-import org.uteq.sacpa.entity.inventario.Almacen;
 
 import java.util.List;
 
@@ -11,7 +10,7 @@ public interface IAlmacenService {
 
     void actualizarAlmacen(Integer idAlmacen, AlmacenRequestDTO dto);
 
-    List<Almacen> listarTodos();
+    List<AlmacenResponseDTO> listarTodos();
 
     void desactivarAlmacen(Integer idAlmacen, Integer idEstadoInactivo);
 

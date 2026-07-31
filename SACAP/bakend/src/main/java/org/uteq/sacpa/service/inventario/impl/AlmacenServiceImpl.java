@@ -95,8 +95,8 @@ public class AlmacenServiceImpl implements IAlmacenService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Almacen> listarTodos() {
-        return almacenRepository.findAll();
+    public List<AlmacenResponseDTO> listarTodos() {
+        return almacenRepository.findAll().stream().map(AlmacenResponseDTO::from).toList();
     }
 
     @Override

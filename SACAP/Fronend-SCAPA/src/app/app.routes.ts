@@ -21,7 +21,6 @@ import { ConfiguracionComponent } from './features/admin/configuracion/configura
 // Componentes de Inventario (Módulo 3)
 import { EstructuraFisicaComponent } from './features/inventario/estructura-fisica/estructura-fisica.component';
 import { PreRegistroLoteComponent } from './features/inventario/pre-registro-lote/pre-registro-lote.component';
-import { RecepcionLoteComponent } from './features/inventario/recepcion-lote/recepcion-lote.component';
 
 // Componentes de Bodega (Módulo 2: Topología y Gestión Física)
 import { GestorTopologiaComponent } from './features/bodega/gestor-topologia/gestor-topologia.component';
@@ -145,12 +144,6 @@ export const routes: Routes = [
         component: PreRegistroLoteComponent,
         canActivate: [roleGuard],
         data: { roles: ['Administrador', 'Proveedor', 'Bodeguero'] }
-      },
-      {
-        path: 'inventario/recepcion',
-        component: RecepcionLoteComponent,
-        canActivate: [roleGuard],
-        data: { roles: ['Administrador', 'Bodeguero'] }
       },
       // -- Dashboard Proveedor --
       {
