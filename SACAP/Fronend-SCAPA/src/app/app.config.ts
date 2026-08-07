@@ -17,7 +17,8 @@ import {
   Printer, Copy, ExternalLink, Eye as EyeIcon, EyeOff as EyeOffIcon,
   FilePlus, PackagePlus, Receipt, Warehouse, ShoppingCart,
   ArrowRightCircle, CalendarClock, CheckCircle2, ClipboardCheck, ClipboardList, ClipboardX,
-  Edit2, Flame, Inbox, ListOrdered, PackageCheck, XCircle
+  Edit2, Flame, Inbox, ListOrdered, PackageCheck, XCircle,
+  Network, ArrowRightLeft, QrCode
 } from 'lucide-angular';
 
 const pickedIcons = {
@@ -34,7 +35,8 @@ const pickedIcons = {
   EyeIcon, EyeOffIcon,
   FilePlus, PackagePlus, Receipt, Warehouse, ShoppingCart,
   ArrowRightCircle, CalendarClock, CheckCircle2, ClipboardCheck, ClipboardList, ClipboardX,
-  Edit2, Flame, Inbox, ListOrdered, PackageCheck, XCircle
+  Edit2, Flame, Inbox, ListOrdered, PackageCheck, XCircle,
+  Network, ArrowRightLeft, QrCode
 };
 
 export const appConfig: ApplicationConfig = {

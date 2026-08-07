@@ -37,6 +37,7 @@ import { ProveedorListComponent } from './features/supervisor/proveedores/provee
 import { GestorTopologiaComponent } from './features/bodega/gestor-topologia/gestor-topologia.component';
 import { AsignacionUbicacionComponent } from './features/bodega/asignacion-ubicacion/asignacion-ubicacion.component';
 import { AuditoriaQrComponent } from './features/bodega/auditoria-qr/auditoria-qr.component';
+import { SupervisorDashboardComponent as SupervisorBodegasDashboardComponent } from './features/bodega/supervisor-dashboard/supervisor-dashboard.component';
 import { EstructuraFisicaComponent } from './features/inventario/estructura-fisica/estructura-fisica.component';
 import { PreRegistroLoteComponent } from './features/inventario/pre-registro-lote/pre-registro-lote.component';
 import { ProveedorDashboardComponent } from './features/proveedor/proveedor-dashboard/proveedor-dashboard.component';
@@ -197,10 +198,10 @@ export const routes: Routes = [
         canActivate: [roleGuard],
         data: { roles: ['Proveedor'] }
       },
-      // -- Dashboard Supervisor (Módulo 2) --
+      // -- Dashboard Supervisor: Mis Bodegas / Lotes (Módulo 2) --
       {
         path: 'supervisor/dashboard',
-        component: SupervisorDashboardComponent,
+        component: SupervisorBodegasDashboardComponent,
         canActivate: [roleGuard],
         data: { roles: ['Supervisor'] }
       },

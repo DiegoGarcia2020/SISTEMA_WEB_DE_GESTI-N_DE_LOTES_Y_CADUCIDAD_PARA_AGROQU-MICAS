@@ -11,6 +11,6 @@ public class Ciudad {
     @Column(name = "id_ciudad") private Integer idCiudad;
     @Column(name = "nombre", nullable = false, length = 150) private String nombre;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_provincia") private Provincia provincia;
 }

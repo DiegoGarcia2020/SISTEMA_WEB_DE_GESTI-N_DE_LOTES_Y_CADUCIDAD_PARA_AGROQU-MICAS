@@ -8,6 +8,7 @@ import org.uteq.sacpa.entity.catalogos.CatPlaga;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.uteq.sacpa.entity.catalogos.Toxicidad;
 import org.uteq.sacpa.entity.catalogos.Formulacion;
@@ -30,7 +31,7 @@ public class Producto {
     /** Cantidad mínima aceptable en inventario. Genera alerta de reabastecimiento si el stock cae por debajo */
     @Column(name = "stock_minimo") private Integer stockMinimo;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_categoria") private Categoria categoria;
 
 
@@ -38,18 +39,20 @@ public class Producto {
     
     @Column(name = "periodo_carencia_dias") private Integer periodoCarenciaDias;
     
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_toxicidad") private Toxicidad toxicidad;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_formulacion") private Formulacion formulacion;
 
+    @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "producto_plaga", schema = "inventario",
             joinColumns = @JoinColumn(name = "id_producto"),
             inverseJoinColumns = @JoinColumn(name = "id_plaga"))
     private List<CatPlaga> plagas;
 
+    @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "producto_cultivo", schema = "inventario",
             joinColumns = @JoinColumn(name = "id_producto"),

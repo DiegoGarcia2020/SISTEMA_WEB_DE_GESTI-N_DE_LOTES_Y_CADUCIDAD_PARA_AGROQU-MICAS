@@ -69,16 +69,20 @@ public interface ILoteRepository extends JpaRepository<Lote, Integer> {
      * y lotes "flotantes" creados por el Supervisor que aún no tienen ubicación asignada
      * por el Bodeguero (navega lote → almacen directamente).
      */
-    @Query("SELECT l FROM Lote l WHERE " +
-           "(l.ubicacion IS NOT NULL AND l.ubicacion.estanteria.zona.almacen.idAlmacen = :idAlmacen) OR " +
-           "(l.ubicacion IS NULL AND l.almacen.idAlmacen = :idAlmacen) " +
+    @Query("SELECT l FROM Lote l " +
+           "LEFT JOIN l.ubicacion u LEFT JOIN u.estanteria e LEFT JOIN e.zona z LEFT JOIN z.almacen za " +
+           "WHERE " +
+           "(u IS NOT NULL AND za.idAlmacen = :idAlmacen) OR " +
+           "(u IS NULL AND l.almacen.idAlmacen = :idAlmacen) " +
            "ORDER BY l.fechaVencimiento ASC")
     List<Lote> findByAlmacen(@Param("idAlmacen") Integer idAlmacen);
 
     /** Lotes de un almacén (ubicados o flotantes) filtrados por categoría de producto */
-    @Query("SELECT l FROM Lote l WHERE " +
-           "((l.ubicacion IS NOT NULL AND l.ubicacion.estanteria.zona.almacen.idAlmacen = :idAlmacen) OR " +
-           "(l.ubicacion IS NULL AND l.almacen.idAlmacen = :idAlmacen)) " +
+    @Query("SELECT l FROM Lote l " +
+           "LEFT JOIN l.ubicacion u LEFT JOIN u.estanteria e LEFT JOIN e.zona z LEFT JOIN z.almacen za " +
+           "WHERE " +
+           "((u IS NOT NULL AND za.idAlmacen = :idAlmacen) OR " +
+           "(u IS NULL AND l.almacen.idAlmacen = :idAlmacen)) " +
            "AND l.producto.categoria.idCategoria = :idCategoria ORDER BY l.fechaVencimiento ASC")
     List<Lote> findByAlmacenYCategoria(@Param("idAlmacen") Integer idAlmacen, @Param("idCategoria") Integer idCategoria);
 

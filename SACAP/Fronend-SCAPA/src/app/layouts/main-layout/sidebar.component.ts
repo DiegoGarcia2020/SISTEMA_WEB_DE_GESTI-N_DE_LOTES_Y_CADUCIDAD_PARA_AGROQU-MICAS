@@ -38,6 +38,18 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
             <lucide-icon name="alert-triangle" class="nav-item__icon"></lucide-icon>
             <span>Alertas de Caducidad</span>
           </a>
+          <a routerLink="/admin/bodega/topologia" routerLinkActive="active" class="nav-item">
+            <lucide-icon name="network" class="nav-item__icon"></lucide-icon>
+            <span>Topología de Bodega</span>
+          </a>
+          <a routerLink="/admin/bodega/asignacion" routerLinkActive="active" class="nav-item">
+            <lucide-icon name="arrow-right-left" class="nav-item__icon"></lucide-icon>
+            <span>Asignar a Ubicación</span>
+          </a>
+          <a routerLink="/admin/bodega/auditoria-qr" routerLinkActive="active" class="nav-item">
+            <lucide-icon name="qr-code" class="nav-item__icon"></lucide-icon>
+            <span>Auditoría QR (Móvil)</span>
+          </a>
         }
 
         <!-- TÉCNICO DE CAMPO -->
@@ -57,7 +69,12 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
             <lucide-icon name="layout-dashboard" class="nav-item__icon"></lucide-icon>
             <span>Dashboard Principal</span>
           </a>
-          
+
+          <a routerLink="/admin/supervisor/dashboard" routerLinkActive="active" class="nav-item">
+            <lucide-icon name="package" class="nav-item__icon"></lucide-icon>
+            <span>Mi Bodega</span>
+          </a>
+
           <a routerLink="/supervisor/proveedores" routerLinkActive="active" class="nav-item">
             <lucide-icon name="truck" class="nav-item__icon"></lucide-icon>
             <span>Gestión de Proveedores</span>

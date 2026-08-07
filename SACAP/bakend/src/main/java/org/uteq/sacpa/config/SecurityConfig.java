@@ -1,6 +1,7 @@
 package org.uteq.sacpa.config;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpMethod;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.*;
@@ -133,6 +134,10 @@ public class SecurityConfig {
                     "/api/promociones/activas",
                     "/api/promociones/combos/activos"
                 ).hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "TECNICO", "TECNICO_CAMPO")
+
+                // Lectura de alertas de caducidad — también accesible al BODEGUERO (dashboard de kitting)
+                .requestMatchers(HttpMethod.GET, "/api/alertas", "/api/alertas/activas", "/api/alertas/lote/**")
+                    .hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "BODEGUERO")
 
                 // ADMINISTRADOR y SUPERVISOR — alertas, sugerencias IA, promociones, proveedores
                 .requestMatchers(

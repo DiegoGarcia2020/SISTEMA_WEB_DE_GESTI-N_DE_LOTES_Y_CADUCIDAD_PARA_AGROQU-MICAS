@@ -1,12 +1,14 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { Subject } from 'rxjs';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class WebsocketService {
+  private authService = inject(AuthService);
   private client: Client;
   private connectionSubject = new Subject<boolean>();
   public connectionState$ = this.connectionSubject.asObservable();
@@ -16,7 +18,11 @@ export class WebsocketService {
       webSocketFactory: () => new SockJS('http://localhost:8080/ws-sacpa'),
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
-      heartbeatOutgoing: 4000
+      heartbeatOutgoing: 4000,
+      beforeConnect: () => {
+        const token = this.authService.getToken();
+        this.client.connectHeaders = token ? { Authorization: `Bearer ${token}` } : {};
+      }
     });
 
     this.client.onConnect = (frame) => {

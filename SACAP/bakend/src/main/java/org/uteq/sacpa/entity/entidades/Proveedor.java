@@ -33,11 +33,11 @@ public class Proveedor {
     @Column(name = "id_estado") 
     private Integer idEstado;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_empresa") 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_empresa")
     private Empresa empresa;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_ciudad") 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_ciudad")
     private Ciudad ciudad;
 }
