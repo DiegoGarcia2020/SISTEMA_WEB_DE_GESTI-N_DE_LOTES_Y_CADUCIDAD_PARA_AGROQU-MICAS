@@ -77,6 +77,11 @@ public class Lote {
     @JoinColumn(name = "id_ubicacion")
     private UbicacionInterna ubicacion;
 
+    /** Bodega asignada directamente (lote "flotante" aún sin ubicación física interna asignada por el Bodeguero) */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_almacen")
+    private Almacen almacen;
+
 
     /** Referencia a la orden de compra que originó este lote */
     @ManyToOne(fetch = FetchType.LAZY)

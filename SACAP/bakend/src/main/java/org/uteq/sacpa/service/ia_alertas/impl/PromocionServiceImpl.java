@@ -55,6 +55,13 @@ public class PromocionServiceImpl implements IPromocionService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<PromocionResponseDTO> listarPorEstado(Integer idEstado) {
+        return promocionRepository.findByEstado_IdEstadoPromocion(idEstado).stream()
+                .map(PromocionResponseDTO::from).toList();
+    }
+
+    @Override
     @Transactional
     public void cambiarEstado(Integer idPromocion, String estado) {
         Promocion p = promocionRepository.findById(idPromocion)
@@ -117,11 +124,23 @@ public class PromocionServiceImpl implements IPromocionService {
     }
 
     @Override
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     public void cambiarEstadoPromocion(Integer idPromocion, Integer idEstado) {
-        Promocion prom = promocionRepository.findById(idPromocion)
-                .orElseThrow(() -> new RuntimeException("Promoción no encontrada con ID: " + idPromocion));
-        prom.setIdEstado(idEstado);
-        promocionRepository.save(prom);
+        Promocion p = promocionRepository.findById(idPromocion)
+                .orElseThrow(() -> new EntityNotFoundException("Promoción no encontrada: " + idPromocion));
+        jdbcTemplate.execute((Connection conn) -> {
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "SELECT ia_alertas.fn_actualizar_promocion(?, ?, ?, ?, ?, ?, ?)")) {
+                ps.setInt(1, idPromocion);
+                ps.setString(2, p.getNombrePromocion());
+                ps.setString(3, p.getDescripcion());
+                ps.setBigDecimal(4, p.getDescuentoGlobal());
+                ps.setDate(5, Date.valueOf(p.getFechaInicio()));
+                ps.setDate(6, Date.valueOf(p.getFechaFin()));
+                ps.setInt(7, idEstado);
+                ps.execute();
+            }
+            return null;
+        });
     }
 }

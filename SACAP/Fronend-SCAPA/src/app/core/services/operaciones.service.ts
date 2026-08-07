@@ -200,7 +200,7 @@ export class OperacionesService {
 
   // ================= PROMOCIONES & REGLAS IA =================
   listarPromociones(): Observable<PromocionIADTO[]> {
-    return this.http.get<PromocionIADTO[]>(`${this.apiUrl}/ia/promociones`).pipe(
+    return this.http.get<PromocionIADTO[]>(`${this.apiUrl}/promociones`).pipe(
       catchError(err => {
         if (err.status === 0 || err.status === 404) return of([...this.mockPromociones]);
         return throwError(() => err);
@@ -662,7 +662,7 @@ export class OperacionesService {
 
   // ================= ENDPOINTS DE COMBOS / KITTING =================
   listarCombosActivos(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/ia/promociones/activas`).pipe(
+    return this.http.get<any[]>(`${this.apiUrl}/promociones/activas`).pipe(
       catchError(err => {
         if (err.status === 0 || err.status === 404) {
           return of(this.mockCombosKit.filter(c => c.idEstado === 1));
@@ -673,7 +673,7 @@ export class OperacionesService {
   }
 
   crearComboKit(payload: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/ia/promociones`, payload).pipe(
+    return this.http.post<any>(`${this.apiUrl}/promociones`, payload).pipe(
       catchError(err => {
         if (err.status === 0 || err.status === 404) {
           const newId = Math.max(...this.mockCombosKit.map(c => c.idPromocion), 100) + 1;

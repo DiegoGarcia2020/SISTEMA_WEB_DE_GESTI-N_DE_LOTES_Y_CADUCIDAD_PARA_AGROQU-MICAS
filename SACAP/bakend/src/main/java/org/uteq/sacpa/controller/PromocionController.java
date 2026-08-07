@@ -33,12 +33,12 @@ public class PromocionController {
 
 
     @GetMapping({"/activas", "/combos/activos"})
-    public ResponseEntity<List<Promocion>> listarActivas() {
+    public ResponseEntity<List<PromocionResponseDTO>> listarActivas() {
         return ResponseEntity.ok(promocionService.listarPorEstado(1)); // 1: Activo/Aprobado
     }
 
     @GetMapping("/pendientes")
-    public ResponseEntity<List<Promocion>> listarPendientes() {
+    public ResponseEntity<List<PromocionResponseDTO>> listarPendientes() {
         return ResponseEntity.ok(promocionService.listarPorEstado(2)); // 2: Sugerido/Pendiente de aprobación
 
     }
@@ -59,5 +59,13 @@ public class PromocionController {
         promocionService.cambiarEstadoPromocion(idPromocion, idEstado);
         return ResponseEntity.ok(Map.of("mensaje", "Estado de combo/promoción actualizado exitosamente"));
 
+    }
+
+    private Integer idUsuarioAutenticado() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof UsuarioPrincipal principal) {
+            return principal.getIdUsuario();
+        }
+        throw new IllegalStateException("No se encontró un usuario autenticado en el contexto de seguridad");
     }
 }

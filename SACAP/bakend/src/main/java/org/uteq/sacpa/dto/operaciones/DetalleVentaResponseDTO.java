@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.uteq.sacpa.entity.operaciones.DetalleVenta;
+import org.uteq.sacpa.entity.operaciones.DetalleVentaIA;
 
 import java.math.BigDecimal;
 
@@ -20,7 +20,7 @@ public class DetalleVentaResponseDTO {
     private Boolean esComboIA;
     private String instruccionesAplicacion;
 
-    public static DetalleVentaResponseDTO from(DetalleVenta d) {
+    public static DetalleVentaResponseDTO from(DetalleVentaIA d) {
         var producto = d.getLote() != null ? d.getLote().getProducto() : null;
         return DetalleVentaResponseDTO.builder()
                 .idDetalle(d.getIdDetalle())

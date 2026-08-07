@@ -1,6 +1,7 @@
 package org.uteq.sacpa.service.entidades;
 
 import java.util.List;
+import java.util.Optional;
 import org.uteq.sacpa.dto.entidades.ProveedorRequestDTO;
 import org.uteq.sacpa.entity.entidades.Proveedor;
 
@@ -20,5 +21,7 @@ public interface IProveedorService {
     void asociarProducto(org.uteq.sacpa.dto.entidades.ProveedorProductoDTO dto);
     void desasociarProducto(Integer idProveedor, Integer idProducto);
     List<org.uteq.sacpa.dto.entidades.ProveedorProductoDTO> listarProductosDeProveedor(Integer idProveedor);
+
+    Optional<Proveedor> buscarPorIdUsuario(Integer idUsuario);
 
 }

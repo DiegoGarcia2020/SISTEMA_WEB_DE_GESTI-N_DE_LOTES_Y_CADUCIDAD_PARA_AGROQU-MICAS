@@ -1,6 +1,7 @@
 package org.uteq.sacpa.service.operaciones.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.uteq.sacpa.dto.operaciones.DevolucionRequestDTO;
 import org.uteq.sacpa.entity.operaciones.Devolucion;
@@ -20,6 +21,28 @@ public class DevolucionServiceImpl implements IDevolucionService {
 
     @Autowired
     private org.uteq.sacpa.repository.ia_alertas.ISugerenciaIARepository sugerenciaRepository;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    // Vía JdbcTemplate: "SELECT fn(...)" con executeUpdate() (usado por @Modifying) falla en Postgres
+    // para funciones que retornan void — ver LoteServiceImpl.preRegistrarLote para el mismo patrón.
+    private void crearSugerenciaJdbc(java.math.BigDecimal porcentajeDescuento, String observaciones, Integer idLote,
+                                      Integer idTemporada, Integer idEjecucion, Integer idEstadoAprobacion) {
+        jdbcTemplate.execute((java.sql.Connection conn) -> {
+            try (java.sql.PreparedStatement ps = conn.prepareStatement(
+                    "SELECT ia_alertas.fn_crear_sugerencia_ia(?, ?, ?, ?, ?, ?)")) {
+                ps.setBigDecimal(1, porcentajeDescuento);
+                ps.setString(2, observaciones);
+                ps.setInt(3, idLote);
+                if (idTemporada != null) ps.setInt(4, idTemporada); else ps.setNull(4, java.sql.Types.INTEGER);
+                if (idEjecucion != null) ps.setInt(5, idEjecucion); else ps.setNull(5, java.sql.Types.INTEGER);
+                ps.setInt(6, idEstadoAprobacion);
+                ps.execute();
+            }
+            return null;
+        });
+    }
 
     @Override
     public void crearDevolucion(DevolucionRequestDTO dto) {
@@ -81,7 +104,7 @@ public class DevolucionServiceImpl implements IDevolucionService {
 
                 // Disparar Alerta / Sugerencia IA para venta o rotación de productos por defectos/devolución
                 try {
-                    sugerenciaRepository.crearSugerencia(
+                    crearSugerenciaJdbc(
                             java.math.BigDecimal.valueOf(15.00),
                             "Alerta IA SACPA: Devolución aprobada por defectos (" + dev.getMotivo() + "). Se sugiere auditar lote y considerar promoción/combo de rotación para mitigar merma.",
                             lote.getIdLote(),

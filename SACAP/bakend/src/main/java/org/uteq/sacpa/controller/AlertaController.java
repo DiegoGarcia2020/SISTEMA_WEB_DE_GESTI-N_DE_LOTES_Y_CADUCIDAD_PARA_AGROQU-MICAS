@@ -32,7 +32,7 @@ public class AlertaController {
 
 
     @GetMapping
-    public ResponseEntity<List<AlertaCaducidad>> listarAlertas() {
+    public ResponseEntity<List<AlertaCaducidadResponseDTO>> listarAlertas() {
         try {
             return ResponseEntity.ok(alertaService.listarAlertasActivas(1));
         } catch (Exception e) {
@@ -41,7 +41,7 @@ public class AlertaController {
     }
 
     @GetMapping("/activas")
-    public ResponseEntity<List<AlertaCaducidad>> listarAlertasActivas(@RequestParam("idEstadoActivo") Integer idEstadoActivo) {
+    public ResponseEntity<List<AlertaCaducidadResponseDTO>> listarAlertasActivas(@RequestParam("idEstadoActivo") Integer idEstadoActivo) {
         try {
             return ResponseEntity.ok(alertaService.listarAlertasActivas(idEstadoActivo));
         } catch (Exception e) {

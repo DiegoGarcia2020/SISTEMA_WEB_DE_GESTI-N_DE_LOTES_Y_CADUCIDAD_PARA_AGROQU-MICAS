@@ -20,7 +20,7 @@ import java.util.List;
 
 
 @Service("temporadaServiceImplIA")
-
+@RequiredArgsConstructor
 public class TemporadaServiceImpl implements ITemporadaService {
 
     private final ITemporadaAgricolaRepository temporadaRepository;

@@ -55,7 +55,7 @@ public class LoteResponseDTO {
                 .idProducto(l.getProducto()   != null ? l.getProducto().getIdProducto()     : null)
                 .nombreProducto(l.getProducto() != null ? l.getProducto().getNombre()       : null)
                 .idProveedor(l.getProveedor()  != null ? l.getProveedor().getIdProveedor()  : null)
-                .nombreProveedor(l.getProveedor() != null ? l.getProveedor().getNombre() : null)
+                .nombreProveedor(l.getProveedor() != null ? l.getProveedor().getNombreRepresentante() : null)
                 .idUbicacion(l.getUbicacion()  != null ? l.getUbicacion().getIdUbicacion()  : null)
                 .descripcionUbicacion(ubicacionDesc)
                 .diasHastaVencimiento(dias)

@@ -53,6 +53,15 @@ public interface ILoteRepository extends JpaRepository<Lote, Integer> {
     @Query("SELECT l FROM Lote l WHERE l.producto.idProducto = :idProducto ORDER BY l.fechaVencimiento ASC")
     List<Lote> findByProducto(@Param("idProducto") Integer idProducto);
 
+    /** Igual que findByProducto pero con bloqueo pesimista, para despachos/reintegros concurrentes (FEFO) */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT l FROM Lote l WHERE l.producto.idProducto = :idProducto ORDER BY l.fechaVencimiento ASC")
+    List<Lote> findByProductoForUpdate(@Param("idProducto") Integer idProducto);
+
+    /** Todos los lotes con stock realmente disponible (cantidad_actual - cantidad_reservada > 0), orden FEFO */
+    @Query("SELECT l FROM Lote l WHERE (l.cantidadActual - COALESCE(l.cantidadReservada, 0)) > 0 ORDER BY l.fechaVencimiento ASC")
+    List<Lote> findLotesDisponiblesFefo();
+
 
     /**
      * Lotes de un almacén específico (Supervisor: ver lotes de mis bodegas asignadas).

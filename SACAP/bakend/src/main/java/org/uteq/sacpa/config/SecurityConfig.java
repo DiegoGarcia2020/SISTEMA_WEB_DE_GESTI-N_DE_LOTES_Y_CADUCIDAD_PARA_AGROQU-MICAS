@@ -128,6 +128,12 @@ public class SecurityConfig {
                     "/api/gerencia/**"
                 ).hasAnyAuthority("ADMINISTRADOR", "GERENTE")
 
+                // Lectura de combos/promociones activas para armar pedidos — también accesible al TECNICO
+                .requestMatchers(
+                    "/api/promociones/activas",
+                    "/api/promociones/combos/activos"
+                ).hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "TECNICO", "TECNICO_CAMPO")
+
                 // ADMINISTRADOR y SUPERVISOR — alertas, sugerencias IA, promociones, proveedores
                 .requestMatchers(
                     "/api/alertas/**",
@@ -147,6 +153,11 @@ public class SecurityConfig {
                     "/api/proveedores/perfil",
                     "/api/proveedores/diagnostico"
                 ).hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "BODEGUERO", "PROVEEDOR")
+
+                // Lectura de stock disponible para armar pedidos — también accesible al TECNICO
+                .requestMatchers(
+                    "/api/movimientos/lotes-disponibles"
+                ).hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "BODEGUERO", "TECNICO", "TECNICO_CAMPO")
 
                 // ADMINISTRADOR, SUPERVISOR y BODEGUERO — inventario y lotes
                 .requestMatchers(

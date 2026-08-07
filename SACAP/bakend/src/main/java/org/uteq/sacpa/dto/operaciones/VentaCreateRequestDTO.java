@@ -21,5 +21,5 @@ public class VentaCreateRequestDTO {
 
     @NotEmpty(message = "El carrito no puede estar vacío")
     @Valid
-    private List<DetalleVentaRequestDTO> lineas;
+    private List<DetalleVentaIARequestDTO> lineas;
 }
