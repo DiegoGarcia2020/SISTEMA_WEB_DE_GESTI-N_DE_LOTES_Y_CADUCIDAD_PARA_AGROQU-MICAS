@@ -14,4 +14,10 @@ public interface IDevolucionService {
     void aprobarDevolucion(Integer idDevolucion, Integer idUsuarioAprobador, String observacionesAprobador, Integer idEstadoAprobado);
 
     void anularDevolucion(Integer idDevolucion, Integer idEstadoAnulado);
+
+    List<Devolucion> listarPendientes();
+
+    List<Devolucion> listarTodos();
+
+    void cambiarEstadoDevolucion(Integer idDevolucion, org.uteq.sacpa.dto.operaciones.CambioEstadoDevolucionDTO dto);
 }

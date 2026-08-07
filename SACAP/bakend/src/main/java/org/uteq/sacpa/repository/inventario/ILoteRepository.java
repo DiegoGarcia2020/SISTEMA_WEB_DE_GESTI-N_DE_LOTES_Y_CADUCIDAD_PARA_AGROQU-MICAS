@@ -2,9 +2,11 @@ package org.uteq.sacpa.repository.inventario;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
+import jakarta.persistence.LockModeType;
 import org.uteq.sacpa.entity.inventario.Lote;
 
 import java.time.LocalDate;
@@ -51,6 +53,7 @@ public interface ILoteRepository extends JpaRepository<Lote, Integer> {
     @Query("SELECT l FROM Lote l WHERE l.producto.idProducto = :idProducto ORDER BY l.fechaVencimiento ASC")
     List<Lote> findByProducto(@Param("idProducto") Integer idProducto);
 
+
     /**
      * Lotes de un almacén específico (Supervisor: ver lotes de mis bodegas asignadas).
      * Incluye lotes ya ubicados físicamente (navega lote → ubicacion → estanteria → zona → almacen)
@@ -94,6 +97,7 @@ public interface ILoteRepository extends JpaRepository<Lote, Integer> {
            "AND (l.cantidadActual - COALESCE(l.cantidadReservada, 0)) > 0 " +
            "ORDER BY l.fechaVencimiento ASC")
     List<Lote> findDisponiblesParaVentaPorPlaga(@Param("idPlaga") Integer idPlaga, @Param("idCultivo") Integer idCultivo, @Param("idEstadoActivo") Integer idEstadoActivo);
+
 
     // ============================================================
     // Llamadas a funciones PL/pgSQL del esquema inventario

@@ -1,5 +1,6 @@
 package org.uteq.sacpa.service.entidades.impl;
 
+
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -61,16 +62,20 @@ public class ClienteServiceImpl implements IClienteService {
         });
         return clienteRepository.findById(idCliente).map(ClienteResponseDTO::from)
                 .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado: " + idCliente));
+
     }
 
     @Override
     @Transactional(readOnly = true)
+
     public List<ClienteResponseDTO> listarTodos() {
         return clienteRepository.findAll().stream().map(ClienteResponseDTO::from).toList();
+
     }
 
     @Override
     @Transactional(readOnly = true)
+
     public List<ClienteResponseDTO> buscar(String nombre) {
         return clienteRepository.findByNombreContainingIgnoreCase(nombre).stream().map(ClienteResponseDTO::from).toList();
     }
@@ -90,5 +95,6 @@ public class ClienteServiceImpl implements IClienteService {
 
     private void setNullableString(PreparedStatement ps, int idx, String value) throws java.sql.SQLException {
         if (value != null) ps.setString(idx, value); else ps.setNull(idx, Types.VARCHAR);
+
     }
 }

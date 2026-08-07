@@ -16,24 +16,32 @@ public interface IProductoRepository extends JpaRepository<Producto, Integer> {
 
     @Modifying
     @Transactional
-    @Query(value = "SELECT inventario.fn_crear_producto(:nombre, :descripcion, :unidadMedida, :precio, :idCategoria, :idEstado)", nativeQuery = true)
+    @Query(value = "SELECT inventario.fn_crear_producto(:nombre, :descripcion, :unidadMedida, :precio, :idCategoria, :idEstado, :ingredienteActivo, :periodoCarenciaDias, :idToxicidad, :idFormulacion)", nativeQuery = true)
     void crearProducto(@Param("nombre") String nombre,
                        @Param("descripcion") String descripcion,
                        @Param("unidadMedida") String unidadMedida,
                        @Param("precio") BigDecimal precio,
                        @Param("idCategoria") Integer idCategoria,
-                       @Param("idEstado") Integer idEstado);
+                       @Param("idEstado") Integer idEstado,
+                       @Param("ingredienteActivo") String ingredienteActivo,
+                       @Param("periodoCarenciaDias") Integer periodoCarenciaDias,
+                       @Param("idToxicidad") Integer idToxicidad,
+                       @Param("idFormulacion") Integer idFormulacion);
 
     @Modifying
     @Transactional
-    @Query(value = "SELECT inventario.fn_actualizar_producto(:idProducto, :nombre, :descripcion, :unidadMedida, :precio, :idCategoria, :idEstado)", nativeQuery = true)
+    @Query(value = "SELECT inventario.fn_actualizar_producto(:idProducto, :nombre, :descripcion, :unidadMedida, :precio, :idCategoria, :idEstado, :ingredienteActivo, :periodoCarenciaDias, :idToxicidad, :idFormulacion)", nativeQuery = true)
     void actualizarProducto(@Param("idProducto") Integer idProducto,
                             @Param("nombre") String nombre,
                             @Param("descripcion") String descripcion,
                             @Param("unidadMedida") String unidadMedida,
                             @Param("precio") BigDecimal precio,
                             @Param("idCategoria") Integer idCategoria,
-                            @Param("idEstado") Integer idEstado);
+                            @Param("idEstado") Integer idEstado,
+                            @Param("ingredienteActivo") String ingredienteActivo,
+                            @Param("periodoCarenciaDias") Integer periodoCarenciaDias,
+                            @Param("idToxicidad") Integer idToxicidad,
+                            @Param("idFormulacion") Integer idFormulacion);
 
     @Modifying
     @Transactional

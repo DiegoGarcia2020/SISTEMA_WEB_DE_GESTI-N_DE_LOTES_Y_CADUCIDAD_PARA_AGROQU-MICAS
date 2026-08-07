@@ -12,4 +12,16 @@ public interface IMovimientoService {
     List<MovimientoInventario> buscarPorLote(Integer idLote);
 
     void anularMovimiento(Integer idMovimiento, Integer idEstadoAnulado);
+
+    void despacharFefo(org.uteq.sacpa.dto.operaciones.DespachoRequestDTO dto);
+
+    List<MovimientoInventario> listarPendientes();
+
+    List<MovimientoInventario> listarTodos();
+
+    void aprobarDespacho(Integer idMovimiento, String observacion);
+
+    void rechazarDespacho(Integer idMovimiento, String observacion);
+
+    List<org.uteq.sacpa.dto.operaciones.LoteDisponibleDTO> listarLotesDisponiblesFefo();
 }

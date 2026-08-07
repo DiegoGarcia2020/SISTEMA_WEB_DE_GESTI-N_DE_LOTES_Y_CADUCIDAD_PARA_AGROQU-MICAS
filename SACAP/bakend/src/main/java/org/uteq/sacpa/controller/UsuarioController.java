@@ -34,6 +34,19 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.crear(request));
     }
 
+    @PostMapping("/basico")
+    public ResponseEntity<UsuarioResponseDTO> crearBasico(@Valid @RequestBody org.uteq.sacpa.dto.seguridad.CrearUsuarioBasicoRequestDTO request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.crearBasico(request));
+    }
+
+    @PostMapping(value = "/{id}/asignar-rol", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<UsuarioResponseDTO> asignarRol(
+            @PathVariable Integer id,
+            @RequestParam("idRol") Integer idRol,
+            @RequestParam(value = "documento", required = false) org.springframework.web.multipart.MultipartFile documento) {
+        return ResponseEntity.ok(usuarioService.asignarRol(id, idRol, documento));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioResponseDTO> actualizar(@PathVariable Integer id, @Valid @RequestBody UsuarioRequestDTO request) {
         return ResponseEntity.ok(usuarioService.actualizar(id, request));
@@ -45,9 +58,15 @@ public class UsuarioController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/{id}/reset-password")
+    public ResponseEntity<UsuarioResponseDTO> resetPassword(@PathVariable Integer id) {
+        return ResponseEntity.ok(usuarioService.resetPassword(id));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
         usuarioService.eliminar(id);
         return ResponseEntity.noContent().build();
     }
 }
+

@@ -11,18 +11,19 @@ import java.util.Optional;
 
 public interface IProveedorRepository extends JpaRepository<Proveedor, Integer> {
 
-    @Query(value = "SELECT id_proveedor FROM entidades.proveedor WHERE id_usuario = :idUsuario LIMIT 1", nativeQuery = true)
-    Optional<Integer> findIdProveedorByIdUsuario(@Param("idUsuario") Integer idUsuario);
+    Optional<Proveedor> findByRuc(String ruc);
+    boolean existsByRuc(String ruc);
+
 
     @Modifying @Transactional
-    @Query(value = "SELECT entidades.fn_crear_proveedor(:correo, :contrasena, :idEstado, :ruc, :nombreRepresentante, :direccion, :telefonoEmpresa, :idEmpresa, :idCiudad)", nativeQuery = true)
-    void crearProveedor(@Param("correo") String correo, @Param("contrasena") String contrasena, @Param("idEstado") Integer idEstado, @Param("ruc") String ruc, @Param("nombreRepresentante") String nombreRepresentante, @Param("direccion") String direccion, @Param("telefonoEmpresa") String telefonoEmpresa, @Param("idEmpresa") Integer idEmpresa, @Param("idCiudad") Integer idCiudad);
+    @Query(value = "SELECT entidades.fn_crear_proveedor(:idEstado, :ruc, :nombreRepresentante, :direccion, :telefono, :telefonoEmpresa, :correoContacto, :idEmpresa, :idCiudad)", nativeQuery = true)
+    void crearProveedor(@Param("idEstado") Integer idEstado, @Param("ruc") String ruc, @Param("nombreRepresentante") String nombreRepresentante, @Param("direccion") String direccion, @Param("telefono") String telefono, @Param("telefonoEmpresa") String telefonoEmpresa, @Param("correoContacto") String correoContacto, @Param("idEmpresa") Integer idEmpresa, @Param("idCiudad") Integer idCiudad);
 
     @Modifying @Transactional
-    @Query(value = "SELECT entidades.fn_actualizar_proveedor(:idUsuario, :correo, :idEstado, :ruc, :nombreRepresentante, :direccion, :telefonoEmpresa, :idEmpresa, :idCiudad)", nativeQuery = true)
-    void actualizarProveedor(@Param("idUsuario") Integer idUsuario, @Param("correo") String correo, @Param("idEstado") Integer idEstado, @Param("ruc") String ruc, @Param("nombreRepresentante") String nombreRepresentante, @Param("direccion") String direccion, @Param("telefonoEmpresa") String telefonoEmpresa, @Param("idEmpresa") Integer idEmpresa, @Param("idCiudad") Integer idCiudad);
+    @Query(value = "SELECT entidades.fn_actualizar_proveedor(:idProveedor, :idEstado, :ruc, :nombreRepresentante, :direccion, :telefono, :telefonoEmpresa, :correoContacto, :idEmpresa, :idCiudad)", nativeQuery = true)
+    void actualizarProveedor(@Param("idProveedor") Integer idProveedor, @Param("idEstado") Integer idEstado, @Param("ruc") String ruc, @Param("nombreRepresentante") String nombreRepresentante, @Param("direccion") String direccion, @Param("telefono") String telefono, @Param("telefonoEmpresa") String telefonoEmpresa, @Param("correoContacto") String correoContacto, @Param("idEmpresa") Integer idEmpresa, @Param("idCiudad") Integer idCiudad);
 
     @Modifying @Transactional
-    @Query(value = "SELECT entidades.fn_eliminar_proveedor(:idUsuario)", nativeQuery = true)
-    void eliminarProveedor(@Param("idUsuario") Integer idUsuario);
+    @Query(value = "SELECT entidades.fn_eliminar_proveedor(:idProveedor)", nativeQuery = true)
+    void eliminarProveedor(@Param("idProveedor") Integer idProveedor);
 }

@@ -34,4 +34,16 @@ public class AuthController {
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
         return ResponseEntity.ok(authService.selectRole(request, authHeader));
     }
+
+    /**
+     * Paso 3 (Opcional/Obligatorio): Cambiar contraseña cuando requiereCambioClave es true.
+     */
+    @PostMapping("/cambiar-contrasena")
+    public ResponseEntity<Void> cambiarContrasena(
+            @Valid @RequestBody org.uteq.sacpa.dto.auth.CambioContrasenaRequestDTO request,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        authService.cambiarContrasena(request, authHeader);
+        return ResponseEntity.noContent().build();
+    }
 }
+

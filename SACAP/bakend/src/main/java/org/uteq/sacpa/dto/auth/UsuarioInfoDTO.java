@@ -12,4 +12,6 @@ import lombok.NoArgsConstructor;
 public class UsuarioInfoDTO {
     private Integer idUsuario;
     private String correo;
+    private Boolean requiereCambioClave;
 }
+

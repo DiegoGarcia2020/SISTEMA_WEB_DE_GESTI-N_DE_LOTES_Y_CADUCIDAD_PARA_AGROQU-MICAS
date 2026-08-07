@@ -1,0 +1,70 @@
+<div class="dashboard-container">
+  
+  <!-- CABECERA -->
+  <div class="dashboard-header">
+    <div class="dashboard-header__info">
+      <div class="dashboard-header__icon">
+        <lucide-icon name="layout-dashboard" class="w-8 h-8"></lucide-icon>
+      </div>
+      <div>
+        <h1 class="dashboard-header__title">Visión General de Operaciones</h1>
+        <p class="dashboard-header__subtitle">Auditor Activo: {{ authService.currentUser()?.correo || 'supervisor@agrosense.ec' }}</p>
+      </div>
+    </div>
+    <div class="dashboard-header__actions">
+      <button (click)="loadAll()" class="btn btn--ghost">
+        <lucide-icon name="refresh-cw" class="w-4 h-4"></lucide-icon>
+        <span>Actualizar Todo</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- TARJETAS DE ESTADÍSTICAS -->
+  <div class="kpi-grid">
+    <!-- Tarjeta 1: Compras en Tránsito -->
+    <div class="kpi-card">
+      <div class="kpi-card__content">
+        <p class="kpi-card__label">Compras en Tránsito</p>
+        <p class="kpi-card__value kpi-card__value--dark">4</p>
+        <p class="kpi-card__subtext">Órdenes pendientes de recepción</p>
+      </div>
+      <div class="kpi-card__icon-wrapper" style="background-color: #e0f2fe; color: #0284c7;">
+        <lucide-icon name="truck" class="w-6 h-6"></lucide-icon>
+      </div>
+    </div>
+
+    <!-- Tarjeta 2: Combos por Aprobar -->
+    <div class="kpi-card">
+      <div class="kpi-card__content">
+        <p class="kpi-card__label">Combos por Aprobar</p>
+        <p class="kpi-card__value kpi-card__value--dark">{{ promosPendientes().length }}</p>
+        <p class="kpi-card__subtext">Esperando en Centro de Aprobaciones</p>
+      </div>
+      <div class="kpi-card__icon-wrapper" style="background-color: #fef3c7; color: #d97706;">
+        <lucide-icon name="zap" class="w-6 h-6"></lucide-icon>
+      </div>
+    </div>
+
+    <!-- Tarjeta 3: Alertas Críticas FEFO -->
+    <div class="kpi-card">
+      <div class="kpi-card__content">
+        <p class="kpi-card__label">Alertas Críticas FEFO</p>
+        <p class="kpi-card__value kpi-card__value--danger">5</p>
+        <p class="kpi-card__subtext">Productos por vencer (< 30 días)</p>
+      </div>
+      <div class="kpi-card__icon-wrapper" style="background-color: #fee2e2; color: #dc2626;">
+        <lucide-icon name="alert-triangle" class="w-6 h-6"></lucide-icon>
+      </div>
+    </div>
+  </div>
+
+  <!-- MENSAJE DE BIENVENIDA INFERIOR -->
+  <div class="welcome-section">
+    <div class="welcome-box">
+      <lucide-icon name="info" class="welcome-icon"></lucide-icon>
+      <h2>Bienvenido al Panel del Supervisor</h2>
+      <p>Has ingresado al módulo de control y auditoría. Para comenzar a operar, por favor selecciona una de las opciones disponibles en el menú lateral izquierdo.</p>
+    </div>
+  </div>
+
+</div>

@@ -18,30 +18,61 @@ import { GestionCatalogosComponent } from './features/admin/gestion-catalogos/ge
 import { AuditoriaComponent } from './features/admin/auditoria/auditoria.component';
 import { ConfiguracionComponent } from './features/admin/configuracion/configuracion.component';
 
-// Componentes de Inventario (Módulo 3)
-import { EstructuraFisicaComponent } from './features/inventario/estructura-fisica/estructura-fisica.component';
-import { PreRegistroLoteComponent } from './features/inventario/pre-registro-lote/pre-registro-lote.component';
 
-// Componentes de Bodega (Módulo 2: Topología y Gestión Física)
-import { GestorTopologiaComponent } from './features/bodega/gestor-topologia/gestor-topologia.component';
-import { AsignacionUbicacionComponent } from './features/bodega/asignacion-ubicacion/asignacion-ubicacion.component';
-import { AuditoriaQrComponent } from './features/bodega/auditoria-qr/auditoria-qr.component';
+// Componentes por Rol (Bodega, Campo, Supervisor)
+import { BodegaDashboardComponent } from './features/bodeguero/bodega-dashboard.component';
+import { ComprasRecepcionComponent } from './features/bodeguero/compras-recepcion/compras-recepcion.component';
+import { BodegaRecepcionesComponent } from './features/bodeguero/recepciones/bodega-recepciones.component';
+import { BodegaDespachosComponent } from './features/bodeguero/despachos/bodega-despachos.component';
+import { CampoDashboardComponent } from './features/tecnico-campo/campo-dashboard.component';
+import { PuntoVentaComponent } from './features/tecnico-campo/punto-venta/punto-venta.component';
+import { TecnicoEntregasComponent } from './features/tecnico-campo/entregas/tecnico-entregas.component';
+import { SupervisorDashboardComponent } from './features/supervisor/supervisor-dashboard.component';
+import { CentroAprobacionesComponent } from './features/supervisor/centro-aprobaciones/centro-aprobaciones.component';
+import { ComprasListadoComponent } from './features/supervisor/compras-listado/compras-listado.component';
+import { ComprasCrearComponent } from './features/supervisor/compras-crear/compras-crear.component';
+import { ProveedorListComponent } from './features/supervisor/proveedores/proveedor-list.component';
 
-// Componentes de Proveedor
-import { ProveedorDashboardComponent } from './features/proveedor/proveedor-dashboard/proveedor-dashboard.component';
-
-// Dashboard del Supervisor (Módulo 2)
-import { SupervisorDashboardComponent } from './features/bodega/supervisor-dashboard/supervisor-dashboard.component';
-
-// Componentes de Ventas (Módulo 3: Ventas y Motor IA — Técnico de Campo)
-import { VentasDashboardComponent } from './features/ventas/dashboard/ventas-dashboard.component';
-import { MotorSugerenciasComponent } from './features/ventas/motor-sugerencias/motor-sugerencias.component';
-import { CheckoutComponent } from './features/ventas/checkout/checkout.component';
-import { ConfirmacionPedidoComponent } from './features/ventas/confirmacion/confirmacion-pedido.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'registro', component: RegistroComponent },
+  {
+    path: 'bodega',
+    component: MainLayoutComponent,
+    canActivate: [authGuard],
+    children: [
+      { path: 'dashboard', component: BodegaDashboardComponent },
+      { path: 'recepciones-hoy', component: BodegaRecepcionesComponent },
+      { path: 'despachos', component: BodegaDespachosComponent },
+      { path: 'recepcion/:idOrden', component: ComprasRecepcionComponent },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
+    ]
+  },
+  {
+    path: 'campo',
+    component: MainLayoutComponent,
+    canActivate: [authGuard],
+    children: [
+      { path: 'dashboard', component: CampoDashboardComponent },
+      { path: 'punto-venta', component: PuntoVentaComponent },
+      { path: 'entregas', component: TecnicoEntregasComponent },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
+    ]
+  },
+  {
+    path: 'supervisor',
+    component: MainLayoutComponent,
+    canActivate: [authGuard],
+    children: [
+      { path: 'dashboard', component: SupervisorDashboardComponent },
+      { path: 'centro-aprobaciones', component: CentroAprobacionesComponent },
+      { path: 'compras', component: ComprasListadoComponent },
+      { path: 'compras/nueva', component: ComprasCrearComponent },
+      { path: 'proveedores', component: ProveedorListComponent },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
+    ]
+  },
   {
     path: 'admin',
     component: MainLayoutComponent,

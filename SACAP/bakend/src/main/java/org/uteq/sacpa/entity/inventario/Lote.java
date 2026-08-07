@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.uteq.sacpa.entity.entidades.Proveedor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -44,7 +45,8 @@ public class Lote {
     @Column(name = "cantidad_actual")
     private Integer cantidadActual;
 
-    /** Unidades ya reservadas por ventas confirmadas pero aún no despachadas. Disponible = cantidadActual - cantidadReservada. */
+
+
     @Column(name = "cantidad_reservada")
     private Integer cantidadReservada;
 
@@ -53,6 +55,15 @@ public class Lote {
 
     @Column(name = "id_estado_lote")
     private Integer idEstadoLote;
+
+    /**
+     * Costo real promedio del producto en este lote.
+     * Si la compra incluye bonificaciones (regalos), el costo se distribuye
+     * entre todas las unidades (pagadas + regaladas).
+     * Ej: 100 a $10 + 10 regalo = $1000 / 110 = $9.09 c/u.
+     */
+    @Column(name = "costo_unitario_real", precision = 10, scale = 2)
+    private BigDecimal costoUnitarioReal;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_producto")
@@ -66,11 +77,9 @@ public class Lote {
     @JoinColumn(name = "id_ubicacion")
     private UbicacionInterna ubicacion;
 
-    /**
-     * Bodega de destino para lotes creados por el Supervisor que aún no tienen
-     * ubicación física asignada por el Bodeguero (lote "flotante").
-     */
+
+    /** Referencia a la orden de compra que originó este lote */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_almacen")
-    private Almacen almacen;
+    @JoinColumn(name = "id_orden_compra")
+    private org.uteq.sacpa.entity.operaciones.OrdenCompra ordenCompra;
 }

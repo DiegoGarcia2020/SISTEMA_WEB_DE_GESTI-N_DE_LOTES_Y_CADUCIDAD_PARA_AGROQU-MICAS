@@ -33,4 +33,12 @@ public class ProductoRequestDTO {
 
     @NotNull(message = "El ID del estado es obligatorio")
     private Integer idEstado;
+
+    private String ingredienteActivo;
+    
+    private Integer periodoCarenciaDias;
+    
+    private Integer idToxicidad;
+    
+    private Integer idFormulacion;
 }

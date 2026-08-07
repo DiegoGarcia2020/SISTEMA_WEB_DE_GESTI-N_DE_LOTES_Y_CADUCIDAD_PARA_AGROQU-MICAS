@@ -48,6 +48,7 @@ public class PromocionServiceImpl implements IPromocionService {
     }
 
     @Override
+
     @Transactional(readOnly = true)
     public List<PromocionResponseDTO> listarTodas() {
         return promocionRepository.findAll().stream().map(PromocionResponseDTO::from).toList();
@@ -77,6 +78,7 @@ public class PromocionServiceImpl implements IPromocionService {
 
     @Override
     @Transactional
+
     public void desactivarPromocion(Integer idPromocion, Integer idEstadoInactivo) {
         jdbcTemplate.execute((Connection conn) -> {
             try (PreparedStatement ps = conn.prepareStatement("SELECT ia_alertas.fn_desactivar_promocion(?, ?)")) {
@@ -112,5 +114,14 @@ public class PromocionServiceImpl implements IPromocionService {
         return catEstadoPromocionRepository.findByNombreIgnoreCase(nombreEstado)
                 .map(CatEstadoPromocion::getIdEstadoPromocion)
                 .orElseThrow(() -> new IllegalArgumentException("Estado de promoción desconocido: " + nombreEstado));
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public void cambiarEstadoPromocion(Integer idPromocion, Integer idEstado) {
+        Promocion prom = promocionRepository.findById(idPromocion)
+                .orElseThrow(() -> new RuntimeException("Promoción no encontrada con ID: " + idPromocion));
+        prom.setIdEstado(idEstado);
+        promocionRepository.save(prom);
     }
 }

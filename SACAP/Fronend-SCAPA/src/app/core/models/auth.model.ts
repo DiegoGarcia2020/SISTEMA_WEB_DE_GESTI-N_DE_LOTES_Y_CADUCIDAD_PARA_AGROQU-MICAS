@@ -6,6 +6,7 @@ export interface LoginRequest {
 export interface UsuarioInfo {
   idUsuario: number;
   correo: string;
+  requiereCambioClave?: boolean;
 }
 
 export interface AuthResponse {
@@ -18,3 +19,8 @@ export interface AuthResponse {
 export interface RoleSelectionRequest {
   rolSeleccionado: string;
 }
+
+export interface CambioContrasenaRequest {
+  nuevaContrasena: string;
+}
+

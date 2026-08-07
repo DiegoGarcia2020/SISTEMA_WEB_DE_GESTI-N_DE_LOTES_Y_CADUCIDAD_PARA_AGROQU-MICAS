@@ -38,4 +38,36 @@ public interface IUsoCampoRepository extends JpaRepository<UsoCampo, Integer> {
     @Transactional
     @Query(value = "SELECT operaciones.fn_anular_uso_campo(:idUso)", nativeQuery = true)
     void anularUsoCampo(@Param("idUso") Integer idUso);
+
+    // ── Consultas para el flujo de Ventas (Órdenes de Pedido) ──────────────
+    List<UsoCampo> findByTecnico_IdUsuarioAndTipoRegistro(Integer idUsuario, String tipoRegistro);
+
+    List<UsoCampo> findByTipoRegistroAndIdEstadoPedido(String tipoRegistro, Integer idEstadoPedido);
+
+    @Modifying
+    @Transactional
+    @Query(value = "SELECT operaciones.fn_crear_orden_pedido(:idCliente, :descripcionPlaga, :idLote, :cantidad, :observacion, :idUsuarioTecnico, :idComboAplicado)", nativeQuery = true)
+    void crearOrdenPedido(@Param("idCliente") Integer idCliente,
+                          @Param("descripcionPlaga") String descripcionPlaga,
+                          @Param("idLote") Integer idLote,
+                          @Param("cantidad") Integer cantidad,
+                          @Param("observacion") String observacion,
+                          @Param("idUsuarioTecnico") Integer idUsuarioTecnico,
+                          @Param("idComboAplicado") Integer idComboAplicado);
+
+    @Modifying
+    @Transactional
+    @Query(value = "SELECT operaciones.fn_despachar_pedido(:idUso, :idUsuario)", nativeQuery = true)
+    void despacharPedido(@Param("idUso") Integer idUso,
+                         @Param("idUsuario") Integer idUsuario);
+
+    @Modifying
+    @Transactional
+    @Query(value = "SELECT operaciones.fn_devolucion_cliente(:idPedidoOriginal, :motivo, :cantidad, :idLote, :idUsuario)", nativeQuery = true)
+    void devolucionCliente(@Param("idPedidoOriginal") Integer idPedidoOriginal,
+                           @Param("motivo") String motivo,
+                           @Param("cantidad") Integer cantidad,
+                           @Param("idLote") Integer idLote,
+                           @Param("idUsuario") Integer idUsuario);
 }
+

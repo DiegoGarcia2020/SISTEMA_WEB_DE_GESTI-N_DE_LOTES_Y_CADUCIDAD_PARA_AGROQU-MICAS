@@ -6,11 +6,16 @@ import org.uteq.sacpa.entity.catalogos.CatCultivo;
 import org.uteq.sacpa.entity.catalogos.CatPlaga;
 
 import java.math.BigDecimal;
-import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.uteq.sacpa.entity.catalogos.Toxicidad;
+import org.uteq.sacpa.entity.catalogos.Formulacion;
+
 
 @Entity
 @Table(name = "producto", schema = "inventario")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Producto {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_producto") private Integer idProducto;
@@ -21,18 +26,21 @@ public class Producto {
     @Column(name = "id_estado") private Integer idEstado;
     @Column(name = "instrucciones_aplicacion", columnDefinition = "text") private String instruccionesAplicacion;
 
+    /** Cantidad mínima aceptable en inventario. Genera alerta de reabastecimiento si el stock cae por debajo */
+    @Column(name = "stock_minimo") private Integer stockMinimo;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_categoria") private Categoria categoria;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "producto_plaga", schema = "inventario",
-            joinColumns = @JoinColumn(name = "id_producto"),
-            inverseJoinColumns = @JoinColumn(name = "id_plaga"))
-    private List<CatPlaga> plagas;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "producto_cultivo", schema = "inventario",
-            joinColumns = @JoinColumn(name = "id_producto"),
-            inverseJoinColumns = @JoinColumn(name = "id_cultivo"))
-    private List<CatCultivo> cultivos;
+    @Column(name = "ingrediente_activo", length = 200) private String ingredienteActivo;
+    
+    @Column(name = "periodo_carencia_dias") private Integer periodoCarenciaDias;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_toxicidad") private Toxicidad toxicidad;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_formulacion") private Formulacion formulacion;
+
 }

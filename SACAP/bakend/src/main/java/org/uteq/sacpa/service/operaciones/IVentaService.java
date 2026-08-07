@@ -1,5 +1,6 @@
 package org.uteq.sacpa.service.operaciones;
 
+import java.util.List;
 import org.uteq.sacpa.dto.ia_alertas.SugerenciaComboDTO;
 import org.uteq.sacpa.dto.operaciones.VentaCreateRequestDTO;
 import org.uteq.sacpa.dto.operaciones.VentaDashboardResponseDTO;
@@ -7,8 +8,6 @@ import org.uteq.sacpa.dto.operaciones.VentaResponseDTO;
 import org.uteq.sacpa.entity.catalogos.CatCultivo;
 import org.uteq.sacpa.entity.catalogos.CatPlaga;
 import org.uteq.sacpa.entity.inventario.Categoria;
-
-import java.util.List;
 
 public interface IVentaService {
 
@@ -34,4 +33,5 @@ public interface IVentaService {
     List<VentaResponseDTO> misVentas(Integer idUsuarioAutenticado);
 
     VentaResponseDTO obtenerVenta(Integer idVenta);
+
 }

@@ -104,14 +104,52 @@
   flex-shrink: 0;
 }
 
-.nav-item__badge {
-  margin-left: auto;
+
+/* Acordeón */
+.accordion {
+  display: flex;
+  flex-direction: column;
+}
+
+.accordion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem 0.5rem 1.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+
+.accordion-title {
   font-size: 0.625rem;
   font-weight: 700;
-  background-color: var(--c-cacao-accent);
-  color: var(--c-bone-bg);
-  padding: 0.125rem 0.4rem;
-  border-radius: 999px;
+  color: var(--c-sage-border);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.accordion-icon {
+  color: var(--c-sage-border);
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+.accordion-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+
+.accordion-content.open {
+  max-height: 200px;
+}
+
+.nav-item--sub {
+  padding-left: 2.5rem;
+
 }
 
 /* Pie del Sidebar / Usuario */
@@ -121,7 +159,8 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background-color: rgba(0, 0, 0, 0.1);
+
+
 }
 
 .user-info {

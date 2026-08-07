@@ -31,8 +31,8 @@ import java.util.Arrays;
 
 /**
  * Configuracion de seguridad SACPA.
- * Roles del sistema: ADMINISTRADOR, GERENTE, BODEGUERO, SUPERVISOR, PROVEEDOR, TECNICO_CAMPO
- * Roles BD: agro_administrador, agro_gerente, agro_bodeguero, agro_supervisor, agro_proveedor, agro_tecnico_campo
+ * Roles del sistema: ADMINISTRADOR, GERENTE, BODEGUERO, SUPERVISOR, TECNICO_CAMPO
+ * Roles BD: agro_administrador, agro_gerente, agro_bodeguero, agro_supervisor, agro_tecnico_campo
  */
 @Configuration
 @EnableWebSecurity
@@ -97,13 +97,15 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // Publico: login, seleccion de rol y solicitud de registro
+                // Publico o con token previo: login, seleccion de rol, cambio de contraseña y solicitud de registro
                 .requestMatchers(
                     "/api/auth/login",
                     "/api/auth/seleccionar-rol",
                     "/api/auth/select-role",
+                    "/api/auth/cambiar-contrasena",
                     "/api/registro/solicitar"
                 ).permitAll()
+
 
                 // WebSocket alertas en tiempo real
                 .requestMatchers("/ws-sacpa/**").permitAll()
@@ -126,12 +128,13 @@ public class SecurityConfig {
                     "/api/gerencia/**"
                 ).hasAnyAuthority("ADMINISTRADOR", "GERENTE")
 
-                // ADMINISTRADOR y SUPERVISOR — alertas, sugerencias IA, promociones
+                // ADMINISTRADOR y SUPERVISOR — alertas, sugerencias IA, promociones, proveedores
                 .requestMatchers(
                     "/api/alertas/**",
                     "/api/ia/sugerencias/**",
                     "/api/promociones/**",
                     "/api/temporadas/**",
+                    "/api/proveedores/**",
                     "/api/devoluciones/aprobar/**",
                     "/api/movimientos/aprobar/**",
                     "/api/supervisor/**"
@@ -153,11 +156,6 @@ public class SecurityConfig {
                     "/api/movimientos/**",
                     "/api/devoluciones/**"
                 ).hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "BODEGUERO")
-
-                // PROVEEDOR — ver sus lotes y catalogo
-                .requestMatchers(
-                    "/api/proveedores/mis-lotes/**"
-                ).hasAuthority("PROVEEDOR")
 
                 // TECNICO_CAMPO — uso en campo
                 .requestMatchers(

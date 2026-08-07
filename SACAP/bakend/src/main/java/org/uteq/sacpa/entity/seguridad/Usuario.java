@@ -25,11 +25,30 @@ public class Usuario {
     @Column(name = "id_estado", nullable = false)
     private Integer idEstado;
 
-    @Column(name = "fecha_creacion")
+    @Column(name = "requiere_cambio_clave")
+    private Boolean requiereCambioClave;
+
+
+    @Transient
     private LocalDateTime fechaCreacion;
 
-    @Column(name = "fecha_actualizacion")
+    @Transient
     private LocalDateTime fechaActualizacion;
+
+    @Transient
+    private String nombres;
+
+    @Transient
+    private String apellidos;
+
+    @Transient
+    private String cedula;
+
+    @Transient
+    private String telefono;
+
+    @Transient
+    private String ocupacion;
 
     @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<UsuarioRol> roles;

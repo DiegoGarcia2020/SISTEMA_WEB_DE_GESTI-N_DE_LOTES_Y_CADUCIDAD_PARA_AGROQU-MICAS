@@ -31,11 +31,16 @@ public class PromocionController {
         return ResponseEntity.ok(promocionService.listarTodas());
     }
 
-    @PatchMapping("/{idPromocion}/estado")
-    public ResponseEntity<Map<String, String>> cambiarEstado(
-            @PathVariable Integer idPromocion, @RequestBody Map<String, String> body) {
-        promocionService.cambiarEstado(idPromocion, body.get("estado"));
-        return ResponseEntity.ok(Map.of("mensaje", "Estado de promoción actualizado"));
+
+    @GetMapping({"/activas", "/combos/activos"})
+    public ResponseEntity<List<Promocion>> listarActivas() {
+        return ResponseEntity.ok(promocionService.listarPorEstado(1)); // 1: Activo/Aprobado
+    }
+
+    @GetMapping("/pendientes")
+    public ResponseEntity<List<Promocion>> listarPendientes() {
+        return ResponseEntity.ok(promocionService.listarPorEstado(2)); // 2: Sugerido/Pendiente de aprobación
+
     }
 
     @PutMapping("/{idPromocion}/desactivar")
@@ -46,11 +51,13 @@ public class PromocionController {
         return ResponseEntity.ok(Map.of("mensaje", "Promocion desactivada exitosamente"));
     }
 
-    private Integer idUsuarioAutenticado() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.getPrincipal() instanceof UsuarioPrincipal principal) {
-            return principal.getIdUsuario();
-        }
-        throw new IllegalStateException("No se encontró un usuario autenticado en el contexto de seguridad");
+
+    @PutMapping("/{idPromocion}/cambiar-estado")
+    public ResponseEntity<Map<String, String>> cambiarEstado(
+            @PathVariable Integer idPromocion,
+            @RequestParam("idEstado") Integer idEstado) {
+        promocionService.cambiarEstadoPromocion(idPromocion, idEstado);
+        return ResponseEntity.ok(Map.of("mensaje", "Estado de combo/promoción actualizado exitosamente"));
+
     }
 }

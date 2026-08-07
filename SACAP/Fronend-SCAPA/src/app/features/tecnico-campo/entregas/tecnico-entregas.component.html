@@ -1,0 +1,98 @@
+<div class="entregas-container">
+  <div class="entregas-header">
+    <h1>Historial de Entregas (Última Milla)</h1>
+    <p>Gestiona los paquetes preparados por bodega y reporta novedades o devoluciones en campo.</p>
+  </div>
+
+  @if (entregas().length === 0) {
+    <div class="empty-state">No hay órdenes asignadas en este momento.</div>
+  } @else {
+    <div class="entregas-grid">
+      @for (entrega of entregas(); track entrega.id) {
+        <div class="entrega-card">
+          
+          <div class="entrega-card__header">
+            <div>
+              <h3 class="entrega-card__title">Orden #{{ entrega.id }}</h3>
+              <p class="entrega-card__subtitle">Cliente: {{ entrega.cliente }}</p>
+            </div>
+            <span class="badge" 
+                  [class.badge-preparada]="entrega.estado === 'PREPARADA'"
+                  [class.badge-entregada]="entrega.estado === 'ENTREGADA'"
+                  [class.badge-devuelta]="entrega.estado === 'DEVUELTA_PARCIALMENTE'">
+              {{ entrega.estado.replace('_', ' ') }}
+            </span>
+          </div>
+
+          <div class="entrega-card__body">
+            <div class="info-row">
+              <span class="info-label">Fecha Estimada:</span>
+              <span>{{ entrega.fechaEstimadaEntrega }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Total a Cobrar:</span>
+              <span style="font-weight: bold; color: #15803d;">\${{ entrega.total | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+          <!-- RENDERIZADO CONDICIONAL DE BOTONES -->
+          @if (entrega.estado === 'PREPARADA') {
+            <button class="btn btn-success" (click)="confirmarEntrega(entrega.id)" [disabled]="isProcessing(entrega.id)">
+              ✅ Confirmar Entrega al Cliente
+            </button>
+          }
+
+          @if (entrega.estado === 'ENTREGADA') {
+            <button class="btn btn-warning" (click)="abrirModalDevolucion(entrega.id)">
+              ⚠️ Registrar Novedad / Devolución
+            </button>
+            <button class="btn btn-secondary mt-2" (click)="imprimirComprobante(entrega)">
+              🖨️ Imprimir Comprobante
+            </button>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- MODAL FLOTANTE DE DEVOLUCIÓN (CSS PURO) -->
+@if (modalAbierto()) {
+  <div class="modal-overlay">
+    <div class="modal-content" [formGroup]="devolucionForm">
+      <h2>Registrar Devolución en Campo</h2>
+      
+      <div class="form-group">
+        <label>Producto a devolver *</label>
+        <select formControlName="idProducto" class="form-control">
+          <option [ngValue]="null" disabled>Seleccione el producto de la factura...</option>
+          <!-- Mock options, en la realidad vendrían de los detalles de la orden -->
+          <option value="1">Fertilizante Urea 46%</option>
+          <option value="2">Fungicida Carbendazim</option>
+          <option value="3">Herbicida Glifosato</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Cantidad Devuelta *</label>
+        <input type="number" formControlName="cantidadDevuelta" class="form-control" min="1">
+      </div>
+
+      <div class="form-group">
+        <label>Motivo de la Devolución *</label>
+        <select formControlName="motivo" class="form-control">
+          <option [ngValue]="null" disabled>Seleccione un motivo...</option>
+          <option value="MALOGRADO">Producto Malogrado / Dañado</option>
+          <option value="ARREPENTIMIENTO_SALDO">El cliente se arrepintió (Saldo)</option>
+        </select>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-ghost" (click)="cerrarModal()">Cancelar</button>
+        <button class="btn btn-primary" [disabled]="devolucionForm.invalid || isProcessingModal()" (click)="confirmarDevolucion()">
+          {{ isProcessingModal() ? 'Enviando...' : 'Confirmar Devolución' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

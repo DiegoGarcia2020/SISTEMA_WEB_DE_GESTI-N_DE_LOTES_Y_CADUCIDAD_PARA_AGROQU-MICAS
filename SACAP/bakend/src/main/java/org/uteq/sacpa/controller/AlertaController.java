@@ -30,18 +30,24 @@ public class AlertaController {
         return ResponseEntity.ok(Map.of("mensaje", "Alerta de caducidad creada exitosamente"));
     }
 
-    /** Atajo: alertas activas, sin tener que conocer el id numérico del estado ACTIVA */
+
     @GetMapping
-    public ResponseEntity<List<AlertaCaducidadResponseDTO>> listarAlertas() {
-        Integer idActiva = catEstadoAlertaRepository.findByNombreIgnoreCase("ACTIVA")
-                .map(e -> e.getIdEstadoAlerta())
-                .orElse(1);
-        return ResponseEntity.ok(alertaService.listarAlertasActivas(idActiva));
+    public ResponseEntity<List<AlertaCaducidad>> listarAlertas() {
+        try {
+            return ResponseEntity.ok(alertaService.listarAlertasActivas(1));
+        } catch (Exception e) {
+            return ResponseEntity.ok(List.of());
+        }
     }
 
     @GetMapping("/activas")
-    public ResponseEntity<List<AlertaCaducidadResponseDTO>> listarAlertasActivas(@RequestParam("idEstadoActivo") Integer idEstadoActivo) {
-        return ResponseEntity.ok(alertaService.listarAlertasActivas(idEstadoActivo));
+    public ResponseEntity<List<AlertaCaducidad>> listarAlertasActivas(@RequestParam("idEstadoActivo") Integer idEstadoActivo) {
+        try {
+            return ResponseEntity.ok(alertaService.listarAlertasActivas(idEstadoActivo));
+        } catch (Exception e) {
+            return ResponseEntity.ok(List.of());
+        }
+
     }
 
     @GetMapping("/lote/{idLote}")

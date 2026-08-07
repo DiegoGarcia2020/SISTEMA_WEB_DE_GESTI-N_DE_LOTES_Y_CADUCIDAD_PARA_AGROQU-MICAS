@@ -29,6 +29,12 @@ public class AuthServiceImpl implements IAuthService {
     @Autowired
     private UserDetailsService userDetailsService;
 
+    @Autowired
+    private org.uteq.sacpa.repository.seguridad.IUsuarioRepository usuarioRepository;
+
+    @Autowired
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
     @Override
     public AuthResponseDTO login(LoginRequestDTO request) {
         // Autenticar credenciales
@@ -48,11 +54,17 @@ public class AuthServiceImpl implements IAuthService {
                 usuarioPrincipal.getRolesCsv()
         );
 
+        Boolean requiere = usuarioPrincipal.getUsuario().getRequiereCambioClave() != null && usuarioPrincipal.getUsuario().getRequiereCambioClave();
+
         return AuthResponseDTO.builder()
                 .token(jwtToken)
                 .tipoFase("PRE_AUTH")
                 .rolesDisponibles(usuarioPrincipal.getRoles())
-                .usuario(new UsuarioInfoDTO(usuarioPrincipal.getIdUsuario(), usuarioPrincipal.getCorreo()))
+                .usuario(UsuarioInfoDTO.builder()
+                        .idUsuario(usuarioPrincipal.getIdUsuario())
+                        .correo(usuarioPrincipal.getCorreo())
+                        .requiereCambioClave(requiere)
+                        .build())
                 .build();
     }
 
@@ -77,12 +89,36 @@ public class AuthServiceImpl implements IAuthService {
         }
 
         String finalJwtToken = jwtService.generateToken(usuarioPrincipal.getUsername(), rolSeleccionado);
+        Boolean requiere = usuarioPrincipal.getUsuario().getRequiereCambioClave() != null && usuarioPrincipal.getUsuario().getRequiereCambioClave();
 
         return AuthResponseDTO.builder()
                 .token(finalJwtToken)
                 .tipoFase("FINAL")
                 .rolesDisponibles(null)
-                .usuario(new UsuarioInfoDTO(usuarioPrincipal.getIdUsuario(), usuarioPrincipal.getCorreo()))
+                .usuario(UsuarioInfoDTO.builder()
+                        .idUsuario(usuarioPrincipal.getIdUsuario())
+                        .correo(usuarioPrincipal.getCorreo())
+                        .requiereCambioClave(requiere)
+                        .build())
                 .build();
     }
+
+    @Override
+    public void cambiarContrasena(org.uteq.sacpa.dto.auth.CambioContrasenaRequestDTO request, String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("Token invalido");
+        }
+        String jwt = authHeader.substring(7);
+        String correo = jwtService.extractUsername(jwt);
+
+        UsuarioPrincipal usuarioPrincipal = (UsuarioPrincipal) userDetailsService.loadUserByUsername(correo);
+        if (request.getContrasenaActual() != null && !request.getContrasenaActual().isBlank()) {
+            if (!passwordEncoder.matches(request.getContrasenaActual(), usuarioPrincipal.getPassword())) {
+                throw new RuntimeException("La contraseña actual ingresada es incorrecta");
+            }
+        }
+        String hash = passwordEncoder.encode(request.getNuevaContrasena());
+        usuarioRepository.actualizarContrasenaYEstado(usuarioPrincipal.getIdUsuario(), hash, false);
+    }
 }
+

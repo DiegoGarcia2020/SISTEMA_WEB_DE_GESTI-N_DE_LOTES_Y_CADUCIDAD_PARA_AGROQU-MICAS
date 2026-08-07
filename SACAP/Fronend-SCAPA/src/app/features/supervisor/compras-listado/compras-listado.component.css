@@ -1,0 +1,396 @@
+/* =================================================================
+   PANTALLA 1: LISTADO DE ÓRDENES DE COMPRA
+   Dirección A: "Etiqueta de Almacén"
+   ================================================================= */
+
+.compras-container {
+  padding: 1.5rem;
+  min-height: 100vh;
+  background: var(--c-bone-bg);
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Cabecera Hero / Banner de Alerta ── */
+.alert-warning {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background: rgba(199, 127, 61, 0.1); /* c-cacao-accent con opacidad */
+  border-left: 4px solid var(--c-cacao-accent);
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .alert-warning {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.alert-warning__info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  z-index: 1;
+}
+
+.alert-warning__icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--c-cacao-accent);
+}
+
+.alert-warning__badge {
+  display: inline-block;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  color: var(--c-warm-black);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+.alert-warning__title {
+  font-family: var(--font-slab);
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--c-warm-black);
+  margin: 0;
+}
+
+.alert-warning__subtitle {
+  font-size: 0.75rem;
+  color: var(--c-sage-border);
+  margin: 0.125rem 0 0 0;
+}
+
+.alert-warning__actions {
+  display: flex;
+  gap: 0.75rem;
+  z-index: 1;
+}
+
+/* ── Botones ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--radius-btn);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn--primary {
+  background: var(--c-dark-green);
+  color: var(--c-bone-bg);
+}
+
+.btn--primary:hover {
+  background: var(--c-obsidian);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--c-warm-black);
+  border: 1px solid var(--c-sage-border);
+}
+
+.btn--ghost:hover {
+  border-color: var(--c-dark-green);
+  color: var(--c-dark-green);
+}
+
+.btn--filter {
+  background: var(--c-sage-border);
+  color: var(--c-bone-bg);
+}
+
+.btn--filter:hover {
+  background: var(--c-dark-green);
+}
+
+.btn--sm {
+  padding: 0.375rem 0.875rem;
+  font-size: 0.75rem;
+}
+
+/* ── Tarjeta de filtros ── */
+.filters-card {
+  background: var(--c-bone-bg);
+  border: 1px solid var(--c-sage-border);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.filters-card__title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--c-warm-black);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.75rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+@media (min-width: 640px) {
+  .filters-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 1024px) {
+  .filters-grid { grid-template-columns: repeat(5, 1fr); }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group__label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--c-warm-black);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.375rem;
+}
+
+.form-group__select,
+.form-group__input {
+  width: 100%;
+  padding: 0.5rem 0;
+  border: none;
+  border-bottom: 1px solid var(--c-sage-border);
+  background: transparent;
+  color: var(--c-warm-black);
+  font-size: 0.8125rem;
+  font-family: var(--font-sans);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.form-group__select:focus,
+.form-group__input:focus {
+  border-bottom-color: var(--c-dark-green);
+}
+
+/* ── Tabla de Órdenes ── */
+.table-card {
+  background: var(--c-bone-bg);
+  border: 1px solid var(--c-sage-border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.table-card__header {
+  padding: 1.25rem;
+  border-bottom: 1px solid var(--c-sage-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.table-card__title {
+  font-family: var(--font-slab);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--c-warm-black);
+  margin: 0;
+}
+
+.table-card__count {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--c-sage-border);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.data-table th,
+.data-table td {
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid var(--c-sage-border);
+}
+
+.data-table th {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--c-sage-border);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--c-bone-bg);
+}
+
+.data-table td {
+  font-size: 0.8125rem;
+  color: var(--c-warm-black);
+  vertical-align: middle;
+}
+
+.data-table tbody tr {
+  background: transparent;
+  transition: background-color 0.2s ease;
+}
+
+.data-table tbody tr:hover {
+  background: rgba(143, 174, 155, 0.1);
+}
+
+.data-table__id {
+  font-weight: 700;
+  color: var(--c-dark-green);
+}
+
+.data-table__date {
+  font-family: var(--font-sans);
+  color: var(--c-warm-black);
+}
+
+.data-table__total {
+  font-weight: 800;
+  color: var(--c-warm-black);
+}
+
+/* ── Badges y Estados ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  border-radius: 1rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge--pendiente {
+  background: rgba(199, 127, 61, 0.1);
+  color: var(--c-cacao-accent);
+  border: 1px solid var(--c-cacao-accent);
+}
+
+.badge--recepcionada {
+  background: rgba(18, 38, 29, 0.1);
+  color: var(--c-dark-green);
+  border: 1px solid var(--c-dark-green);
+}
+
+.badge--anulada {
+  background: transparent;
+  color: var(--c-error);
+  border: 1px solid var(--c-error);
+}
+
+/* ── Acciones en tabla ── */
+.table-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.btn--action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.625rem;
+  border-radius: var(--radius-btn);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: transparent;
+}
+
+.btn--action-view {
+  color: var(--c-dark-green);
+  border: 1px solid var(--c-sage-border);
+}
+
+.btn--action-view:hover {
+  border-color: var(--c-dark-green);
+  background: rgba(47, 93, 69, 0.1);
+}
+
+.btn--action-void {
+  color: var(--c-error);
+  border: 1px solid var(--c-sage-border);
+}
+
+.btn--action-void:hover {
+  border-color: var(--c-error);
+  background: rgba(220, 38, 38, 0.1);
+}
+
+/* ── Estado vacío ── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  text-align: center;
+}
+
+.empty-state__icon {
+  width: 4rem;
+  height: 4rem;
+  background: transparent;
+  border: 2px dashed var(--c-sage-border);
+  color: var(--c-sage-border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.empty-state__title {
+  font-family: var(--font-slab);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--c-warm-black);
+  margin: 0 0 0.5rem 0;
+}
+
+.empty-state__text {
+  font-size: 0.8125rem;
+  color: var(--c-sage-border);
+  margin: 0;
+}

@@ -8,7 +8,9 @@ export interface UsuarioDTO {
   fechaActualizacion?: string;
   roles: string[];
   idRoles: number[];
+  requiereCambioClave?: boolean;
   // Campos extra opcionales para la interfaz y vista
+
   nombre?: string;
   cedula?: string;
   licencia?: string;

@@ -17,6 +17,9 @@ public class TecnicoCampo {
     @Column(name = "licencia_agricola", length = 100) private String licenciaAgricola;
     @Column(name = "id_estado") private Integer idEstado;
 
+    @Transient
+    private byte[] documentoPdf;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario", unique = true) private Usuario usuario;
 }

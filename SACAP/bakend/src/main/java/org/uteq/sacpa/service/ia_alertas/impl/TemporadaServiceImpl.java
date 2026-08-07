@@ -18,8 +18,9 @@ import java.sql.PreparedStatement;
 import java.sql.Date;
 import java.util.List;
 
-@Service
-@RequiredArgsConstructor
+
+@Service("temporadaServiceImplIA")
+
 public class TemporadaServiceImpl implements ITemporadaService {
 
     private final ITemporadaAgricolaRepository temporadaRepository;

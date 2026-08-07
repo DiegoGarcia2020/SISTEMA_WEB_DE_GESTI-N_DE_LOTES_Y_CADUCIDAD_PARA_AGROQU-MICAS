@@ -1,0 +1,167 @@
+<div class="pos-layout">
+  <!-- COLUMNA 1: Filtros Agronómicos y Contexto (30%) -->
+  <aside class="pos-sidebar" [formGroup]="posForm">
+    <div class="sidebar-section">
+      <h2 class="sidebar-title">Contexto del Cliente</h2>
+      <div class="form-group">
+        <label>Seleccionar Cliente *</label>
+        <select formControlName="idCliente" class="form-control">
+          <option [ngValue]="null" disabled>Buscar por nombre o finca...</option>
+          @for (cli of clientes(); track cli.idCliente) {
+            <option [ngValue]="cli.idCliente">{{ cli.nombreFinca }} - {{ cli.cedula }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <h2 class="sidebar-title">Filtros Agronómicos</h2>
+      <p class="sidebar-subtitle">Filtra el catálogo sin necesidad de diagnósticos manuales.</p>
+      <div class="form-group">
+        <label>Cultivo</label>
+        <select formControlName="cultivo" class="form-control">
+          <option value="">Todos los cultivos</option>
+          <option value="Banano">Banano</option>
+          <option value="Cacao">Cacao</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Plaga / Enfermedad</label>
+        <select formControlName="plaga" class="form-control">
+          <option value="">Todas las plagas</option>
+          <option value="Monilia">Monilia (Hongo)</option>
+          <option value="Pulgón">Pulgón (Insecto)</option>
+          <option value="Maleza">Maleza</option>
+          <option value="Nutrición">Nutrición (Abono)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <h2 class="sidebar-title">Logística de Entrega (SLA)</h2>
+      <div class="form-group">
+        <label>Fecha Estimada de Llegada *</label>
+        <input type="date" formControlName="fechaEntrega" class="form-control">
+      </div>
+      <div class="form-group">
+        <label>Ventana Horaria *</label>
+        <select formControlName="ventanaHoraria" class="form-control">
+          <option [ngValue]="null" disabled>Seleccionar franja...</option>
+          <option value="08:00 - 10:00">08:00 - 10:00</option>
+          <option value="10:00 - 12:00">10:00 - 12:00</option>
+          <option value="14:00 - 16:00">14:00 - 16:00</option>
+        </select>
+      </div>
+    </div>
+  </aside>
+
+  <!-- COLUMNA 2: Catálogo Inteligente (45%) -->
+  <main class="pos-catalog">
+    <div class="catalog-header">
+      <h2>Catálogo Inteligente</h2>
+      <span class="badge">{{ productosFiltrados().length }} productos encontrados</span>
+    </div>
+
+    <div class="catalog-grid">
+      @for (prod of productosFiltrados(); track prod.idProducto) {
+        <div class="product-card">
+          <div class="product-info">
+            <h3>{{ prod.nombre }}</h3>
+            <span class="product-measure">{{ prod.unidadMedida }}</span>
+            <span class="product-price">\${{ prod.precio | number:'1.2-2' }}</span>
+            
+            @if (prod.instruccionesAplicacion) {
+              <div class="instruction-badge">
+                <span class="badge-icon">ℹ️</span> Instrucciones precargadas
+              </div>
+            }
+          </div>
+          <button class="btn btn-add" (click)="agregarAlCarrito(prod)">Añadir</button>
+        </div>
+      } @empty {
+        <div class="empty-catalog">
+          No se encontraron productos para los filtros seleccionados.
+        </div>
+      }
+    </div>
+  </main>
+
+  <!-- COLUMNA 3: Carrito, Facturación y Pago (25%) -->
+  <aside class="pos-cart" [formGroup]="posForm">
+    <h2 class="cart-title">Resumen de Venta</h2>
+    
+    <div class="cart-items">
+      @for (item of carrito(); track item.producto.idProducto) {
+        <div class="cart-item">
+          <div class="cart-item-header">
+            <span class="cart-item-name">{{ item.producto.nombre }}</span>
+            <span class="cart-item-total">\${{ (item.producto.precio * item.cantidad) | number:'1.2-2' }}</span>
+          </div>
+          
+          @if (item.producto.instruccionesAplicacion) {
+            <small class="cart-item-instruction">{{ item.producto.instruccionesAplicacion }}</small>
+          }
+
+          <div class="cart-item-actions">
+            <span class="cart-item-price">\${{ item.producto.precio | number:'1.2-2' }} c/u</span>
+            <div class="quantity-controls">
+              <button class="btn-qty" (click)="decrementar(item.producto.idProducto)">-</button>
+              <span class="qty-value">{{ item.cantidad }}</span>
+              <button class="btn-qty" (click)="incrementar(item.producto.idProducto)">+</button>
+            </div>
+          </div>
+        </div>
+      } @empty {
+        <div class="empty-cart">
+          El carrito está vacío.
+        </div>
+      }
+    </div>
+
+    <!-- Facturación y Pagos -->
+    <div class="billing-section">
+      <div class="form-group flex-group">
+        <label>Costo Envío ($)</label>
+        <input type="number" formControlName="costoEnvio" class="form-control" min="0" step="0.5">
+      </div>
+      <div class="form-group flex-group">
+        <label>Pago</label>
+        <select formControlName="metodoPago" class="form-control">
+          <option value="EFECTIVO">Efectivo</option>
+          <option value="TRANSFERENCIA">Transferencia</option>
+          <option value="TARJETA">Tarjeta</option>
+        </select>
+      </div>
+      @if (posForm.get('metodoPago')?.value !== 'EFECTIVO') {
+        <div class="form-group flex-group">
+          <label>Ref/Voucher *</label>
+          <input type="text" formControlName="referenciaPago" class="form-control" placeholder="N° Comprobante">
+        </div>
+      }
+    </div>
+
+    <!-- Totales -->
+    <div class="cart-totals">
+      <div class="total-row">
+        <span>Subtotal</span>
+        <span>\${{ subtotal() | number:'1.2-2' }}</span>
+      </div>
+      <div class="total-row">
+        <span>Envío</span>
+        <span>\${{ costoEnvioReactive() | number:'1.2-2' }}</span>
+      </div>
+      <div class="total-row">
+        <span>IVA (15%)</span>
+        <span>\${{ iva() | number:'1.2-2' }}</span>
+      </div>
+      <div class="total-row grand-total">
+        <span>TOTAL</span>
+        <span>\${{ granTotal() | number:'1.2-2' }}</span>
+      </div>
+    </div>
+
+    <button class="btn btn-confirm" [disabled]="posForm.invalid || carrito().length === 0 || isLoading()" (click)="confirmarVenta()">
+      {{ isLoading() ? 'Procesando...' : 'Confirmar Venta y Notificar Bodega' }}
+    </button>
+  </aside>
+</div>

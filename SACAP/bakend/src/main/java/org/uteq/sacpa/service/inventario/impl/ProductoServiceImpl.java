@@ -23,8 +23,34 @@ public class ProductoServiceImpl implements IProductoService {
                 dto.getUnidadMedida(),
                 dto.getPrecioSugerido(),
                 dto.getIdCategoria(),
-                dto.getIdEstado()
+                dto.getIdEstado(),
+                dto.getIngredienteActivo(),
+                dto.getPeriodoCarenciaDias(),
+                dto.getIdToxicidad(),
+                dto.getIdFormulacion()
         );
+    }
+    
+    @Override
+    public void actualizarProducto(Integer id, ProductoRequestDTO dto) {
+        productoRepository.actualizarProducto(
+                id,
+                dto.getNombre(),
+                dto.getDescripcion(),
+                dto.getUnidadMedida(),
+                dto.getPrecioSugerido(),
+                dto.getIdCategoria(),
+                dto.getIdEstado(),
+                dto.getIngredienteActivo(),
+                dto.getPeriodoCarenciaDias(),
+                dto.getIdToxicidad(),
+                dto.getIdFormulacion()
+        );
+    }
+
+    @Override
+    public Producto obtenerPorId(Integer id) {
+        return productoRepository.findById(id).orElseThrow(() -> new RuntimeException("Producto no encontrado"));
     }
 
     @Override

@@ -1,0 +1,226 @@
+/* =================================================================
+   AUTH LAYOUT - TARJETA CENTRADA (Reutilizable para Login y Update)
+   ================================================================= */
+
+/* 1. Contenedor Principal (Fondo Verde Institucional) */
+.auth-wrapper {
+  width: 100vw;
+  min-height: 100vh;
+  background-color: #15803d; /* Verde Institucional corporativo */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem; /* Margen de seguridad para móviles */
+  box-sizing: border-box;
+  font-family: 'Inter', 'Roboto', sans-serif;
+}
+
+/* 2. Tarjeta Blanca (Card) */
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  padding: 2.5rem 2rem;
+  box-sizing: border-box;
+}
+
+/* Cabecera de la Tarjeta */
+.auth-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.auth-header__title {
+  color: #111827;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+}
+
+.auth-header__subtitle {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* 3. Formularios e Inputs Minimalistas */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.form-group__label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.form-group__input {
+  width: 100%;
+  padding: 0.625rem 0; /* Padding superior e inferior, sin lados */
+  background-color: transparent; /* Sin fondos grises */
+  border: none;
+  border-bottom: 1px solid #e5e7eb; /* Solo borde inferior */
+  font-size: 0.9375rem;
+  color: #111827;
+  outline: none;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.form-group__input::placeholder {
+  color: #9ca3af;
+}
+
+.form-group__input:focus {
+  border-bottom-color: #15803d; /* Foco en Verde Institucional */
+}
+
+/* Mensajes de Error (Opcional para validaciones) */
+.form-group__error {
+  font-size: 0.75rem;
+  color: #dc2626;
+  margin-top: 0.25rem;
+  display: block; 
+}
+
+/* 4. Botón de Acción Principal */
+.auth-btn {
+  width: 100%;
+  background-color: #15803d;
+  color: #ffffff;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.auth-btn:hover:not(:disabled) {
+  background-color: #14532d; /* Verde oscurecido al hacer hover */
+}
+
+.auth-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.auth-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Extras para funcionalidad de Login y Roles */
+.btn-reveal {
+  position: absolute;
+  right: 0;
+  bottom: 0.5rem;
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s;
+}
+
+.btn-reveal:hover {
+  color: #15803d;
+}
+
+.auth-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  margin-top: -0.5rem;
+}
+
+.auth-link {
+  color: #374151;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.auth-link:hover {
+  color: #15803d;
+}
+
+/* Roles */
+.role-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.role-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.role-btn:hover:not(:disabled) {
+  border-color: #15803d;
+}
+
+.role-btn__info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.role-btn__icon {
+  color: #15803d;
+}
+
+.role-btn__name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #111827;
+  display: block;
+}
+
+.role-btn__desc {
+  font-size: 0.75rem;
+  color: #6b7280;
+  display: block;
+}
+
+.auth-footer {
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 0.75rem;
+}
+
+.auth-footer a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  font-weight: 600;
+}
