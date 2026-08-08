@@ -19,6 +19,7 @@ import org.uteq.sacpa.repository.inventario.IProductoRepository;
 import org.uteq.sacpa.repository.operaciones.IDetalleCompraRepository;
 import org.uteq.sacpa.repository.operaciones.IOrdenCompraRepository;
 import org.uteq.sacpa.service.operaciones.IOrdenCompraService;
+import org.uteq.sacpa.security.SecurityContextService;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -62,6 +63,9 @@ public class OrdenCompraServiceImpl implements IOrdenCompraService {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+    @Autowired
+    private SecurityContextService securityContextService;
+
     // =========================================================================
     // CREAR ORDEN DE COMPRA
     // =========================================================================
@@ -86,6 +90,7 @@ public class OrdenCompraServiceImpl implements IOrdenCompraService {
                 .fechaLlegadaEstimada(dto.getFechaLlegadaEstimada())
                 .ventanaHoraria(dto.getVentanaHoraria())
                 .fechaRegistro(LocalDateTime.now())
+                .idUsuarioRegistro(securityContextService.obtenerIdUsuario())
                 .detalles(new ArrayList<>())
                 .build();
 
@@ -156,8 +161,8 @@ public class OrdenCompraServiceImpl implements IOrdenCompraService {
     @Override
     @Transactional(readOnly = true)
     public List<OrdenCompraResponseDTO> listarOrdenes(String estado, Integer idProveedor,
-                                                       LocalDate desde, LocalDate hasta) {
-        List<OrdenCompra> ordenes = ordenCompraRepository.findByFiltros(estado, idProveedor, desde, hasta);
+                                                       LocalDate desde, LocalDate hasta, Integer idUsuarioRegistro) {
+        List<OrdenCompra> ordenes = ordenCompraRepository.findByFiltros(estado, idProveedor, desde, hasta, idUsuarioRegistro);
         return ordenes.stream().map(this::mapToResponseDTO).collect(Collectors.toList());
     }
 
@@ -320,6 +325,7 @@ public class OrdenCompraServiceImpl implements IOrdenCompraService {
                 .totalNeto(orden.getTotalNeto())
                 .estado(orden.getEstado())
                 .fechaRegistro(orden.getFechaRegistro())
+                .idUsuarioRegistro(orden.getIdUsuarioRegistro())
                 .fechaLlegadaEstimada(orden.getFechaLlegadaEstimada())
                 .ventanaHoraria(orden.getVentanaHoraria())
                 .fechaLlegadaReal(orden.getFechaLlegadaReal())

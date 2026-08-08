@@ -11,101 +11,95 @@ import { WebsocketService } from '../../core/services/websocket.service';
   selector: 'app-bodega-dashboard',
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule, LucideAngularModule],
+  styleUrls: ['./bodega-dashboard.component.css'],
   template: `
-    <div class="p-6 space-y-6 animate-fade-in min-h-screen bg-slate-50/50">
-      <!-- Cabecera Verde/Esmeralda del Bodeguero -->
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-[#0B4628] via-emerald-900 to-teal-800 p-6 rounded-3xl text-white shadow-xl relative overflow-hidden">
-        <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
-        <div class="flex items-center gap-4 z-10">
-          <div class="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white shadow-inner">
-            <lucide-icon name="boxes" class="w-8 h-8"></lucide-icon>
+    <div class="dashboard-container">
+      <!-- Cabecera Hero -->
+      <div class="hero-card">
+        <div class="hero-card__info">
+          <div class="hero-card__icon">
+            <lucide-icon name="boxes"></lucide-icon>
           </div>
           <div>
-            <span class="inline-block px-2.5 py-0.5 bg-green-400/20 text-green-200 text-[11px] font-extrabold rounded-full uppercase tracking-wider mb-1">Rol: Bodeguero & Almacén</span>
-            <h1 class="text-2xl font-bold tracking-tight">Kitting Físico, Despachos FEFO & Devoluciones</h1>
-            <p class="text-xs text-green-100/80 mt-0.5">Operador en Bodega: {{ authService.currentUser()?.correo || 'bodega@agrosense.ec' }}</p>
+            <span class="hero-card__badge">Rol: Bodeguero & Almacén</span>
+            <h1 class="hero-card__title">Kitting Físico, Despachos FEFO & Devoluciones</h1>
+            <p class="hero-card__subtitle">Operador en Bodega: {{ authService.currentUser()?.correo || 'bodega@agrosense.ec' }}</p>
           </div>
         </div>
-        <div class="flex items-center gap-3 z-10">
-          <!-- Navegación de Pestañas Operativas -->
-          <div class="bg-black/20 p-1.5 rounded-2xl flex flex-wrap items-center gap-1 backdrop-blur-md">
-            <button (click)="activeTab.set('PEDIDOS_VENTAS')"
-                    [class]="activeTab() === 'PEDIDOS_VENTAS' ? 'bg-white text-[#0B4628] shadow-md' : 'text-white/80 hover:text-white hover:bg-white/10'"
-                    class="px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer">
-              <lucide-icon name="truck" class="w-4 h-4 text-emerald-400"></lucide-icon>
-              <span>Despachos de Pedidos</span>
-              @if (pedidosPendientes().length > 0) {
-                <span class="px-1.5 py-0.2 bg-amber-400 text-amber-950 font-black rounded-full text-[10px]">{{ pedidosPendientes().length }}</span>
-              }
-            </button>
-            <button (click)="activeTab.set('KITTING')"
-                    [class]="activeTab() === 'KITTING' ? 'bg-white text-[#0B4628] shadow-md' : 'text-white/80 hover:text-white hover:bg-white/10'"
-                    class="px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer">
-              <lucide-icon name="package-check" class="w-4 h-4 text-amber-400"></lucide-icon>
-              <span>Armado de Kits (Combos IA)</span>
-            </button>
-            <button (click)="activeTab.set('LOTES')"
-                    [class]="activeTab() === 'LOTES' ? 'bg-white text-[#0B4628] shadow-md' : 'text-white/80 hover:text-white hover:bg-white/10'"
-                    class="px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer">
-              <lucide-icon name="list-ordered" class="w-4 h-4 text-teal-400"></lucide-icon>
-              <span>Matriz Stock FEFO</span>
-            </button>
-            <button (click)="activeTab.set('DEVOLUCION_CLIENTE')"
-                    [class]="activeTab() === 'DEVOLUCION_CLIENTE' ? 'bg-white text-[#0B4628] shadow-md' : 'text-white/80 hover:text-white hover:bg-white/10'"
-                    class="px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer">
-              <lucide-icon name="rotate-ccw" class="w-4 h-4 text-purple-400"></lucide-icon>
-              <span>Devolución Cliente</span>
-            </button>
-          </div>
+        <div class="hero-card__actions">
+          <button (click)="activeTab.set('PEDIDOS_VENTAS')"
+                  [class.active]="activeTab() === 'PEDIDOS_VENTAS'"
+                  class="btn--tab">
+            <lucide-icon name="truck" class="w-4 h-4"></lucide-icon>
+            <span>Despachos de Pedidos</span>
+            @if (pedidosPendientes().length > 0) {
+              <span class="badge-tab">{{ pedidosPendientes().length }}</span>
+            }
+          </button>
+          <button (click)="activeTab.set('KITTING')"
+                  [class.active]="activeTab() === 'KITTING'"
+                  class="btn--tab">
+            <lucide-icon name="package-check" class="w-4 h-4"></lucide-icon>
+            <span>Armado de Kits (Combos IA)</span>
+          </button>
+          <button (click)="activeTab.set('LOTES')"
+                  [class.active]="activeTab() === 'LOTES'"
+                  class="btn--tab">
+            <lucide-icon name="list-ordered" class="w-4 h-4"></lucide-icon>
+            <span>Matriz Stock FEFO</span>
+          </button>
+          <button (click)="activeTab.set('DEVOLUCION_CLIENTE')"
+                  [class.active]="activeTab() === 'DEVOLUCION_CLIENTE'"
+                  class="btn--tab">
+            <lucide-icon name="rotate-ccw" class="w-4 h-4"></lucide-icon>
+            <span>Devolución Cliente</span>
+          </button>
         </div>
       </div>
 
       <!-- Tarjetas KPI -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-2xs flex items-center justify-between">
+      <!-- Tarjetas KPI -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
           <div>
-            <p class="text-xs font-bold text-gray-500 uppercase">Órdenes por Despachar</p>
-            <p class="text-2xl font-black text-amber-600 mt-1">{{ pedidosPendientes().length }}</p>
-            <p class="text-[11px] text-amber-600 font-medium mt-1 flex items-center gap-1">
-              <lucide-icon name="clock" class="w-3.5 h-3.5"></lucide-icon> Reserva activa en stock
-            </p>
+            <p class="kpi-card__title">Órdenes por Despachar</p>
+            <p class="kpi-card__value">{{ pedidosPendientes().length }}</p>
+            <p class="kpi-card__desc">Reserva activa en stock</p>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+          <div class="kpi-card__icon">
             <lucide-icon name="clipboard-check" class="w-6 h-6"></lucide-icon>
           </div>
         </div>
 
-        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-2xs flex items-center justify-between">
+        <div class="kpi-card">
           <div>
-            <p class="text-xs font-bold text-gray-500 uppercase">Alertas para Kitting</p>
-            <p class="text-2xl font-black text-emerald-600 mt-1">{{ alertasKitting().length }}</p>
-            <p class="text-[11px] text-emerald-600 font-medium mt-1">Lotes críticos en rotación</p>
+            <p class="kpi-card__title">Alertas para Kitting</p>
+            <p class="kpi-card__value">{{ alertasKitting().length }}</p>
+            <p class="kpi-card__desc">Lotes críticos en rotación</p>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+          <div class="kpi-card__icon">
             <lucide-icon name="sparkles" class="w-6 h-6"></lucide-icon>
           </div>
         </div>
 
-        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-2xs flex items-center justify-between">
+        <div class="kpi-card">
           <div>
-            <p class="text-xs font-bold text-gray-500 uppercase">Total en Stock (FEFO)</p>
-            <p class="text-2xl font-black text-gray-900 mt-1">{{ totalUnidadesStock() }} <span class="text-xs font-normal text-gray-500">unds</span></p>
-            <p class="text-[11px] text-green-600 font-medium mt-1">Disponibles tras reservas</p>
+            <p class="kpi-card__title">Total en Stock (FEFO)</p>
+            <p class="kpi-card__value">{{ totalUnidadesStock() }}</p>
+            <p class="kpi-card__desc">Disponibles tras reservas</p>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-green-50 text-[#0B4628] flex items-center justify-center">
+          <div class="kpi-card__icon">
             <lucide-icon name="layers" class="w-6 h-6"></lucide-icon>
           </div>
         </div>
 
-        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-2xs flex items-center justify-between">
+        <div class="kpi-card">
           <div>
-            <p class="text-xs font-bold text-gray-500 uppercase">Devoluciones de Clientes</p>
-            <p class="text-2xl font-black text-purple-600 mt-1">{{ devolucionesClienteCount() }}</p>
-            <p class="text-[11px] text-purple-600 font-medium mt-1 flex items-center gap-1">
-              <lucide-icon name="check-circle" class="w-3.5 h-3.5"></lucide-icon> Stock sumado de inmediato
-            </p>
+            <p class="kpi-card__title">Devoluciones Clientes</p>
+            <p class="kpi-card__value">{{ devolucionesClienteCount() }}</p>
+            <p class="kpi-card__desc">Stock sumado de inmediato</p>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center">
+          <div class="kpi-card__icon">
             <lucide-icon name="rotate-ccw" class="w-6 h-6"></lucide-icon>
           </div>
         </div>
@@ -113,59 +107,58 @@ import { WebsocketService } from '../../core/services/websocket.service';
 
       <!-- TAB 1: DESPACHOS DE PEDIDOS (VENTAS) -->
       @if (activeTab() === 'PEDIDOS_VENTAS') {
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-2xs overflow-hidden animate-fade-in">
-          <div class="p-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+        <div class="table-card">
+          <div class="table-card__header">
             <div>
-              <h3 class="font-bold text-base text-gray-900 flex items-center gap-2">
-                <lucide-icon name="truck" class="w-5 h-5 text-[#0B4628]"></lucide-icon>
-                <span>Órdenes de Pedido Emitidas por Técnicos (Cola de Despacho)</span>
+              <h3 class="table-card__title">
+                <lucide-icon name="truck" class="w-5 h-5"></lucide-icon>
+                <span>Órdenes de Pedido Emitidas por Técnicos</span>
               </h3>
-              <p class="text-xs text-gray-500">Al pulsar en "Despachar", el sistema libera la reserva, descuenta el stock del lote y genera la orden de salida al cliente.</p>
+              <p class="table-card__desc">Al pulsar en "Despachar", el sistema libera la reserva, descuenta el stock del lote y genera la orden de salida al cliente.</p>
             </div>
-            <button (click)="loadAll()" class="p-2 text-gray-500 hover:text-[#0B4628] rounded-xl hover:bg-white transition-all cursor-pointer" title="Actualizar">
+            <button (click)="loadAll()" class="btn btn--ghost">
               <lucide-icon name="refresh-cw" class="w-4 h-4"></lucide-icon>
             </button>
           </div>
 
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+          <div class="table-scroll">
+            <table class="data-table">
               <thead>
-                <tr class="bg-gray-50 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                  <th class="py-3.5 px-4">Orden # / Fecha</th>
-                  <th class="py-3.5 px-4">Finca / Cliente Destino</th>
-                  <th class="py-3.5 px-4">Insumo & Lote FEFO</th>
-                  <th class="py-3.5 px-4">Reservado</th>
-                  <th class="py-3.5 px-4">Receta / Dosis Prescrita</th>
-                  <th class="py-3.5 px-4 text-right">Acción Operativa</th>
+                <tr>
+                  <th>Orden # / Fecha</th>
+                  <th>Finca / Cliente Destino</th>
+                  <th>Insumo & Lote FEFO</th>
+                  <th>Reservado</th>
+                  <th>Receta / Dosis Prescrita</th>
+                  <th style="text-align: right;">Acción Operativa</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-100 text-sm">
+              <tbody>
                 @for (ped of pedidosPendientes(); track ped.idUso) {
-                  <tr class="hover:bg-amber-50/30 transition-colors">
-                    <td class="py-4 px-4 font-mono">
-                      <span class="font-bold text-gray-900 block">ORD-{{ ped.idUso }}</span>
-                      <span class="text-xs text-gray-500">{{ ped.fechaAplicacion }}</span>
+                  <tr>
+                    <td>
+                      <span class="data-table__id block">ORD-{{ ped.idUso }}</span>
+                      <span style="font-size: 0.6875rem; color: var(--c-sage-border);">{{ ped.fechaAplicacion }}</span>
                     </td>
-                    <td class="py-4 px-4">
-                      <div class="font-extrabold text-gray-900">{{ ped.cliente?.nombreFinca }}</div>
-                      <div class="text-xs font-mono text-emerald-700">CI: {{ ped.cliente?.cedula }}</div>
+                    <td>
+                      <div style="font-weight: 700; color: var(--c-warm-black);">{{ ped.cliente?.nombreFinca }}</div>
+                      <div style="font-size: 0.6875rem; color: var(--c-dark-green);">CI: {{ ped.cliente?.cedula }}</div>
                     </td>
-                    <td class="py-4 px-4">
-                      <div class="font-bold text-gray-800">{{ ped.lote?.nombreProducto || ped.lote?.producto?.nombre }}</div>
-                      <div class="text-xs font-mono text-gray-500">Lote: {{ ped.lote?.numeroLote || ped.idLote }}</div>
-                      <div class="text-[11px] text-gray-400 mt-0.5">{{ ped.lote?.ubicacionAlmacen }}</div>
+                    <td>
+                      <div style="font-weight: 700; color: var(--c-warm-black);">{{ ped.lote?.nombreProducto || ped.lote?.producto?.nombre }}</div>
+                      <div style="font-size: 0.6875rem; color: var(--c-sage-border);">Lote: {{ ped.lote?.numeroLote || ped.idLote }}</div>
+                      <div style="font-size: 0.625rem; color: var(--c-sage-border); margin-top: 2px;">{{ ped.lote?.ubicacionAlmacen }}</div>
                     </td>
-                    <td class="py-4 px-4">
-                      <span class="px-2.5 py-1 bg-amber-100 text-amber-900 font-black rounded-lg text-xs">
+                    <td>
+                      <span class="badge badge--pendiente">
                         {{ ped.cantidadUsada || ped.cantidadReservada }} unds
                       </span>
                     </td>
-                    <td class="py-4 px-4 max-w-xs text-xs text-gray-600 line-clamp-2">
+                    <td style="font-size: 0.75rem; color: var(--c-warm-black); max-width: 200px;">
                       {{ ped.descripcionPlaga || ped.observacion }}
                     </td>
-                    <td class="py-4 px-4 text-right">
-                      <button (click)="despacharPedido(ped.idUso)"
-                              class="px-4 py-2 bg-[#0B4628] hover:bg-[#146C43] text-white font-extrabold text-xs rounded-xl shadow-xs transition-all inline-flex items-center gap-1.5 cursor-pointer">
+                    <td style="text-align: right;">
+                      <button (click)="despacharPedido(ped.idUso)" class="btn btn--primary">
                         <lucide-icon name="check-circle" class="w-4 h-4"></lucide-icon>
                         <span>Despachar (Aplicar FEFO)</span>
                       </button>
@@ -173,10 +166,12 @@ import { WebsocketService } from '../../core/services/websocket.service';
                   </tr>
                 } @empty {
                   <tr>
-                    <td colspan="6" class="py-12 text-center text-gray-400">
-                      <lucide-icon name="check-circle" class="w-12 h-12 mx-auto mb-2 opacity-40 text-emerald-600"></lucide-icon>
-                      <p class="font-bold text-sm text-gray-600">No hay órdenes de pedido pendientes en bodega</p>
-                      <p class="text-xs text-gray-400 mt-1">Todas las órdenes emitidas por los técnicos han sido procesadas o despachadas.</p>
+                    <td colspan="6">
+                      <div class="empty-state">
+                        <lucide-icon name="check-circle" class="empty-state__icon"></lucide-icon>
+                        <p class="empty-state__title">No hay órdenes de pedido pendientes en bodega</p>
+                        <p class="empty-state__text">Todas las órdenes emitidas por los técnicos han sido procesadas o despachadas.</p>
+                      </div>
                     </td>
                   </tr>
                 }
@@ -188,66 +183,59 @@ import { WebsocketService } from '../../core/services/websocket.service';
 
       <!-- TAB 2: KITTING Y COMBOS FÍSICOS -->
       @if (activeTab() === 'KITTING') {
-        <div class="space-y-6 animate-fade-in">
-          <div class="bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent p-5 rounded-2xl border border-emerald-200/60 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-              <div class="w-11 h-11 rounded-xl bg-[#0B4628] text-white flex items-center justify-center shadow-md shrink-0">
-                <lucide-icon name="package-check" class="w-6 h-6"></lucide-icon>
-              </div>
-              <div>
-                <h3 class="font-extrabold text-gray-900 text-base">Almacén: Armado de Combos & Kitting Inteligente</h3>
-                <p class="text-xs text-gray-600">Convierta alertas de caducidad en paquetes listos para venta y empújelos directamente al catálogo de los Técnicos-Comerciales.</p>
-              </div>
+        <div>
+          <div class="section-banner">
+            <div>
+              <h3 class="section-banner__title">Almacén: Armado de Combos & Kitting Inteligente</h3>
+              <p class="section-banner__desc">Convierta alertas de caducidad en paquetes listos para venta y empújelos directamente al catálogo de los Técnicos-Comerciales.</p>
             </div>
-            <button (click)="openNuevoKitModal()"
-                    class="px-4 py-2 bg-[#0B4628] hover:bg-[#146C43] text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer">
+            <button (click)="openNuevoKitModal()" class="btn btn--primary">
               <lucide-icon name="plus" class="w-4 h-4"></lucide-icon>
               <span>Armar Kit Personalizado</span>
             </button>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div class="kitting-grid">
             @for (alerta of alertasKitting(); track alerta.idAlerta) {
-              <div class="bg-white rounded-2xl border border-amber-200 shadow-xs hover:shadow-md transition-all flex flex-col justify-between overflow-hidden relative">
-                <div class="p-5 space-y-3">
-                  <div class="flex items-center justify-between gap-2">
-                    <span class="px-2.5 py-1 bg-amber-100 text-amber-900 font-black text-[11px] rounded-lg tracking-wide flex items-center gap-1">
-                      <lucide-icon name="alert-triangle" class="w-3.5 h-3.5 text-amber-600"></lucide-icon> VENCE EN {{ alerta.diasRestantes }} DÍAS
-                    </span>
-                    <span class="text-xs font-mono font-bold text-gray-500">{{ alerta.codigoLote }}</span>
-                  </div>
+              <div class="alert-card">
+                <div class="alert-card__header">
+                  <span class="alert-card__badge">
+                    VENCE EN {{ alerta.diasRestantes }} DÍAS
+                  </span>
+                  <span style="font-size: 0.6875rem; color: var(--c-sage-border);">{{ alerta.codigoLote }}</span>
+                </div>
 
-                  <h4 class="font-black text-gray-900 text-lg leading-snug">{{ alerta.nombreProducto }}</h4>
-                  <p class="text-xs text-gray-600 bg-amber-50/50 p-3 rounded-xl border border-amber-100">
-                    <span class="font-bold text-amber-900 block mb-0.5">Sugerencia IA AgroSense:</span>
+                <div class="alert-card__body">
+                  <h4 class="alert-card__title">{{ alerta.nombreProducto }}</h4>
+                  <p class="alert-card__desc">
+                    <strong style="color: var(--c-cacao-accent); display: block; margin-bottom: 2px;">Sugerencia IA AgroSense:</strong>
                     Armar un pack rotativo con {{ alerta.sugerenciaDescuento }}% de descuento para agotar los {{ alerta.stockActual }} {{ alerta.unidadMedida }} antes del {{ alerta.fechaCaducidad }}.
                   </p>
 
-                  <div class="pt-2 border-t border-gray-100 flex items-center justify-between text-xs">
+                  <div style="display: flex; justify-content: space-between; font-size: 0.6875rem; color: var(--c-warm-black);">
                     <div>
-                      <span class="text-[10px] uppercase font-bold text-gray-400 block">Bodega & Ubicación</span>
-                      <span class="font-bold text-gray-700">{{ alerta.bodega }}</span>
+                      <strong style="text-transform: uppercase;">Bodega:</strong>
+                      <span style="display: block;">{{ alerta.bodega }}</span>
                     </div>
-                    <div class="text-right">
-                      <span class="text-[10px] uppercase font-bold text-gray-400 block">Stock Disponible</span>
-                      <span class="font-black text-gray-900">{{ alerta.stockActual }} unds</span>
+                    <div style="text-align: right;">
+                      <strong style="text-transform: uppercase;">Stock Disp.:</strong>
+                      <span style="display: block; font-weight: 700;">{{ alerta.stockActual }} unds</span>
                     </div>
                   </div>
                 </div>
 
-                <div class="p-4 bg-gray-50/80 border-t border-gray-100">
-                  <button (click)="armarKitDesdeAlerta(alerta)"
-                          class="w-full py-2.5 bg-[#0B4628] hover:bg-[#146C43] text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer">
+                <div class="alert-card__footer">
+                  <button (click)="armarKitDesdeAlerta(alerta)" class="btn btn--primary" style="width: 100%;">
                     <lucide-icon name="send" class="w-4 h-4"></lucide-icon>
                     <span>Armar Kit y Enviar a Comercial</span>
                   </button>
                 </div>
               </div>
             } @empty {
-              <div class="col-span-full bg-white p-12 rounded-3xl border border-gray-200 text-center text-gray-400">
-                <lucide-icon name="check-circle-2" class="w-12 h-12 mx-auto mb-3 opacity-40 text-emerald-600"></lucide-icon>
-                <p class="font-bold text-gray-600 text-base">No hay alertas críticas de kitting pendientes</p>
-                <p class="text-xs text-gray-400 mt-1">Todos los lotes se encuentran dentro de rangos normales de rotación FEFO.</p>
+              <div class="empty-state">
+                <lucide-icon name="check-circle-2" class="empty-state__icon"></lucide-icon>
+                <p class="empty-state__title">No hay alertas críticas de kitting pendientes</p>
+                <p class="empty-state__text">Todos los lotes se encuentran dentro de rangos normales de rotación FEFO.</p>
               </div>
             }
           </div>
@@ -256,50 +244,50 @@ import { WebsocketService } from '../../core/services/websocket.service';
 
       <!-- TAB 3: MATRIZ STOCK FEFO -->
       @if (activeTab() === 'LOTES') {
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-2xs overflow-hidden animate-fade-in">
-          <div class="p-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+        <div class="table-card">
+          <div class="table-card__header">
             <div>
-              <h3 class="font-bold text-base text-gray-900">Matriz de Lotes - Primero en Vencer, Primero en Salir (FEFO)</h3>
-              <p class="text-xs text-gray-500">Stock disponible y reservas de pedidos calculados por lotes.</p>
+              <h3 class="table-card__title">Matriz de Lotes - Primero en Vencer, Primero en Salir (FEFO)</h3>
+              <p class="table-card__desc">Stock disponible y reservas de pedidos calculados por lotes.</p>
             </div>
-            <button (click)="loadAll()" class="p-2 text-gray-500 hover:text-[#0B4628] rounded-xl hover:bg-white transition-all cursor-pointer">
+            <button (click)="loadAll()" class="btn btn--ghost">
               <lucide-icon name="refresh-cw" class="w-4 h-4"></lucide-icon>
             </button>
           </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+          <div class="table-scroll">
+            <table class="data-table">
               <thead>
-                <tr class="bg-gray-50 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                  <th class="py-3.5 px-4">Prioridad / Vencimiento</th>
-                  <th class="py-3.5 px-4">Lote & Producto</th>
-                  <th class="py-3.5 px-4">Stock Físico</th>
-                  <th class="py-3.5 px-4">Reservado</th>
-                  <th class="py-3.5 px-4">Stock Disp.</th>
-                  <th class="py-3.5 px-4">Ubicación Almacén</th>
+                <tr>
+                  <th>Prioridad / Vencimiento</th>
+                  <th>Lote & Producto</th>
+                  <th>Stock Físico</th>
+                  <th>Reservado</th>
+                  <th>Stock Disp.</th>
+                  <th>Ubicación Almacén</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-100 text-sm">
+              <tbody>
                 @for (lote of lotes(); track lote.idLote; let i = $index) {
-                  <tr class="hover:bg-green-50/30 transition-colors">
-                    <td class="py-4 px-4 font-mono">
-                      <div class="flex items-center gap-2">
-                        <span class="w-6 h-6 rounded-full bg-green-100 text-[#0B4628] font-black text-xs flex items-center justify-center">#{{ i + 1 }}</span>
+                  <tr>
+                    <td>
+                      <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; border-radius: 50%; background: var(--c-bone-bg); color: var(--c-dark-green); font-weight: 800; font-size: 0.75rem; border: 1px solid var(--c-sage-border);">#{{ i + 1 }}</span>
                         <div>
-                          <span class="font-bold text-gray-900 block">{{ lote.fechaVencimiento }}</span>
-                          <span class="text-[10px] text-gray-500">FEFO Activo</span>
+                          <span style="font-weight: 700; color: var(--c-warm-black); display: block;">{{ lote.fechaVencimiento }}</span>
+                          <span style="font-size: 0.625rem; color: var(--c-sage-border);">FEFO Activo</span>
                         </div>
                       </div>
                     </td>
-                    <td class="py-4 px-4">
-                      <div class="font-extrabold text-gray-900">{{ lote.nombreProducto }}</div>
-                      <div class="text-xs font-mono text-gray-500">Lote: {{ lote.numeroLote }}</div>
+                    <td>
+                      <div style="font-weight: 700; color: var(--c-warm-black);">{{ lote.nombreProducto }}</div>
+                      <div style="font-size: 0.6875rem; color: var(--c-sage-border);">Lote: {{ lote.numeroLote }}</div>
                     </td>
-                    <td class="py-4 px-4 font-black text-gray-800">{{ lote.cantidadActual || 0 }} unds</td>
-                    <td class="py-4 px-4 font-bold text-amber-600">{{ lote.cantidadReservada || 0 }} unds</td>
-                    <td class="py-4 px-4 font-black text-[#0B4628] text-base">
+                    <td style="font-weight: 800; color: var(--c-warm-black);">{{ lote.cantidadActual || 0 }} unds</td>
+                    <td style="font-weight: 700; color: var(--c-cacao-accent);">{{ lote.cantidadReservada || 0 }} unds</td>
+                    <td style="font-weight: 800; color: var(--c-dark-green); font-size: 1rem;">
                       {{ Math.max(0, (lote.cantidadActual || 0) - (lote.cantidadReservada || 0)) }} unds
                     </td>
-                    <td class="py-4 px-4 text-xs font-medium text-gray-600">{{ lote.ubicacionAlmacen }}</td>
+                    <td style="font-size: 0.75rem; font-weight: 700; color: var(--c-sage-border);">{{ lote.ubicacionAlmacen }}</td>
                   </tr>
                 }
               </tbody>
@@ -308,23 +296,23 @@ import { WebsocketService } from '../../core/services/websocket.service';
         </div>
       }
 
-      <!-- TAB 4: DEVOLUCIÓN DE CLIENTE (SUMA STOCK INMEDIATA) -->
+      <!-- TAB 4: DEVOLUCIÓN DE CLIENTE -->
       @if (activeTab() === 'DEVOLUCION_CLIENTE') {
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
+        <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem; align-items: start;">
           <!-- Formulario de Reingreso -->
-          <div class="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm space-y-5">
-            <div class="border-b border-gray-100 pb-4">
-              <h3 class="font-extrabold text-gray-900 text-base flex items-center gap-2">
-                <lucide-icon name="rotate-ccw" class="w-5 h-5 text-purple-600"></lucide-icon>
+          <div class="form-card">
+            <div style="margin-bottom: 1rem; border-bottom: 1px solid var(--c-sage-border); padding-bottom: 1rem;">
+              <h3 style="font-family: var(--font-slab); font-size: 1.125rem; font-weight: 700; color: var(--c-warm-black); display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                <lucide-icon name="rotate-ccw" class="w-5 h-5"></lucide-icon>
                 <span>Reingreso por Devolución de Cliente</span>
               </h3>
-              <p class="text-xs text-gray-500">Cuando un cliente devuelve cajas o producto en buen estado, el stock se suma automáticamente al lote seleccionado en bodega.</p>
+              <p style="font-size: 0.75rem; color: var(--c-sage-border); margin: 0.5rem 0 0 0;">Cuando un cliente devuelve cajas o producto en buen estado, el stock se suma automáticamente al lote seleccionado en bodega.</p>
             </div>
 
-            <form [formGroup]="devClienteForm" (ngSubmit)="onSaveDevolucionCliente()" class="space-y-4">
-              <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Seleccionar Lote a Reingresar *</label>
-                <select formControlName="idLote" class="w-full p-3 border border-gray-300 rounded-xl text-sm font-bold focus:border-purple-600 outline-none bg-gray-50">
+            <form [formGroup]="devClienteForm" (ngSubmit)="onSaveDevolucionCliente()">
+              <div class="form-group">
+                <label class="form-label">Seleccionar Lote a Reingresar *</label>
+                <select formControlName="idLote" class="form-select">
                   <option [ngValue]="null" disabled>-- Seleccione lote original --</option>
                   @for (l of lotes(); track l.idLote) {
                     <option [value]="l.idLote">{{ l.nombreProducto }} (Lote: {{ l.numeroLote }})</option>
@@ -332,43 +320,26 @@ import { WebsocketService } from '../../core/services/websocket.service';
                 </select>
               </div>
 
-              <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Orden de Pedido / Cliente Ref. (Opcional)</label>
-                <input type="text" formControlName="idPedidoOriginal" placeholder="ej. ORD-801 o Cédula Cliente"
-                       class="w-full p-3 border border-gray-300 rounded-xl text-sm font-semibold focus:border-purple-600 outline-none">
+              <div class="form-group">
+                <label class="form-label">Orden de Pedido / Cliente Ref. (Opcional)</label>
+                <input type="text" formControlName="idPedidoOriginal" placeholder="ej. ORD-801 o Cédula Cliente" class="form-input">
               </div>
 
-              <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Cantidad Devuelta (a sumar al stock) *</label>
-                <input type="number" formControlName="cantidad" min="1" placeholder="ej. 5"
-                       class="w-full p-3 border border-gray-300 rounded-xl text-sm font-black text-purple-700 focus:border-purple-600 outline-none bg-purple-50/40">
+              <div class="form-group">
+                <label class="form-label">Cantidad Devuelta (a sumar al stock) *</label>
+                <input type="number" formControlName="cantidad" min="1" placeholder="ej. 5" class="form-input">
               </div>
 
-              <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Motivo / Estado del Producto Devuelto *</label>
-                <textarea formControlName="motivo" rows="2" placeholder="ej. Sobrante de aplicación en finca. Cajas intactas y selladas, aptas para reventa."
-                          class="w-full p-3 border border-gray-300 rounded-xl text-sm focus:border-purple-600 outline-none"></textarea>
+              <div class="form-group">
+                <label class="form-label">Motivo / Estado del Producto Devuelto *</label>
+                <textarea formControlName="motivo" rows="2" placeholder="ej. Sobrante de aplicación en finca. Cajas intactas y selladas, aptas para reventa." class="form-textarea"></textarea>
               </div>
 
-              <button type="submit" [disabled]="devClienteForm.invalid"
-                      class="w-full py-3 bg-purple-700 hover:bg-purple-800 disabled:opacity-50 text-white font-extrabold text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer">
+              <button type="submit" [disabled]="devClienteForm.invalid" class="btn btn--primary" style="width: 100%; margin-top: 1rem;">
                 <lucide-icon name="plus-circle" class="w-4 h-4"></lucide-icon>
                 <span>Registrar Devolución (+ Sumar Stock)</span>
               </button>
             </form>
-          </div>
-
-          <!-- Historial de Devoluciones de Clientes -->
-          <div class="lg:col-span-2 bg-white p-6 rounded-3xl border border-gray-200 shadow-sm space-y-4">
-            <div class="border-b border-gray-100 pb-4">
-              <h3 class="font-extrabold text-gray-900 text-base">Registro Operativo de Devoluciones del Cliente</h3>
-              <p class="text-xs text-gray-500">Auditoría de todos los reingresos sumados al inventario.</p>
-            </div>
-
-            <div class="p-4 bg-purple-50/50 rounded-2xl border border-purple-200 flex items-center gap-3 text-xs text-purple-900">
-              <lucide-icon name="info" class="w-5 h-5 text-purple-600 shrink-0"></lucide-icon>
-              <span>A diferencia de las devoluciones a proveedor (que restan stock por daños), las devoluciones de clientes suman stock al lote al instante para que los técnicos puedan comercializarlos de nuevo.</span>
-            </div>
           </div>
         </div>
       }
@@ -376,52 +347,41 @@ import { WebsocketService } from '../../core/services/websocket.service';
 
     <!-- MODAL DE CREACIÓN DE KIT PERSONALIZADO -->
     @if (isKitModalOpen()) {
-      <div class="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in">
-        <div class="bg-white rounded-3xl shadow-2xl border border-gray-200 max-w-md w-full overflow-hidden">
-          <div class="bg-[#0B4628] p-6 text-white flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-                <lucide-icon name="package" class="w-5 h-5"></lucide-icon>
-              </div>
-              <div>
-                <h3 class="font-bold text-lg">Armar Combo / Kit de Venta</h3>
-                <p class="text-xs text-green-200">Se enviará directo a los Técnicos-Comerciales</p>
-              </div>
-            </div>
-            <button (click)="isKitModalOpen.set(false)" class="text-white/70 hover:text-white">×</button>
+      <div class="modal-overlay">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">Armar Combo / Kit de Venta</h3>
+            <button (click)="isKitModalOpen.set(false)" class="modal-close">×</button>
           </div>
 
-          <form [formGroup]="kitForm" (ngSubmit)="onSaveKit()" class="p-6 space-y-4">
-            <div>
-              <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Nombre del Kit *</label>
-              <input type="text" formControlName="nombrePromocion" placeholder="ej. Kit Liquidación Urea + Abono"
-                     class="w-full p-3 border border-gray-300 rounded-xl text-sm font-bold focus:border-[#0B4628] outline-none">
+          <form [formGroup]="kitForm" (ngSubmit)="onSaveKit()" style="padding: 1.5rem;">
+            <div class="form-group">
+              <label class="form-label">Nombre del Kit *</label>
+              <input type="text" formControlName="nombrePromocion" placeholder="ej. Kit Liquidación Urea + Abono" class="form-input">
             </div>
 
-            <div>
-              <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Seleccionar Lote Principal *</label>
-              <select formControlName="codigoLoteRef" class="w-full p-3 border border-gray-300 rounded-xl text-sm font-bold focus:border-[#0B4628] outline-none bg-gray-50">
+            <div class="form-group">
+              <label class="form-label">Seleccionar Lote Principal *</label>
+              <select formControlName="codigoLoteRef" class="form-select">
                 @for (l of lotes(); track l.idLote) {
                   <option [value]="l.numeroLote">{{ l.nombreProducto }} (Lote: {{ l.numeroLote }})</option>
                 }
               </select>
             </div>
 
-            <div>
-              <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Descuento Global Kit (%) *</label>
-              <input type="number" formControlName="descuentoGlobal" min="5" max="50"
-                     class="w-full p-3 border border-gray-300 rounded-xl text-sm font-black text-[#0B4628] focus:border-[#0B4628] outline-none">
+            <div class="form-group">
+              <label class="form-label">Descuento Global Kit (%) *</label>
+              <input type="number" formControlName="descuentoGlobal" min="5" max="50" class="form-input">
             </div>
 
-            <div>
-              <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Descripción / Justificación para Comercial *</label>
-              <textarea formControlName="descripcion" rows="3" placeholder="Detalle qué incluye el combo y por qué debe impulsarse hoy..."
-                        class="w-full p-3 border border-gray-300 rounded-xl text-sm focus:border-[#0B4628] outline-none"></textarea>
+            <div class="form-group">
+              <label class="form-label">Descripción / Justificación para Comercial *</label>
+              <textarea formControlName="descripcion" rows="3" placeholder="Detalle qué incluye el combo..." class="form-textarea"></textarea>
             </div>
 
-            <div class="flex justify-end gap-3 pt-2">
-              <button type="button" (click)="isKitModalOpen.set(false)" class="px-5 py-2.5 text-sm font-bold text-gray-600 hover:bg-gray-100 rounded-xl">Cancelar</button>
-              <button type="submit" [disabled]="kitForm.invalid" class="px-6 py-2.5 bg-[#0B4628] hover:bg-[#146C43] text-white font-bold text-sm rounded-xl shadow-md">
+            <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
+              <button type="button" (click)="isKitModalOpen.set(false)" class="btn btn--ghost">Cancelar</button>
+              <button type="submit" [disabled]="kitForm.invalid" class="btn btn--primary">
                 Armar y Publicar Kit
               </button>
             </div>

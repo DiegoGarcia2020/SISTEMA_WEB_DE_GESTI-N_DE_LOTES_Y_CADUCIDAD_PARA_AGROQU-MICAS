@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { OperacionesService } from '../../../core/services/operaciones.service';
 import { ToastService } from '../../../shared/components/toast/toast.service';
+import { ComprobanteService } from '../../../core/services/comprobante.service';
 
 @Component({
   selector: 'app-compras-listado',
@@ -167,6 +168,10 @@ import { ToastService } from '../../../shared/components/toast/toast.service';
                           Ver Detalle
                         </button>
                       }
+                      <button class="btn--action btn--action-view" (click)="descargarPDF(orden.id)" style="color: #0d9488;">
+                        <lucide-icon name="download" class="w-3.5 h-3.5"></lucide-icon>
+                        Descargar PDF
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -220,6 +225,7 @@ import { ToastService } from '../../../shared/components/toast/toast.service';
 })
 export class ComprasListadoComponent implements OnInit {
   private operacionesService = inject(OperacionesService);
+  private comprobanteService = inject(ComprobanteService);
   private toast = inject(ToastService);
   private router = inject(Router);
 
@@ -276,6 +282,16 @@ export class ComprasListadoComponent implements OnInit {
       // Para órdenes ya recepcionadas, podemos mostrar un detalle o navegar
       this.toast.info('Detalle de Orden', `Visualizando detalle de la Orden OC-${id}.`);
     }
+  }
+
+  descargarPDF(id: number): void {
+    this.toast.info('Generando PDF', `Descargando orden OC-${id}...`);
+    this.operacionesService.obtenerOrdenCompra(id).subscribe({
+      next: (ordenCompleta) => {
+        this.comprobanteService.generarComprobanteCompra(ordenCompleta);
+      },
+      error: () => this.toast.error('Error', 'No se pudo generar el comprobante. Intente más tarde.')
+    });
   }
 
   anularOrden(id: number): void {

@@ -82,6 +82,9 @@ public class OrdenCompra {
     @Column(name = "fecha_registro")
     private LocalDateTime fechaRegistro;
 
+    @Column(name = "id_usuario_registro")
+    private Integer idUsuarioRegistro;
+
     /**
      * Relación con los detalles (productos) de esta orden de compra.
      * CascadeType.ALL permite guardar la cabecera y detalles en una sola transacción.

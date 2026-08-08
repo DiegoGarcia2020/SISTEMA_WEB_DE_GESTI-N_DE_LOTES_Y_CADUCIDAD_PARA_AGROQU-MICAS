@@ -6,6 +6,7 @@ import { VentasService } from '../../../core/services/ventas.service';
 import { CarritoService } from '../../../core/services/carrito.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ClienteDTO } from '../../../core/models/ventas.model';
+import { ToastService } from '../../../shared/components/toast/toast.service';
 
 @Component({
   selector: 'app-checkout',
@@ -18,6 +19,7 @@ export class CheckoutComponent {
   private ventasService = inject(VentasService);
   private router = inject(Router);
   private auth = inject(AuthService);
+  private toast = inject(ToastService);
   carrito = inject(CarritoService);
 
   // Búsqueda / creación de cliente
@@ -128,7 +130,8 @@ export class CheckoutComponent {
       next: venta => {
         this.confirmando.set(false);
         this.carrito.vaciar();
-        this.router.navigate(['/admin/ventas/confirmacion', venta.idVenta]);
+        this.toast.success('Venta Confirmada', `La venta #${venta.numeroOrden || venta.idVenta} se registró exitosamente.`);
+        this.router.navigate(['/campo/dashboard']);
       },
       error: e => {
         this.confirmando.set(false);

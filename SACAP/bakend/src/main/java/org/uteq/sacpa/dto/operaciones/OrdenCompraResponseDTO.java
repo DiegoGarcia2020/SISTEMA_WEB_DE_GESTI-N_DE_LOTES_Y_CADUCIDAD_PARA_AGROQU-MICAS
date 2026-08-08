@@ -33,6 +33,7 @@ public class OrdenCompraResponseDTO {
     private BigDecimal totalNeto;
     private String estado;
     private LocalDateTime fechaRegistro;
+    private Integer idUsuarioRegistro;
 
     // SLA Fields
     private LocalDate fechaLlegadaEstimada;

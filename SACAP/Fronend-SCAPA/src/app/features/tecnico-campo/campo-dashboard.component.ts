@@ -3,114 +3,104 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { OperacionesService } from '../../core/services/operaciones.service';
+import { VentasService } from '../../core/services/ventas.service';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { AuthService } from '../../core/services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-campo-dashboard',
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule, LucideAngularModule],
+  styleUrls: ['./campo-dashboard.component.css'],
   template: `
-    <div class="p-6 space-y-6 animate-fade-in min-h-screen bg-slate-50/50">
-      <!-- Cabecera Verde del Técnico-Comercial -->
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-emerald-900 via-[#0B4628] to-teal-800 p-6 rounded-3xl text-white shadow-xl relative overflow-hidden">
-        <div class="absolute -right-10 -top-10 w-48 h-48 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
-        <div class="flex items-center gap-4 z-10">
-          <div class="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white shadow-inner">
-            <lucide-icon name="user-check" class="w-8 h-8"></lucide-icon>
+    <div class="dashboard-container">
+      <!-- Cabecera Hero -->
+      <div class="hero-card">
+        <div class="hero-card__info">
+          <div class="hero-card__icon">
+            <lucide-icon name="user-check"></lucide-icon>
           </div>
           <div>
-            <span class="inline-block px-2.5 py-0.5 bg-emerald-400/20 text-emerald-200 text-[11px] font-extrabold rounded-full uppercase tracking-wider mb-1">Rol: Técnico-Comercial</span>
-            <h1 class="text-2xl font-bold tracking-tight">Gestión Agronómica & Ventas en Campo</h1>
-            <p class="text-xs text-green-100/80 mt-0.5">Técnico asignado: {{ authService.currentUser()?.correo || 'tecnico@agrosense.ec' }}</p>
+            <span class="hero-card__badge">Rol: Técnico-Comercial</span>
+            <h1 class="hero-card__title">Gestión Agronómica & Ventas en Campo</h1>
+            <p class="hero-card__subtitle">Técnico asignado: {{ authService.currentUser()?.correo || 'tecnico@agrosense.ec' }}</p>
           </div>
         </div>
-        <div class="flex items-center gap-3 z-10">
-          <!-- Navegación de Tabs del Técnico -->
-          <div class="bg-black/20 p-1.5 rounded-2xl flex items-center gap-1 backdrop-blur-md">
-            <button (click)="activeTab.set('combos')" 
-                    [class]="activeTab() === 'combos' ? 'bg-white text-[#0B4628] shadow-md' : 'text-white/80 hover:text-white hover:bg-white/10'"
-                    class="px-4 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer">
-              <lucide-icon name="zap" class="w-4 h-4 text-amber-400"></lucide-icon>
-              <span>Combos IA</span>
-            </button>
-            <button (click)="activeTab.set('receta')" 
-                    [class]="activeTab() === 'receta' ? 'bg-white text-[#0B4628] shadow-md' : 'text-white/80 hover:text-white hover:bg-white/10'"
-                    class="px-4 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer">
-              <lucide-icon name="file-plus" class="w-4 h-4 text-emerald-400"></lucide-icon>
-              <span>Generar Pedido & Receta</span>
-            </button>
-            <button (click)="activeTab.set('historial')" 
-                    [class]="activeTab() === 'historial' ? 'bg-white text-[#0B4628] shadow-md' : 'text-white/80 hover:text-white hover:bg-white/10'"
-                    class="px-4 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer">
-              <lucide-icon name="clipboard-list" class="w-4 h-4 text-teal-400"></lucide-icon>
-              <span>Historial de Pedidos</span>
-            </button>
-          </div>
+        <div class="hero-card__actions">
+          <button (click)="activeTab.set('combos')" 
+                  [class.active]="activeTab() === 'combos'"
+                  class="btn--tab">
+            <lucide-icon name="zap" class="w-4 h-4"></lucide-icon>
+            <span>Combos IA</span>
+          </button>
+          <button (click)="router.navigate(['/admin/ventas/dashboard'])" 
+                  class="btn--tab">
+            <lucide-icon name="file-plus" class="w-4 h-4"></lucide-icon>
+            <span>Generar Venta / Pedido</span>
+          </button>
+          <button (click)="activeTab.set('historial')" 
+                  [class.active]="activeTab() === 'historial'"
+                  class="btn--tab">
+            <lucide-icon name="clipboard-list" class="w-4 h-4"></lucide-icon>
+            <span>Historial de Ventas</span>
+          </button>
         </div>
       </div>
 
-      <!-- TAB 1: CATÁLOGO Y COMBOS IA (INICIO) -->
+      <!-- TAB 1: CATÁLOGO Y COMBOS IA -->
       @if (activeTab() === 'combos') {
-        <div class="space-y-6 animate-fade-in">
-          <div class="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent p-5 rounded-2xl border border-amber-200/60 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-              <div class="w-11 h-11 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-md shrink-0">
-                <lucide-icon name="sparkles" class="w-6 h-6"></lucide-icon>
-              </div>
-              <div>
-                <h3 class="font-extrabold text-gray-900 text-base">Recomendaciones de Venta Inteligente (IA AgroSense)</h3>
-                <p class="text-xs text-gray-600">Promociones estratégicas generadas para empujar lotes próximos a vencer. Úselas al visitar fincas para lograr rotación FEFO rápida.</p>
-              </div>
+        <div>
+          <div class="section-banner">
+            <div>
+              <h3 class="section-banner__title">Recomendaciones de Venta Inteligente (IA AgroSense)</h3>
+              <p class="section-banner__desc">Promociones estratégicas generadas para empujar lotes próximos a vencer.</p>
             </div>
-            <span class="px-3 py-1.5 bg-amber-100 text-amber-800 font-bold text-xs rounded-xl flex items-center gap-1.5">
-              <lucide-icon name="flame" class="w-4 h-4 text-amber-600"></lucide-icon>
-              <span>{{ combosActivos().length }} Promociones Activas para Hoy</span>
+            <span class="badge badge--pendiente">
+              {{ combosActivos().length }} Promociones Activas para Hoy
             </span>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div class="combos-grid">
             @for (combo of combosActivos(); track combo.idPromocion) {
-              <div class="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between overflow-hidden relative group">
-                <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-amber-500/10 to-transparent rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform"></div>
-                <div class="p-5 space-y-3">
-                  <div class="flex items-center justify-between gap-2">
-                    <span class="px-2.5 py-1 bg-amber-100 text-amber-900 font-black text-[11px] rounded-lg tracking-wide flex items-center gap-1">
-                      <lucide-icon name="tag" class="w-3.5 h-3.5"></lucide-icon> DESCUENTO -{{ combo.descuentoGlobal }}%
-                    </span>
-                    <span class="px-2 py-0.5 bg-green-50 text-green-700 font-bold text-[10px] rounded-md border border-green-200">
-                      Vigente hasta {{ combo.fechaFin }}
-                    </span>
-                  </div>
+              <div class="combo-card">
+                <div class="combo-card__header">
+                  <span class="combo-card__discount">
+                    DESCUENTO -{{ combo.descuentoGlobal }}%
+                  </span>
+                  <span class="combo-card__date">
+                    Hasta {{ combo.fechaFin }}
+                  </span>
+                </div>
 
-                  <h4 class="font-black text-gray-900 text-lg leading-snug">{{ combo.nombrePromocion }}</h4>
-                  <p class="text-xs text-gray-600 line-clamp-3 bg-gray-50 p-2.5 rounded-xl border border-gray-100">{{ combo.descripcion }}</p>
+                <div class="combo-card__body">
+                  <h4 class="combo-card__title">{{ combo.nombrePromocion }}</h4>
+                  <p class="combo-card__desc">{{ combo.descripcion }}</p>
 
-                  <div class="pt-2 border-t border-gray-100 flex items-center justify-between text-xs font-mono text-gray-600">
+                  <div style="display: flex; justify-content: space-between; font-size: 0.6875rem; color: var(--c-warm-black);">
                     <div>
-                      <span class="text-[10px] uppercase font-bold text-gray-400 block">Lote Recomendado</span>
-                      <span class="font-bold text-gray-800">{{ combo.codigoLoteRef }}</span>
+                      <strong style="text-transform: uppercase;">Lote Referencia:</strong>
+                      <span>{{ combo.codigoLoteRef }}</span>
                     </div>
-                    <div class="text-right">
-                      <span class="text-[10px] uppercase font-bold text-gray-400 block">Stock Disponible</span>
-                      <span class="font-black text-[#0B4628]">{{ combo.stockLote }} unds</span>
+                    <div>
+                      <strong style="text-transform: uppercase;">Stock:</strong>
+                      <span style="color: var(--c-dark-green); font-weight: 700;">{{ combo.stockLote }} unds</span>
                     </div>
                   </div>
                 </div>
 
-                <div class="p-4 bg-gray-50/80 border-t border-gray-100 flex items-center justify-between gap-3">
-                  <button (click)="seleccionarComboParaReceta(combo)"
-                          class="w-full py-2.5 bg-[#0B4628] hover:bg-[#146C43] text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer">
+                <div class="combo-card__footer">
+                  <button (click)="router.navigate(['/admin/ventas/dashboard'])" class="btn btn--primary" style="width: 100%;">
                     <lucide-icon name="arrow-right-circle" class="w-4 h-4"></lucide-icon>
-                    <span>Generar Pedido con este Combo</span>
+                    <span>Generar Venta con este Combo</span>
                   </button>
                 </div>
               </div>
             } @empty {
-              <div class="col-span-full bg-white p-12 rounded-3xl border border-gray-200 text-center text-gray-400">
-                <lucide-icon name="package-check" class="w-12 h-12 mx-auto mb-3 opacity-40"></lucide-icon>
-                <p class="font-bold text-gray-600 text-base">No hay combos IA activos en este momento</p>
-                <p class="text-xs text-gray-400 mt-1">El Supervisor o el Bodeguero pueden aprobar nuevas promociones desde su panel.</p>
+              <div class="empty-state">
+                <lucide-icon name="package-check" class="empty-state__icon"></lucide-icon>
+                <p class="empty-state__title">No hay combos IA activos en este momento</p>
+                <p class="empty-state__text">El Supervisor o el Bodeguero pueden aprobar nuevas promociones desde su panel.</p>
               </div>
             }
           </div>
@@ -274,82 +264,66 @@ import { AuthService } from '../../core/services/auth.service';
         </div>
       }
 
-      <!-- TAB 3: HISTORIAL DE PEDIDOS Y USO EN CAMPO -->
+      <!-- TAB 3: HISTORIAL DE VENTAS -->
       @if (activeTab() === 'historial') {
-        <div class="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm space-y-5 animate-fade-in">
-          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+        <div class="table-card">
+          <div class="table-card__header">
             <div>
-              <h3 class="font-extrabold text-gray-900 text-base flex items-center gap-2">
-                <lucide-icon name="clipboard-list" class="w-5 h-5 text-[#0B4628]"></lucide-icon>
-                <span>Historial de Órdenes de Pedido Generadas</span>
+              <h3 class="table-card__title">
+                <lucide-icon name="history" class="w-5 h-5"></lucide-icon>
+                <span>Historial de Ventas</span>
               </h3>
-              <p class="text-xs text-gray-500">Seguimiento en tiempo real del estado de sus pedidos en Bodega y despachos a clientes.</p>
+              <p class="table-card__desc">Ventas registradas y confirmadas en su cuenta de técnico</p>
             </div>
-            <button (click)="cargarPedidos()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer">
-              <lucide-icon name="refresh-cw" class="w-3.5 h-3.5"></lucide-icon>
-              <span>Actualizar Estado</span>
+            <button (click)="cargarVentas()" class="btn btn--ghost">
+              <lucide-icon name="refresh-cw" class="w-4 h-4"></lucide-icon>
             </button>
           </div>
 
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+          <div class="table-scroll">
+            <table class="data-table">
               <thead>
-                <tr class="bg-gray-50 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                  <th class="py-3.5 px-4">Pedido # / Fecha</th>
-                  <th class="py-3.5 px-4">Cliente / Finca</th>
-                  <th class="py-3.5 px-4">Diagnóstico Agronómico</th>
-                  <th class="py-3.5 px-4">Insumo & Cantidad</th>
-                  <th class="py-3.5 px-4">Estado en Bodega</th>
+                <tr>
+                  <th>N° Orden & Fecha</th>
+                  <th>Cliente</th>
+                  <th>Técnico</th>
+                  <th>Total</th>
+                  <th>Estado</th>
+                  <th style="text-align: center;">Acciones</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-100 text-sm">
-                @for (ped of pedidos(); track ped.idUso) {
-                  <tr class="hover:bg-green-50/30 transition-colors">
-                    <td class="py-4 px-4">
-                      <span class="font-mono font-bold text-gray-900 block">ORD-{{ ped.idUso }}</span>
-                      <span class="text-xs text-gray-500">{{ ped.fechaAplicacion }}</span>
+              <tbody>
+                @for (venta of ventas(); track venta.idVenta) {
+                  <tr>
+                    <td>
+                      <span class="data-table__id block">{{ venta.numeroOrden || 'VTA-' + venta.idVenta }}</span>
+                      <span style="font-size: 0.6875rem; color: var(--c-sage-border);">{{ venta.fechaVenta | date:'short' }}</span>
                     </td>
-                    <td class="py-4 px-4">
-                      <div class="font-extrabold text-gray-900">{{ ped.cliente?.nombreFinca || 'Finca Cliente' }}</div>
-                      <div class="text-xs font-mono text-emerald-700">CI: {{ ped.cliente?.cedula || 'N/A' }}</div>
+                    <td>
+                      <div style="font-weight: 700; color: var(--c-warm-black);">{{ venta.nombreCliente }}</div>
                     </td>
-                    <td class="py-4 px-4 max-w-xs">
-                      <p class="text-xs text-gray-700 line-clamp-2 font-medium">{{ ped.descripcionPlaga || ped.observacion }}</p>
-                      @if (ped.idComboAplicado) {
-                        <span class="inline-block mt-1 px-2 py-0.5 bg-amber-100 text-amber-900 text-[10px] font-bold rounded">Combo IA #{{ ped.idComboAplicado }}</span>
-                      }
+                    <td>
+                      <div style="font-size: 0.75rem;">{{ venta.nombreTecnico }}</div>
                     </td>
-                    <td class="py-4 px-4">
-                      <div class="font-bold text-gray-800">{{ ped.lote?.nombreProducto || ped.lote?.producto?.nombre || 'Agroquímico' }}</div>
-                      <div class="text-xs font-mono text-gray-500">Lote: {{ ped.lote?.numeroLote || ped.idLote }}</div>
-                      <div class="font-black text-[#0B4628] mt-0.5">{{ ped.cantidadUsada || ped.cantidad }} unds</div>
+                    <td>
+                      <div style="font-weight: 800; color: var(--c-dark-green);">$ {{ venta.total.toFixed(2) }}</div>
                     </td>
-                    <td class="py-4 px-4">
-                      @if (ped.idEstadoPedido === 1) {
-                        <span class="px-3 py-1 bg-amber-100 text-amber-800 font-extrabold text-xs rounded-xl inline-flex items-center gap-1.5 border border-amber-200">
-                          <lucide-icon name="clock" class="w-3.5 h-3.5"></lucide-icon>
-                          <span>Pendiente Bodega</span>
-                        </span>
-                      } @else if (ped.idEstadoPedido === 2) {
-                        <span class="px-3 py-1 bg-emerald-100 text-emerald-800 font-extrabold text-xs rounded-xl inline-flex items-center gap-1.5 border border-emerald-200">
-                          <lucide-icon name="check-circle" class="w-3.5 h-3.5"></lucide-icon>
-                          <span>Despachado al Cliente</span>
-                        </span>
-                      } @else if (ped.idEstadoPedido === 5) {
-                        <span class="px-3 py-1 bg-purple-100 text-purple-800 font-extrabold text-xs rounded-xl inline-flex items-center gap-1.5 border border-purple-200">
-                          <lucide-icon name="rotate-ccw" class="w-3.5 h-3.5"></lucide-icon>
-                          <span>Devuelto por Cliente</span>
-                        </span>
-                      } @else {
-                        <span class="px-3 py-1 bg-gray-100 text-gray-700 font-bold text-xs rounded-xl">Registrado</span>
-                      }
+                    <td>
+                      <span class="badge badge--recepcionada">{{ venta.estado }}</span>
+                    </td>
+                    <td style="text-align: center;">
+                      <button (click)="verDetalleVenta(venta.idVenta)" class="btn--action-view">
+                        Ver Detalle
+                      </button>
                     </td>
                   </tr>
                 } @empty {
                   <tr>
-                    <td colspan="5" class="py-12 text-center text-gray-400">
-                      <lucide-icon name="clipboard-x" class="w-12 h-12 mx-auto mb-2 opacity-40"></lucide-icon>
-                      <p class="font-bold text-sm text-gray-600">No ha generado órdenes de pedido aún en esta jornada</p>
+                    <td colspan="6">
+                      <div class="empty-state">
+                        <lucide-icon name="clipboard-x" class="empty-state__icon"></lucide-icon>
+                        <p class="empty-state__title">No ha registrado ninguna venta todavía</p>
+                      </div>
                     </td>
                   </tr>
                 }
@@ -364,8 +338,10 @@ import { AuthService } from '../../core/services/auth.service';
 export class CampoDashboardComponent implements OnInit {
   authService = inject(AuthService);
   private operacionesService = inject(OperacionesService);
+  private ventasService = inject(VentasService);
   private toast = inject(ToastService);
   private fb = inject(FormBuilder);
+  router = inject(Router);
 
   activeTab = signal<'combos' | 'receta' | 'historial'>('combos');
 
@@ -373,6 +349,7 @@ export class CampoDashboardComponent implements OnInit {
   clientes = signal<any[]>([]);
   lotesDisponibles = signal<any[]>([]);
   pedidos = signal<any[]>([]);
+  ventas = signal<any[]>([]);
 
   selectedIdCliente = signal<number | null>(1);
   isNuevoCliente = signal<boolean>(false);
@@ -402,7 +379,7 @@ export class CampoDashboardComponent implements OnInit {
     this.cargarCombos();
     this.cargarClientes();
     this.cargarLotes();
-    this.cargarPedidos();
+    this.cargarVentas();
   }
 
   cargarCombos(): void {
@@ -425,6 +402,14 @@ export class CampoDashboardComponent implements OnInit {
   cargarPedidos(): void {
     const userId = this.authService.currentUser()?.idUsuario || 1;
     this.operacionesService.listarPedidosPorTecnico(userId).subscribe(data => this.pedidos.set(data));
+  }
+
+  cargarVentas(): void {
+    this.ventasService.misVentas().subscribe(data => this.ventas.set(data));
+  }
+
+  verDetalleVenta(idVenta: number): void {
+    this.router.navigate(['/admin/ventas/confirmacion', idVenta]);
   }
 
   onSelectCliente(): void {

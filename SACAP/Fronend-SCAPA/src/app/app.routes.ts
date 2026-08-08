@@ -25,7 +25,7 @@ import { ComprasRecepcionComponent } from './features/bodeguero/compras-recepcio
 import { BodegaRecepcionesComponent } from './features/bodeguero/recepciones/bodega-recepciones.component';
 import { BodegaDespachosComponent } from './features/bodeguero/despachos/bodega-despachos.component';
 import { CampoDashboardComponent } from './features/tecnico-campo/campo-dashboard.component';
-import { PuntoVentaComponent } from './features/tecnico-campo/punto-venta/punto-venta.component';
+
 import { TecnicoEntregasComponent } from './features/tecnico-campo/entregas/tecnico-entregas.component';
 import { SupervisorDashboardComponent } from './features/supervisor/supervisor-dashboard.component';
 import { CentroAprobacionesComponent } from './features/supervisor/centro-aprobaciones/centro-aprobaciones.component';
@@ -69,7 +69,6 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       { path: 'dashboard', component: CampoDashboardComponent },
-      { path: 'punto-venta', component: PuntoVentaComponent },
       { path: 'entregas', component: TecnicoEntregasComponent },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]

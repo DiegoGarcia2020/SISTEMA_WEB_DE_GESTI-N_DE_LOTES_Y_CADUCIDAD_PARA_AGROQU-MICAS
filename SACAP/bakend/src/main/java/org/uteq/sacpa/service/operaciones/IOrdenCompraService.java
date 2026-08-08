@@ -29,7 +29,7 @@ public interface IOrdenCompraService {
      * @param desde       Fecha de inicio del rango — puede ser null
      * @param hasta       Fecha fin del rango — puede ser null
      */
-    List<OrdenCompraResponseDTO> listarOrdenes(String estado, Integer idProveedor, LocalDate desde, LocalDate hasta);
+    List<OrdenCompraResponseDTO> listarOrdenes(String estado, Integer idProveedor, LocalDate desde, LocalDate hasta, Integer idUsuarioRegistro);
 
     /**
      * Obtiene una orden de compra por ID, incluyendo todos sus detalles con nombres de producto.

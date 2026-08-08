@@ -11,6 +11,10 @@ import org.uteq.sacpa.dto.operaciones.OrdenCompraResponseDTO;
 import org.uteq.sacpa.dto.operaciones.RecepcionLoteRequestDTO;
 import org.uteq.sacpa.entity.operaciones.OrdenCompra;
 import org.uteq.sacpa.service.operaciones.IOrdenCompraService;
+import org.uteq.sacpa.security.SecurityContextService;
+import org.uteq.sacpa.security.UsuarioPrincipal;
+
+import java.util.Arrays;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -37,6 +41,19 @@ public class OrdenCompraController {
     @Autowired
     private IOrdenCompraService ordenCompraService;
 
+    @Autowired
+    private SecurityContextService securityContextService;
+
+    private Integer resolverIdOwner(Integer idRecibido, String... rolesOperativos) {
+        UsuarioPrincipal principal = securityContextService.obtenerPrincipal();
+        boolean esOperativo = principal.getRoles().stream()
+                .anyMatch(r -> Arrays.asList(rolesOperativos).contains(r));
+        if (esOperativo) {
+            return principal.getIdUsuario(); // Ignora el parámetro recibido
+        }
+        return idRecibido; // ADMINISTRADOR/GERENTE/BODEGUERO conservan acceso completo
+    }
+
     /**
      * Crear una nueva orden de compra.
      * El Supervisor transcribe la factura del proveedor.
@@ -62,7 +79,9 @@ public class OrdenCompraController {
             @RequestParam(required = false) Integer idProveedor,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta) {
-        return ResponseEntity.ok(ordenCompraService.listarOrdenes(estado, idProveedor, desde, hasta));
+        
+        Integer idUsuarioRegistroFiltro = resolverIdOwner(null, "SUPERVISOR");
+        return ResponseEntity.ok(ordenCompraService.listarOrdenes(estado, idProveedor, desde, hasta, idUsuarioRegistroFiltro));
     }
 
     /**

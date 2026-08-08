@@ -180,6 +180,26 @@ public class SecurityConfig {
                     "/api/ventas/**"
                 ).hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "TECNICO", "TECNICO_CAMPO")
 
+                // Ventas operativas — solo TECNICO + ADMINISTRADOR + SUPERVISOR
+                .requestMatchers("/api/operaciones/ventas/**")
+                    .hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "TECNICO", "TECNICO_CAMPO")
+
+                // Pedidos operativos — TECNICO (crea/consulta) + BODEGUERO (despacha) + ADMINISTRADOR + SUPERVISOR
+                .requestMatchers("/api/operaciones/pedidos/**")
+                    .hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "TECNICO", "TECNICO_CAMPO", "BODEGUERO")
+
+                // Despachos — solo BODEGUERO + ADMINISTRADOR
+                .requestMatchers("/api/operaciones/despachos/**")
+                    .hasAnyAuthority("ADMINISTRADOR", "BODEGUERO")
+
+                // Devoluciones de venta — TECNICO (registra en campo) + BODEGUERO (recibe física) + ADMINISTRADOR + SUPERVISOR
+                .requestMatchers("/api/operaciones/devoluciones-venta/**")
+                    .hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "TECNICO", "TECNICO_CAMPO", "BODEGUERO")
+
+                // Órdenes de compra — SUPERVISOR (crea/anula) + BODEGUERO (recepciona) + ADMINISTRADOR
+                .requestMatchers("/api/ordenes-compra/**")
+                    .hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "BODEGUERO")
+
                 // Notificaciones: cualquier usuario autenticado
                 .requestMatchers("/api/notificaciones/**").authenticated()
 

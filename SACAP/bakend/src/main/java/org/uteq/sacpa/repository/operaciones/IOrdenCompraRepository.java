@@ -33,11 +33,13 @@ public interface IOrdenCompraRepository extends JpaRepository<OrdenCompra, Integ
            "AND (:idProveedor IS NULL OR o.proveedor.idProveedor = :idProveedor) " +
            "AND (:desde IS NULL OR o.fechaEmision >= :desde) " +
            "AND (:hasta IS NULL OR o.fechaEmision <= :hasta) " +
+           "AND (:idUsuarioRegistro IS NULL OR o.idUsuarioRegistro = :idUsuarioRegistro) " +
            "ORDER BY o.fechaRegistro DESC")
     List<OrdenCompra> findByFiltros(@Param("estado") String estado,
                                     @Param("idProveedor") Integer idProveedor,
                                     @Param("desde") LocalDate desde,
-                                    @Param("hasta") LocalDate hasta);
+                                    @Param("hasta") LocalDate hasta,
+                                    @Param("idUsuarioRegistro") Integer idUsuarioRegistro);
 
     /** Verificar si ya existe una factura con el mismo número para el mismo proveedor */
     Optional<OrdenCompra> findByNumeroFacturaAndProveedorIdProveedor(String numeroFactura, Integer idProveedor);

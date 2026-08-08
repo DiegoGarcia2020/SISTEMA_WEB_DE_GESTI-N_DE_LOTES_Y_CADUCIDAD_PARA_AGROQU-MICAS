@@ -7,11 +7,10 @@
   } @else if (venta(); as v) {
 
     <div class="vt-confirm-card">
-      <div class="vt-confirm-icon">✅</div>
-      <h1 class="vt-confirm-title">¡Venta Confirmada!</h1>
-      <p class="vt-confirm-orden">Orden {{ v.numeroOrden }}</p>
+      <div class="vt-confirm-icon">📄</div>
+      <h1 class="vt-confirm-title">Detalle de Venta</h1>
+      <p class="vt-confirm-orden">Orden {{ v.numeroOrden || v.idVenta }}</p>
       <span class="vt-badge vt-badge--pendiente">{{ v.estado }}</span>
-      <p class="vt-confirm-nota">El pedido quedó pendiente de despacho — la bodega lo preparará próximamente.</p>
     </div>
 
     <div class="vt-section">
@@ -43,8 +42,8 @@
     </div>
 
     <div class="vt-confirm-actions">
-      <button class="vt-btn vt-btn--ghost" (click)="volverDashboard()">Volver al Panel</button>
-      <button class="vt-btn vt-btn--primary" (click)="nuevaVenta()">+ Nueva Venta</button>
+      <button class="vt-btn vt-btn--ghost" (click)="volverDashboard()">Volver al Historial</button>
+      <button class="vt-btn vt-btn--primary" (click)="descargarComprobante()">Descargar Comprobante PDF</button>
     </div>
 
   }

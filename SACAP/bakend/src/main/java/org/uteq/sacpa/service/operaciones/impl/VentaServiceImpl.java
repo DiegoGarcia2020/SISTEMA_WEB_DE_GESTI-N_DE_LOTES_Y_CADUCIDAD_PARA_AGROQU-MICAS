@@ -117,9 +117,12 @@ public class VentaServiceImpl implements IVentaService {
     @Override
     @Transactional(readOnly = true)
 
-    public VentaResponseDTO obtenerPorId(Integer id) {
+    public VentaResponseDTO obtenerPorId(Integer id, Integer idTecnicoFiltro) {
         Venta venta = ventaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Venta no encontrada con ID: " + id));
+        if (idTecnicoFiltro != null && !venta.getTecnico().getIdUsuario().equals(idTecnicoFiltro)) {
+            throw new org.uteq.sacpa.exception.AccesoDenegadoException("No tiene permisos para ver esta venta.");
+        }
         return mapToResponseDTO(venta);
 
     }
@@ -127,8 +130,12 @@ public class VentaServiceImpl implements IVentaService {
     @Override
     @Transactional(readOnly = true)
 
-    public List<VentaResponseDTO> listarVentas() {
-        return ventaRepository.findAll().stream()
+    public List<VentaResponseDTO> listarVentas(Integer idTecnicoFiltro) {
+        List<Venta> ventas = (idTecnicoFiltro != null) ? 
+            ventaRepository.findByTecnico_IdUsuario(idTecnicoFiltro) : 
+            ventaRepository.findAll();
+        
+        return ventas.stream()
                 .map(this::mapToResponseDTO)
                 .collect(Collectors.toList());
     }

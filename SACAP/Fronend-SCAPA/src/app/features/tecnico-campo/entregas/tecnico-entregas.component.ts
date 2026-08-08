@@ -4,7 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { HttpClient } from '@angular/common/http';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { environment } from '../../../../environments/environment';
-import { ComprobanteService, DatosComprobante } from '../../../core/services/comprobante.service';
+import { ComprobanteService } from '../../../core/services/comprobante.service';
 
 export interface EntregaDTO {
   id: number;
@@ -122,25 +122,27 @@ export class TecnicoEntregasComponent implements OnInit {
   }
 
   imprimirComprobante(entrega: EntregaDTO) {
-    const datosComprobante: DatosComprobante = {
-      titulo: 'Comprobante de Entrega',
-      cliente: entrega.cliente,
-      fecha: new Date().toLocaleDateString(),
-      items: [
+    const mockVenta: any = {
+      nombreCliente: entrega.cliente,
+      fechaVenta: new Date().toISOString(),
+      numeroOrden: `ENTREGA-${entrega.id}`,
+      nombreTecnico: 'Sistema',
+      estado: entrega.estado,
+      lineas: [
         {
-          descripcion: 'Paquete de Insumos (Detalles ocultos en modo offline/mock)',
+          nombreProducto: 'Paquete de Insumos (Detalles ocultos)',
+          numeroLote: 'N/A',
           cantidad: 1,
           precioUnitario: entrega.total,
-          subtotal: entrega.total
+          subtotalLinea: entrega.total,
+          esComboIA: false
         }
       ],
       subtotal: entrega.total,
-      costoEnvio: 0,
-      iva: 0,
-      total: entrega.total,
-      idOperacion: entrega.id
+      descuentoTotal: 0,
+      total: entrega.total
     };
     
-    this.comprobanteService.generarComprobanteVenta(datosComprobante, `comprobante_entrega_${entrega.id}.pdf`);
+    this.comprobanteService.generarComprobanteVenta(mockVenta, `comprobante_entrega_${entrega.id}.pdf`);
   }
 }

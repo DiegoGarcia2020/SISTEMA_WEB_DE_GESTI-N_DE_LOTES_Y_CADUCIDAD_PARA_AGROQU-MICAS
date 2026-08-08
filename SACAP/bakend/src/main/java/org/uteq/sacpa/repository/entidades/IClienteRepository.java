@@ -14,4 +14,8 @@ public interface IClienteRepository extends JpaRepository<Cliente, Integer> {
 
     List<Cliente> findByNombreFincaContainingIgnoreCaseOrCedulaContainingIgnoreCase(String nombreFinca, String cedula);
 
+    @org.springframework.data.jpa.repository.Query("SELECT c FROM Cliente c WHERE c.tecnicoAsignado.idUsuario = :idTecnico " +
+           "AND (LOWER(c.nombreFinca) LIKE LOWER(CONCAT('%', :texto, '%')) " +
+           "     OR c.cedula LIKE CONCAT('%', :texto, '%'))")
+    List<Cliente> buscarPorTecnico(@org.springframework.data.repository.query.Param("idTecnico") Integer idTecnico, @org.springframework.data.repository.query.Param("texto") String texto);
 }

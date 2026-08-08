@@ -14,4 +14,6 @@ public interface IClienteService {
     List<Cliente> listarPorTecnico(Integer idTecnico);
 
     List<Cliente> buscar(String texto);
+
+    List<Cliente> buscarPorTecnico(String texto, Integer idTecnico);
 }

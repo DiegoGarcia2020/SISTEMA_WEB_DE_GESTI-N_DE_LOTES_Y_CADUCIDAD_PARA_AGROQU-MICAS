@@ -10,7 +10,7 @@ public interface IVentaService {
 
     Venta crearVenta(VentaRequestDTO request);
 
-    VentaResponseDTO obtenerPorId(Integer id);
+    VentaResponseDTO obtenerPorId(Integer id, Integer idTecnicoFiltro);
 
-    List<VentaResponseDTO> listarVentas();
+    List<VentaResponseDTO> listarVentas(Integer idTecnicoFiltro);
 }

@@ -1,6 +1,6 @@
 .vt-bg {
   font-family: var(--font-sans);
-  min-height: 100vh; padding: 2rem 2.5rem 3rem; max-width: 1200px; margin: 0 auto; color: var(--c-warm-black);
+  min-height: 100vh; padding: 1.5rem; max-width: 1200px; margin: 0 auto; color: var(--c-warm-black);
 }
 
 .vt-hero {
@@ -11,7 +11,7 @@
   position: relative; overflow: hidden;
 }
 .vt-hero::before { content:''; position:absolute; top:-60px; right:-60px; width:200px; height:200px; border-radius:50%; background:rgba(255,255,255,.06); }
-.vt-greeting { font-size: .875rem; color: rgba(246,245,240,.75); margin: 0 0 .35rem; font-weight: 500; }
+.vt-greeting { font-size: .875rem; color: rgba(246,245,240,.75); margin: 0 0 .35rem; font-weight: 700; text-transform: uppercase; }
 .vt-greeting strong { color: var(--c-sage-border); }
 .vt-hero-title { font-family: var(--font-slab); font-size: 1.8rem; font-weight: 700; margin: 0 0 .35rem; letter-spacing: -.01em; }
 .vt-hero-sub { margin: 0; font-size: .875rem; color: rgba(246,245,240,.65); }
@@ -19,11 +19,11 @@
 
 .vt-cta-btn {
   display: inline-flex; align-items: center; gap: .5rem; position: relative;
-  background: rgba(255,255,255,.08); border: 1.5px solid var(--c-sage-border);
-  color: var(--c-bone-bg); border-radius: var(--radius-btn); padding: .75rem 1.5rem; font-size: .875rem; font-weight: 700;
-  cursor: pointer; transition: all .2s; font-family: inherit; white-space: nowrap;
+  background: transparent; border: 1px solid var(--c-sage-border);
+  color: var(--c-bone-bg); border-radius: var(--radius-card); padding: .75rem 1.5rem; font-size: .875rem; font-weight: 700;
+  cursor: pointer; transition: all .2s; font-family: inherit; white-space: nowrap; text-transform: uppercase;
 }
-.vt-cta-btn:hover { background: var(--c-mid-green); border-color: var(--c-mid-green); }
+.vt-cta-btn:hover { background: var(--c-mid-green); border-color: var(--c-mid-green); color: var(--c-bone-bg); }
 .vt-cta-btn--ghost { background: transparent; }
 
 .vt-cart-badge {
@@ -31,7 +31,7 @@
   border-radius: 100px; font-size: .68rem; font-weight: 800; padding: .1rem .4rem; min-width: 18px; text-align: center;
 }
 
-.vt-loading { display: flex; align-items: center; justify-content: center; gap: .75rem; padding: 3rem; background: #fff; border-radius: var(--radius-card); border: 1px solid var(--c-sage-border); }
+.vt-loading { display: flex; align-items: center; justify-content: center; gap: .75rem; padding: 3rem; background: var(--c-bone-bg); border-radius: var(--radius-card); border: 1px solid var(--c-sage-border); }
 .vt-spin { width: 20px; height: 20px; border: 2px solid rgba(47,93,69,.3); border-top-color: var(--c-mid-green); border-radius: 50%; animation: vt-spin .7s linear infinite; }
 @keyframes vt-spin { to { transform: rotate(360deg); } }
 
@@ -39,27 +39,27 @@
 @media (max-width: 900px) { .vt-stats-grid { grid-template-columns: repeat(2,1fr); } }
 @media (max-width: 540px) { .vt-stats-grid { grid-template-columns: 1fr; } }
 
-.vt-stat-card { display: flex; align-items: center; gap: 1rem; background: #fff; border-radius: var(--radius-card); padding: 1.15rem 1.4rem; border: 1px solid var(--c-sage-border); }
-.vt-stat-icon { width: 44px; height: 44px; border-radius: var(--radius-btn); display: grid; place-items: center; flex-shrink: 0; font-size: 1.3rem; background: var(--c-bone-bg); }
+.vt-stat-card { display: flex; align-items: center; gap: 1rem; background: var(--c-bone-bg); border-radius: var(--radius-card); padding: 1.15rem 1.4rem; border: 1px solid var(--c-sage-border); }
+.vt-stat-icon { width: 44px; height: 44px; border-radius: var(--radius-card); display: grid; place-items: center; flex-shrink: 0; font-size: 1.3rem; background: rgba(143, 174, 155, 0.2); color: var(--c-dark-green); }
 .vt-stat-card > div:last-child { display: flex; flex-direction: column; }
 .vt-stat-num { font-family: var(--font-slab); font-size: 1.6rem; font-weight: 700; color: var(--c-warm-black); line-height: 1; }
-.vt-stat-label { font-size: .75rem; color: #6b7a70; font-weight: 500; margin-top: .2rem; }
+.vt-stat-label { font-size: .75rem; color: var(--c-sage-border); font-weight: 700; text-transform: uppercase; margin-top: .2rem; }
 
 .vt-content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
 @media (max-width: 900px) { .vt-content-grid { grid-template-columns: 1fr; } }
 
-.vt-section { background: #fff; border: 1px solid var(--c-sage-border); border-radius: var(--radius-card); padding: 1.5rem; }
+.vt-section { background: var(--c-bone-bg); border: 1px solid var(--c-sage-border); border-radius: var(--radius-card); padding: 1.5rem; }
 .vt-section-title { font-family: var(--font-slab); font-size: 1.05rem; font-weight: 700; color: var(--c-warm-black); margin: 0 0 1rem; }
-.vt-empty-text { font-size: .85rem; color: #8a9a90; }
+.vt-empty-text { font-size: .85rem; color: var(--c-sage-border); }
 
 .vt-temporada-list, .vt-promo-list { display: flex; flex-direction: column; gap: .65rem; }
 .vt-temporada-item, .vt-promo-item {
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-  background: var(--c-bone-bg); border: 1px solid var(--c-sage-border); border-radius: var(--radius-btn); padding: .85rem 1rem;
+  background: transparent; border: 1px solid var(--c-sage-border); border-radius: var(--radius-card); padding: .85rem 1rem;
 }
-.vt-temporada-item strong, .vt-promo-info strong { display: block; font-size: .88rem; color: var(--c-warm-black); }
-.vt-temporada-cultivo, .vt-promo-info span { font-size: .75rem; color: #8a9a90; }
+.vt-temporada-item strong, .vt-promo-info strong { display: block; font-size: .88rem; font-weight: 700; color: var(--c-warm-black); }
+.vt-temporada-cultivo, .vt-promo-info span { font-size: .75rem; color: var(--c-sage-border); }
 
-.vt-badge { padding: .25rem .7rem; border-radius: 100px; font-size: .72rem; font-weight: 700; white-space: nowrap; }
-.vt-badge--activa { background: rgba(61,122,88,.15); color: var(--c-success); }
-.vt-badge--descuento { background: rgba(199,127,61,.15); color: var(--c-cacao-accent); }
+.vt-badge { padding: .25rem .7rem; border-radius: 100px; font-size: .6875rem; font-weight: 800; text-transform: uppercase; white-space: nowrap; border: 1px solid transparent; }
+.vt-badge--activa { background: rgba(61,122,88,.15); color: var(--c-success); border-color: var(--c-success); }
+.vt-badge--descuento { background: rgba(199,127,61,.15); color: var(--c-cacao-accent); border-color: var(--c-cacao-accent); }

@@ -49,4 +49,10 @@ public class ClienteServiceImpl implements IClienteService {
     public List<Cliente> buscar(String texto) {
         return clienteRepository.findByNombreFincaContainingIgnoreCaseOrCedulaContainingIgnoreCase(texto, texto);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Cliente> buscarPorTecnico(String texto, Integer idTecnico) {
+        return clienteRepository.buscarPorTecnico(idTecnico, texto);
+    }
 }

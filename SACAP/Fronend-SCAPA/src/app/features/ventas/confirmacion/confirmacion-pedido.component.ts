@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { VentasService } from '../../../core/services/ventas.service';
 import { VentaDTO } from '../../../core/models/ventas.model';
+import { ComprobanteService } from '../../../core/services/comprobante.service';
 
 @Component({
   selector: 'app-confirmacion-pedido',
@@ -15,6 +16,7 @@ export class ConfirmacionPedidoComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private ventasService = inject(VentasService);
+  private comprobanteService = inject(ComprobanteService);
 
   venta = signal<VentaDTO | null>(null);
   cargando = signal(true);
@@ -35,6 +37,13 @@ export class ConfirmacionPedidoComponent implements OnInit {
   }
 
   volverDashboard() {
-    this.router.navigate(['/admin/ventas/dashboard']);
+    this.router.navigate(['/campo/dashboard']);
+  }
+
+  descargarComprobante() {
+    const v = this.venta();
+    if (v) {
+      this.comprobanteService.generarComprobanteVenta(v);
+    }
   }
 }
