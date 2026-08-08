@@ -17,6 +17,8 @@ const BRAND = {
   boneBg: [246, 245, 240] as [number, number, number],   // --c-bone-bg
   warmBlack: [26, 26, 22] as [number, number, number],   // --c-warm-black
   sage: [143, 174, 155] as [number, number, number],     // --c-sage-border
+  success: [61, 122, 88] as [number, number, number],    // --c-success
+  error: [185, 62, 62] as [number, number, number],      // --c-error
 };
 
 @Injectable({
@@ -195,6 +197,65 @@ export class ComprobanteService {
     doc.text(`$${orden.totalNeto.toFixed(2)}`, 180, offsetY, { align: 'right' });
     
     this.dibujarPie(doc, 'Uso interno administrativo');
+    
+    doc.save(nombreArchivo);
+  }
+
+  generarNotaDevolucion(devolucion: any, nombreArchivo: string = `Nota_Devolucion_DEV${devolucion.id || devolucion.idVenta}.pdf`) {
+    const doc = new jsPDF();
+
+    this.dibujarCabecera(doc, 'Nota de Devolución');
+
+    doc.setTextColor(...BRAND.warmBlack);
+    doc.setFontSize(11);
+    
+    doc.text(`Cliente: ${devolucion.nombreCliente}`, 15, 55);
+    const fechaSolicitud = devolucion.fechaSolicitud ? new Date(devolucion.fechaSolicitud).toLocaleString() : new Date().toLocaleString();
+    doc.text(`Fecha Solicitud: ${fechaSolicitud}`, 15, 62);
+    if (devolucion.fechaRecepcion) {
+      doc.text(`Fecha Recepción: ${new Date(devolucion.fechaRecepcion).toLocaleString()}`, 15, 69);
+    }
+    
+    doc.text(`N° Operación (Origen): ${devolucion.numeroComprobante || devolucion.idVenta}`, 120, 55);
+    doc.text(`Técnico: ${devolucion.nombreTecnico}`, 120, 62);
+    
+    const tableColumn = ["Producto", "Cantidad", "Motivo", "Estado Logístico", "Inventario"];
+    const tableRows: string[][] = [];
+    
+    tableRows.push([
+      devolucion.nombreProducto,
+      devolucion.cantidadDevuelta.toString(),
+      devolucion.motivo || 'N/A',
+      devolucion.estadoLogistico,
+      devolucion.estadoInventario || 'PENDIENTE'
+    ]);
+    
+    (doc as any).autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: 80,
+      theme: 'grid',
+      headStyles: { fillColor: BRAND.midGreen, textColor: BRAND.boneBg },
+      styles: { fontSize: 10, cellPadding: 3, textColor: BRAND.warmBlack },
+      alternateRowStyles: { fillColor: BRAND.boneBg },
+      didParseCell: function(data: any) {
+        if (data.section === 'body' && data.column.index === 4) {
+          const text = data.cell.raw;
+          if (text === 'DISPONIBLE') {
+            data.cell.styles.textColor = BRAND.success;
+            data.cell.styles.fontStyle = 'bold';
+          } else if (text === 'CUARENTENA') {
+            data.cell.styles.textColor = BRAND.cacao;
+            data.cell.styles.fontStyle = 'bold';
+          } else if (text === 'DESECHADO') {
+            data.cell.styles.textColor = BRAND.error;
+            data.cell.styles.fontStyle = 'bold';
+          }
+        }
+      }
+    });
+    
+    this.dibujarPie(doc, 'Documento sin validez tributaria');
     
     doc.save(nombreArchivo);
   }

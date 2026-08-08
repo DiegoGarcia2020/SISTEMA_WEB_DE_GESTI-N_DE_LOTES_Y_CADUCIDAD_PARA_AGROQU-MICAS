@@ -15,11 +15,20 @@ export interface OrdenPendienteDTO {
 export interface DevolucionTransitoDTO {
   id: number;
   idVenta: number;
-  productoNombre: string;
+  numeroComprobante: string;
+  nombreCliente: string;
+  nombreTecnico: string;
+  idProducto: number;
+  nombreProducto: string;
   cantidadDevuelta: number;
   motivo: string;
+  fechaSolicitud: string;
   estadoLogistico: string;
+  estadoInventario: string;
+  fechaRecepcion: string;
 }
+
+import { ComprobanteService } from '../../../core/services/comprobante.service';
 
 @Component({
   selector: 'app-bodega-despachos',
@@ -31,6 +40,7 @@ export interface DevolucionTransitoDTO {
 export class BodegaDespachosComponent implements OnInit {
   private http = inject(HttpClient);
   private toast = inject(ToastService);
+  private comprobanteService = inject(ComprobanteService);
 
   activeTab = signal<'preparar' | 'devoluciones'>('preparar');
   ordenesPendientes = signal<OrdenPendienteDTO[]>([]);
@@ -68,10 +78,11 @@ export class BodegaDespachosComponent implements OnInit {
   }
 
   cargarDevoluciones() {
-    // Mock for now, replace with actual GET request
-    this.devolucionesEnTransito.set([
-      { id: 1, idVenta: 102, productoNombre: 'Fertilizante Urea', cantidadDevuelta: 2, motivo: 'MALOGRADO', estadoLogistico: 'EN_TRANSITO' }
-    ]);
+    this.http.get<DevolucionTransitoDTO[]>(`${environment.apiUrl}/api/operaciones/devoluciones-venta/pendientes-bodega`)
+      .subscribe({
+        next: (data) => this.devolucionesEnTransito.set(data),
+        error: () => this.toast.error('Error', 'No se pudieron cargar las devoluciones pendientes')
+      });
   }
 
   prepararPaquete(idVenta: number) {
@@ -90,16 +101,24 @@ export class BodegaDespachosComponent implements OnInit {
       });
   }
 
-  recibirDevolucion(idDevolucion: number, estadoInventario: 'CUARENTENA' | 'DISPONIBLE') {
+  recibirDevolucion(idDevolucion: number, estadoInventario: 'CUARENTENA' | 'DISPONIBLE' | 'DESECHADO') {
     this.http.put(`${environment.apiUrl}/api/operaciones/devoluciones-venta/${idDevolucion}/recibir-fisica?estadoInventario=${estadoInventario}`, {})
       .subscribe({
         next: () => {
           this.toast.success('Devolución Recibida', `El producto ha sido ingresado a ${estadoInventario}.`);
-          this.devolucionesEnTransito.update(devs => devs.filter(d => d.id !== idDevolucion));
+          this.devolucionesEnTransito.update(devs => devs.map(d => 
+            d.id === idDevolucion 
+              ? { ...d, estadoLogistico: 'RECIBIDO_BODEGA', estadoInventario, fechaRecepcion: new Date().toISOString() }
+              : d
+          ));
         },
         error: () => {
           this.toast.error('Error', 'No se pudo procesar la recepción física.');
         }
       });
+  }
+
+  descargarNotaDevolucion(dev: DevolucionTransitoDTO) {
+    this.comprobanteService.generarNotaDevolucion(dev as any);
   }
 }

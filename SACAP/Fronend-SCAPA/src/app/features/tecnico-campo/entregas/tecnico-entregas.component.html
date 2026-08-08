@@ -8,13 +8,13 @@
     <div class="empty-state">No hay órdenes asignadas en este momento.</div>
   } @else {
     <div class="entregas-grid">
-      @for (entrega of entregas(); track entrega.id) {
+      @for (entrega of entregas(); track entrega.idVenta) {
         <div class="entrega-card">
           
           <div class="entrega-card__header">
             <div>
-              <h3 class="entrega-card__title">Orden #{{ entrega.id }}</h3>
-              <p class="entrega-card__subtitle">Cliente: {{ entrega.cliente }}</p>
+              <h3 class="entrega-card__title">Orden #{{ entrega.numeroOrden || entrega.idVenta }}</h3>
+              <p class="entrega-card__subtitle">Cliente: {{ entrega.nombreCliente }}</p>
             </div>
             <span class="badge" 
                   [class.badge-preparada]="entrega.estado === 'PREPARADA'"
@@ -26,8 +26,8 @@
 
           <div class="entrega-card__body">
             <div class="info-row">
-              <span class="info-label">Fecha Estimada:</span>
-              <span>{{ entrega.fechaEstimadaEntrega }}</span>
+              <span class="info-label">Fecha de Venta:</span>
+              <span>{{ entrega.fechaVenta | date:'shortDate' }}</span>
             </div>
             <div class="info-row">
               <span class="info-label">Total a Cobrar:</span>
@@ -36,18 +36,24 @@
           </div>
 
           <!-- RENDERIZADO CONDICIONAL DE BOTONES -->
-          @if (entrega.estado === 'PREPARADA') {
-            <button class="btn btn-success" (click)="confirmarEntrega(entrega.id)" [disabled]="isProcessing(entrega.id)">
+          @if (entrega.estado === 'CONFIRMADA') {
+            <button class="btn btn-success" (click)="confirmarEntrega(entrega.idVenta)" [disabled]="isProcessing(entrega.idVenta)">
               ✅ Confirmar Entrega al Cliente
             </button>
           }
 
           @if (entrega.estado === 'ENTREGADA') {
-            <button class="btn btn-warning" (click)="abrirModalDevolucion(entrega.id)">
+            <button class="btn btn-warning" (click)="abrirModalDevolucion(entrega.idVenta)">
               ⚠️ Registrar Novedad / Devolución
             </button>
             <button class="btn btn-secondary mt-2" (click)="imprimirComprobante(entrega)">
               🖨️ Imprimir Comprobante
+            </button>
+          }
+
+          @if (entrega.estado === 'DEVUELTA_PARCIALMENTE' || entrega.estado === 'DEVUELTA_TOTAL') {
+            <button class="btn mt-2" style="background-color: var(--c-cacao-accent); color: white;" (click)="descargarNotaDevolucion(entrega)">
+              📄 Descargar Nota de Devolución
             </button>
           }
         </div>

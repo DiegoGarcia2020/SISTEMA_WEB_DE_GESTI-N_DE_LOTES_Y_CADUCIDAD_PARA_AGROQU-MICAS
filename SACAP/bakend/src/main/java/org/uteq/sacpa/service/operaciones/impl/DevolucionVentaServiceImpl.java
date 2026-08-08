@@ -91,7 +91,8 @@ public class DevolucionVentaServiceImpl implements IDevolucionVentaService {
         }
 
         devolucion.setEstadoLogistico(EstadoLogisticoDevolucion.RECIBIDO_BODEGA.name());
-        devolucion.setEstadoInventario(estadoInventario); // CUARENTENA o DISPONIBLE
+        devolucion.setEstadoInventario(estadoInventario); // CUARENTENA, DISPONIBLE o DESECHADO
+        devolucion.setFechaRecepcion(LocalDateTime.now());
 
         // Reintegro de stock y trazabilidad
         if (EstadoInventarioDevolucion.DISPONIBLE.name().equals(estadoInventario)) {
@@ -110,5 +111,28 @@ public class DevolucionVentaServiceImpl implements IDevolucionVentaService {
         }
 
         return devolucionVentaRepository.save(devolucion);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public java.util.List<org.uteq.sacpa.dto.operaciones.DevolucionVentaResponseDTO> listarPendientesBodega() {
+        return devolucionVentaRepository.findByEstadoLogistico(EstadoLogisticoDevolucion.EN_TRANSITO.name())
+                .stream()
+                .map(d -> org.uteq.sacpa.dto.operaciones.DevolucionVentaResponseDTO.builder()
+                        .id(d.getId())
+                        .idVenta(d.getVenta().getId())
+                        .numeroComprobante(d.getVenta().getNumeroComprobante())
+                        .nombreCliente(d.getVenta().getCliente().getNombre())
+                        .nombreTecnico(d.getVenta().getTecnico().getNombre())
+                        .idProducto(d.getProducto().getIdProducto())
+                        .nombreProducto(d.getProducto().getNombre())
+                        .cantidadDevuelta(d.getCantidadDevuelta())
+                        .motivo(d.getMotivo())
+                        .fechaSolicitud(d.getFechaSolicitud())
+                        .estadoLogistico(d.getEstadoLogistico())
+                        .estadoInventario(d.getEstadoInventario())
+                        .fechaRecepcion(d.getFechaRecepcion())
+                        .build())
+                .collect(java.util.stream.Collectors.toList());
     }
 }

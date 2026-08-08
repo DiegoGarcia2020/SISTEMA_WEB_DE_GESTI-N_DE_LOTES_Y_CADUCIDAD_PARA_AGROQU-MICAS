@@ -6,13 +6,8 @@ import { ToastService } from '../../../shared/components/toast/toast.service';
 import { environment } from '../../../../environments/environment';
 import { ComprobanteService } from '../../../core/services/comprobante.service';
 
-export interface EntregaDTO {
-  id: number;
-  cliente: string;
-  fechaEstimadaEntrega: string;
-  total: number;
-  estado: string;
-}
+import { VentasService } from '../../../core/services/ventas.service';
+import { VentaDTO } from '../../../core/models/ventas.model';
 
 @Component({
   selector: 'app-tecnico-entregas',
@@ -26,8 +21,9 @@ export class TecnicoEntregasComponent implements OnInit {
   private toast = inject(ToastService);
   private fb = inject(FormBuilder);
   private comprobanteService = inject(ComprobanteService);
+  private ventasService = inject(VentasService);
 
-  entregas = signal<EntregaDTO[]>([]);
+  entregas = signal<VentaDTO[]>([]);
   processingIds = signal<Set<number>>(new Set());
 
   // Modal State
@@ -50,12 +46,15 @@ export class TecnicoEntregasComponent implements OnInit {
   }
 
   cargarEntregas() {
-    // Mock for now, replace with GET request
-    this.entregas.set([
-      { id: 101, cliente: 'Finca La Esperanza', fechaEstimadaEntrega: '2026-07-28', total: 150.50, estado: 'PREPARADA' },
-      { id: 102, cliente: 'Hacienda San José', fechaEstimadaEntrega: '2026-07-28', total: 45.00, estado: 'ENTREGADA' },
-      { id: 103, cliente: 'Agroganadera del Sur', fechaEstimadaEntrega: '2026-07-27', total: 230.00, estado: 'DEVUELTA_PARCIALMENTE' }
-    ]);
+    this.ventasService.misVentas().subscribe({
+      next: (ventas) => {
+        // Mostrar ventas que están listas para entregar, ya entregadas o devueltas
+        const estadosValidos = ['CONFIRMADA', 'ENTREGADA', 'DEVUELTA_PARCIALMENTE', 'DEVUELTA_TOTAL'];
+        const filtradas = ventas.filter(v => estadosValidos.includes(v.estado));
+        this.entregas.set(filtradas);
+      },
+      error: () => this.toast.error('Error', 'No se pudieron cargar las entregas/ventas')
+    });
   }
 
   isProcessing(id: number): boolean {
@@ -75,7 +74,7 @@ export class TecnicoEntregasComponent implements OnInit {
       .subscribe({
         next: () => {
           this.toast.success('Entrega Confirmada', `El paquete #${idVenta} fue entregado exitosamente.`);
-          this.entregas.update(ents => ents.map(e => e.id === idVenta ? { ...e, estado: 'ENTREGADA' } : e));
+          this.entregas.update(ents => ents.map(e => e.idVenta === idVenta ? { ...e, estado: 'ENTREGADA' } : e));
           this.setProcessing(idVenta, false);
         },
         error: () => {
@@ -110,7 +109,7 @@ export class TecnicoEntregasComponent implements OnInit {
       .subscribe({
         next: () => {
           this.toast.success('Devolución Registrada', 'La novedad fue notificada a bodega exitosamente.');
-          this.entregas.update(ents => ents.map(e => e.id === idVenta ? { ...e, estado: 'DEVUELTA_PARCIALMENTE' } : e));
+          this.entregas.update(ents => ents.map(e => e.idVenta === idVenta ? { ...e, estado: 'DEVUELTA_PARCIALMENTE' } : e));
           this.isProcessingModal.set(false);
           this.cerrarModal();
         },
@@ -121,28 +120,24 @@ export class TecnicoEntregasComponent implements OnInit {
       });
   }
 
-  imprimirComprobante(entrega: EntregaDTO) {
-    const mockVenta: any = {
-      nombreCliente: entrega.cliente,
-      fechaVenta: new Date().toISOString(),
-      numeroOrden: `ENTREGA-${entrega.id}`,
-      nombreTecnico: 'Sistema',
-      estado: entrega.estado,
-      lineas: [
-        {
-          nombreProducto: 'Paquete de Insumos (Detalles ocultos)',
-          numeroLote: 'N/A',
-          cantidad: 1,
-          precioUnitario: entrega.total,
-          subtotalLinea: entrega.total,
-          esComboIA: false
-        }
-      ],
-      subtotal: entrega.total,
-      descuentoTotal: 0,
-      total: entrega.total
+  imprimirComprobante(entrega: VentaDTO) {
+    this.comprobanteService.generarComprobanteVenta(entrega, `comprobante_venta_${entrega.numeroOrden}.pdf`);
+  }
+
+  descargarNotaDevolucion(entrega: VentaDTO) {
+    // Si la venta está devuelta parcial o total, generamos la nota con los datos de la venta y un texto genérico de devolución.
+    // Idealmente, se llamaría a un endpoint para obtener la data real de la devolución.
+    const notaMock: any = {
+      idVenta: entrega.idVenta,
+      numeroComprobante: entrega.numeroOrden,
+      nombreCliente: entrega.nombreCliente,
+      nombreTecnico: entrega.nombreTecnico,
+      // Solo tomamos el primer producto para el mock de la nota, o mapeamos todo.
+      nombreProducto: entrega.lineas.length > 0 ? entrega.lineas[0].nombreProducto : 'Varios',
+      cantidadDevuelta: entrega.lineas.length > 0 ? entrega.lineas[0].cantidad : 1,
+      estadoLogistico: 'EN_TRANSITO',
+      estadoInventario: 'CUARENTENA'
     };
-    
-    this.comprobanteService.generarComprobanteVenta(mockVenta, `comprobante_entrega_${entrega.id}.pdf`);
+    this.comprobanteService.generarNotaDevolucion(notaMock);
   }
 }

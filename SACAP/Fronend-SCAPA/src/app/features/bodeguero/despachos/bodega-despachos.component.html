@@ -73,18 +73,33 @@
                 <tr>
                   <td><strong>DEV-{{ dev.id }}</strong></td>
                   <td>#{{ dev.idVenta }}</td>
-                  <td>{{ dev.productoNombre }}</td>
+                  <td>{{ dev.nombreProducto }}</td>
                   <td>{{ dev.cantidadDevuelta }}</td>
                   <td>{{ dev.motivo }}</td>
-                  <td><span class="badge badge-transito">EN TRÁNSITO</span></td>
                   <td>
-                    <div class="actions-group">
-                      <button class="btn btn-sm btn-danger" (click)="recibirDevolucion(dev.id, 'CUARENTENA')">
-                        Ingresar a Cuarentena
-                      </button>
-                      <button class="btn btn-sm btn-primary" (click)="recibirDevolucion(dev.id, 'DISPONIBLE')">
-                        Retornar a Disponible
-                      </button>
+                    @if (dev.estadoLogistico === 'EN_TRANSITO') {
+                      <span class="badge badge-transito">EN TRÁNSITO</span>
+                    } @else {
+                      <span class="badge badge-success" style="background-color: var(--c-success); color: white; border: none;">RECIBIDO BODEGA</span>
+                    }
+                  </td>
+                  <td>
+                    <div class="actions-group" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                      @if (dev.estadoLogistico === 'EN_TRANSITO') {
+                        <button class="btn btn-sm btn-danger" (click)="recibirDevolucion(dev.id, 'CUARENTENA')">
+                          A Cuarentena
+                        </button>
+                        <button class="btn btn-sm btn-primary" (click)="recibirDevolucion(dev.id, 'DISPONIBLE')">
+                          A Disponible
+                        </button>
+                        <button class="btn btn-sm" style="background-color: var(--c-error); color: white; border: none; padding: 0.25rem 0.5rem; border-radius: 0; font-size: 0.75rem;" (click)="recibirDevolucion(dev.id, 'DESECHADO')">
+                          Desechar
+                        </button>
+                      } @else {
+                        <button class="btn btn-sm" style="background-color: var(--c-cacao-accent); color: white; border: none; padding: 0.25rem 0.5rem; border-radius: 0; font-size: 0.75rem;" (click)="descargarNotaDevolucion(dev)">
+                          📄 Descargar Nota de Devolución
+                        </button>
+                      }
                     </div>
                   </td>
                 </tr>

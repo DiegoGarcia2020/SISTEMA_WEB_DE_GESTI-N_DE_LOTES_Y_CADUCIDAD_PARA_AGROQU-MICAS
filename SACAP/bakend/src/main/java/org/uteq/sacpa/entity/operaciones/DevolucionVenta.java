@@ -43,4 +43,7 @@ public class DevolucionVenta {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_lote")
     private Lote lote;
+
+    @Column(name = "fecha_recepcion")
+    private LocalDateTime fechaRecepcion;
 }

@@ -25,4 +25,9 @@ public class DevolucionVentaController {
             @RequestParam String estadoInventario) {
         return ResponseEntity.ok(devolucionService.recibirDevolucionFisica(idDevolucion, estadoInventario));
     }
+
+    @GetMapping("/pendientes-bodega")
+    public ResponseEntity<java.util.List<org.uteq.sacpa.dto.operaciones.DevolucionVentaResponseDTO>> listarPendientesBodega() {
+        return ResponseEntity.ok(devolucionService.listarPendientesBodega());
+    }
 }

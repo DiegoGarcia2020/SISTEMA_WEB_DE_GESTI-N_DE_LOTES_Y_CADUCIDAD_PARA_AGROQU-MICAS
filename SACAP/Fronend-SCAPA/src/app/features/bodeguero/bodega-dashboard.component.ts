@@ -53,6 +53,9 @@ import { WebsocketService } from '../../core/services/websocket.service';
                   class="btn--tab">
             <lucide-icon name="rotate-ccw" class="w-4 h-4"></lucide-icon>
             <span>Devolución Cliente</span>
+            @if (devolucionesPendientesCount() > 0) {
+              <span class="badge-tab" style="background-color: var(--c-error);">{{ devolucionesPendientesCount() }} Pendientes</span>
+            }
           </button>
         </div>
       </div>
@@ -406,6 +409,7 @@ export class BodegaDashboardComponent implements OnInit {
   pedidosPendientes = signal<any[]>([]);
   isKitModalOpen = signal<boolean>(false);
   devolucionesClienteCount = signal<number>(0);
+  devolucionesPendientesCount = signal<number>(0);
 
   kitForm = this.fb.group({
     nombrePromocion: ['', Validators.required],
@@ -445,7 +449,7 @@ export class BodegaDashboardComponent implements OnInit {
           'Devolución en Tránsito', 
           `Se reportó una devolución (ID: ${mensaje.idDevolucion}) de la Venta #${mensaje.idVenta}. Prepare espacio en bodega.`
         );
-        // Opcional: Recargar o actualizar contadores
+        this.loadAll(); // Recargar contador
       }
     });
   }
@@ -454,6 +458,7 @@ export class BodegaDashboardComponent implements OnInit {
     this.operacionesService.listarLotesDisponiblesFefo().subscribe(data => this.lotes.set(data));
     this.operacionesService.listarPedidosPendientesBodega().subscribe(data => this.pedidosPendientes.set(data));
     this.operacionesService.listarAlertas().subscribe(data => this.alertasKitting.set(data));
+    this.operacionesService.listarDevolucionesPendientesBodega().subscribe(data => this.devolucionesPendientesCount.set(data.length));
   }
 
   despacharPedido(idOrden: number): void {
