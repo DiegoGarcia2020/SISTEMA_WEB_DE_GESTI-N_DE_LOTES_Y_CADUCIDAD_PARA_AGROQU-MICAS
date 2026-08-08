@@ -20,8 +20,8 @@
         @if (carrito.clienteSeleccionado(); as cli) {
           <div class="vt-cliente-card">
             <div>
-              <strong>{{ cli.nombre }}</strong>
-              <span>{{ cli.cedulaRuc || 'Sin cédula/RUC' }} @if (cli.telefono) { · {{ cli.telefono }} }</span>
+              <strong>{{ cli.nombreFinca }}</strong>
+              <span>{{ cli.cedula || 'Sin cédula' }} @if (cli.telefono) { · {{ cli.telefono }} }</span>
             </div>
             <button class="vt-btn vt-btn--ghost" (click)="quitarCliente()">Cambiar</button>
           </div>
@@ -37,8 +37,8 @@
             <div class="vt-resultado-list">
               @for (c of resultadosCliente(); track c.idCliente) {
                 <div class="vt-resultado-item" (click)="seleccionarCliente(c)">
-                  <strong>{{ c.nombre }}</strong>
-                  <span>{{ c.cedulaRuc || 'Sin cédula/RUC' }}</span>
+                  <strong>{{ c.nombreFinca }}</strong>
+                  <span>{{ c.cedula || 'Sin cédula' }}</span>
                 </div>
               }
             </div>
@@ -107,18 +107,19 @@
           <button class="vt-modal-close" (click)="cerrarModalNuevoCliente()">×</button>
         </div>
         <div class="vt-modal-body">
-          <label class="vt-field"><span>Nombre completo *</span>
-            <input type="text" [(ngModel)]="formCliente.nombre" class="vt-input" />
+          <label class="vt-field"><span>Nombre de la finca *</span>
+            <input type="text" [(ngModel)]="formCliente.nombreFinca" class="vt-input" />
           </label>
-          <label class="vt-field"><span>Cédula / RUC</span>
-            <input type="text" [(ngModel)]="formCliente.cedulaRuc" class="vt-input" />
+          <label class="vt-field"><span>Cédula *</span>
+            <input type="text" [(ngModel)]="formCliente.cedula" class="vt-input" />
           </label>
           <label class="vt-field"><span>Teléfono</span>
             <input type="text" [(ngModel)]="formCliente.telefono" class="vt-input" />
           </label>
-          <label class="vt-field"><span>Ubicación / Finca</span>
-            <textarea [(ngModel)]="formCliente.ubicacionFinca" class="vt-input" rows="2"></textarea>
+          <label class="vt-field"><span>Dirección</span>
+            <textarea [(ngModel)]="formCliente.direccion" class="vt-input" rows="2"></textarea>
           </label>
+          @if (errorNuevoCliente()) { <div class="vt-alert-error">{{ errorNuevoCliente() }}</div> }
         </div>
         <div class="vt-modal-footer">
           <button class="vt-btn vt-btn--ghost" (click)="cerrarModalNuevoCliente()">Cancelar</button>

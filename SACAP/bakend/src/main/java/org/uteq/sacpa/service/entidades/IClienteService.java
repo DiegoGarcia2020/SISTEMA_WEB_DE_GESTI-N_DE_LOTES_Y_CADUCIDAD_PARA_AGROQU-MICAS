@@ -7,9 +7,11 @@ import java.util.List;
 
 public interface IClienteService {
 
-    void crearCliente(ClienteRequestDTO dto);
+    Cliente crearCliente(ClienteRequestDTO dto);
 
     List<Cliente> listarTodos();
 
     List<Cliente> listarPorTecnico(Integer idTecnico);
+
+    List<Cliente> buscar(String texto);
 }

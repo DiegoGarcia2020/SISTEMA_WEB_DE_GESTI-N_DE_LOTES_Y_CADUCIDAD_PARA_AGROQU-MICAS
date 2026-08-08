@@ -9,7 +9,6 @@ import org.uteq.sacpa.entity.entidades.Cliente;
 import org.uteq.sacpa.service.entidades.IClienteService;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/clientes")
@@ -19,13 +18,15 @@ public class ClienteController {
     private IClienteService clienteService;
 
     @PostMapping
-    public ResponseEntity<Map<String, String>> crearCliente(@Valid @RequestBody ClienteRequestDTO request) {
-        clienteService.crearCliente(request);
-        return ResponseEntity.ok(Map.of("mensaje", "Cliente/Finca creado exitosamente"));
+    public ResponseEntity<Cliente> crearCliente(@Valid @RequestBody ClienteRequestDTO request) {
+        return ResponseEntity.ok(clienteService.crearCliente(request));
     }
 
     @GetMapping
-    public ResponseEntity<List<Cliente>> listarClientes() {
+    public ResponseEntity<List<Cliente>> listarClientes(@RequestParam(value = "buscar", required = false) String buscar) {
+        if (buscar != null && !buscar.isBlank()) {
+            return ResponseEntity.ok(clienteService.buscar(buscar));
+        }
         return ResponseEntity.ok(clienteService.listarTodos());
     }
 

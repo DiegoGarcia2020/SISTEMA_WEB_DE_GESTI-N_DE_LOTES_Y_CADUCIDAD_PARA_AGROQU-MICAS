@@ -12,4 +12,6 @@ public interface IClienteRepository extends JpaRepository<Cliente, Integer> {
 
     List<Cliente> findByTecnicoAsignado_IdUsuario(Integer idUsuario);
 
+    List<Cliente> findByNombreFincaContainingIgnoreCaseOrCedulaContainingIgnoreCase(String nombreFinca, String cedula);
+
 }

@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.uteq.sacpa.dto.operaciones.OrdenPedidoRequestDTO;
-import org.uteq.sacpa.entity.operaciones.UsoCampo;
+import org.uteq.sacpa.dto.operaciones.PedidoResponseDTO;
 import org.uteq.sacpa.service.operaciones.IUsoCampoService;
 
 import java.util.List;
@@ -29,12 +29,12 @@ public class OrdenPedidoController {
     }
 
     @GetMapping("/tecnico/{idTecnico}")
-    public ResponseEntity<List<UsoCampo>> listarPedidosPorTecnico(@PathVariable Integer idTecnico) {
+    public ResponseEntity<List<PedidoResponseDTO>> listarPedidosPorTecnico(@PathVariable Integer idTecnico) {
         return ResponseEntity.ok(usoCampoService.listarPedidosPorTecnico(idTecnico));
     }
 
     @GetMapping("/bodega/pendientes")
-    public ResponseEntity<List<UsoCampo>> listarPedidosPendientesBodega() {
+    public ResponseEntity<List<PedidoResponseDTO>> listarPedidosPendientesBodega() {
         return ResponseEntity.ok(usoCampoService.listarPedidosPendientesBodega());
     }
 

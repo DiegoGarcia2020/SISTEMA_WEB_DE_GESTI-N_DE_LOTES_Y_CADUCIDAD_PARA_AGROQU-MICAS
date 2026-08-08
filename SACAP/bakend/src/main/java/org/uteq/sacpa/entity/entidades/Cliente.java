@@ -1,5 +1,6 @@
 package org.uteq.sacpa.entity.entidades;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -38,6 +39,7 @@ public class Cliente {
     /** Técnico-Comercial asignado a esta finca/cliente */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_tecnico_asignado")
+    @JsonIgnore
     private Usuario tecnicoAsignado;
 
 }

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { VentasService } from '../../../core/services/ventas.service';
 import { CarritoService } from '../../../core/services/carrito.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { ClienteDTO } from '../../../core/models/ventas.model';
 
 @Component({
@@ -16,6 +17,7 @@ import { ClienteDTO } from '../../../core/models/ventas.model';
 export class CheckoutComponent {
   private ventasService = inject(VentasService);
   private router = inject(Router);
+  private auth = inject(AuthService);
   carrito = inject(CarritoService);
 
   // Búsqueda / creación de cliente
@@ -24,8 +26,9 @@ export class CheckoutComponent {
   buscando = signal(false);
 
   modalNuevoCliente = signal(false);
-  formCliente = { nombre: '', cedulaRuc: '', telefono: '', ubicacionFinca: '' };
+  formCliente = { nombreFinca: '', cedula: '', telefono: '', direccion: '' };
   guardandoCliente = signal(false);
+  errorNuevoCliente = signal('');
 
   confirmando = signal(false);
   errorCheckout = signal('');
@@ -51,7 +54,8 @@ export class CheckoutComponent {
   }
 
   abrirModalNuevoCliente() {
-    this.formCliente = { nombre: this.textoBusqueda(), cedulaRuc: '', telefono: '', ubicacionFinca: '' };
+    this.formCliente = { nombreFinca: this.textoBusqueda(), cedula: '', telefono: '', direccion: '' };
+    this.errorNuevoCliente.set('');
     this.modalNuevoCliente.set(true);
   }
 
@@ -60,13 +64,19 @@ export class CheckoutComponent {
   }
 
   guardarNuevoCliente() {
-    if (!this.formCliente.nombre.trim()) return;
+    const idTecnico = this.auth.currentUser()?.idUsuario;
+    if (!this.formCliente.nombreFinca.trim() || !this.formCliente.cedula.trim() || !idTecnico) {
+      this.errorNuevoCliente.set('Nombre de la finca y cédula son obligatorios.');
+      return;
+    }
+    this.errorNuevoCliente.set('');
     this.guardandoCliente.set(true);
     this.ventasService.crearCliente({
-      nombre: this.formCliente.nombre.trim(),
-      cedulaRuc: this.formCliente.cedulaRuc || undefined,
+      nombreFinca: this.formCliente.nombreFinca.trim(),
+      cedula: this.formCliente.cedula.trim(),
       telefono: this.formCliente.telefono || undefined,
-      ubicacionFinca: this.formCliente.ubicacionFinca || undefined
+      direccion: this.formCliente.direccion || undefined,
+      idTecnico
     }).subscribe({
       next: c => {
         this.guardandoCliente.set(false);
@@ -75,7 +85,10 @@ export class CheckoutComponent {
         this.resultadosCliente.set([]);
         this.textoBusqueda.set('');
       },
-      error: () => { this.guardandoCliente.set(false); }
+      error: e => {
+        this.guardandoCliente.set(false);
+        this.errorNuevoCliente.set(e?.error?.message || 'Error al crear el cliente.');
+      }
     });
   }
 

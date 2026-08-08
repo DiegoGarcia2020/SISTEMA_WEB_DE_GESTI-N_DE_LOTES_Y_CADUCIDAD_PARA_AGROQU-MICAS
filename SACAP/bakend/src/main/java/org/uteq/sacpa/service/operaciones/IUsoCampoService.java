@@ -1,6 +1,7 @@
 package org.uteq.sacpa.service.operaciones;
 
 import org.uteq.sacpa.dto.operaciones.OrdenPedidoRequestDTO;
+import org.uteq.sacpa.dto.operaciones.PedidoResponseDTO;
 import org.uteq.sacpa.dto.operaciones.UsoCampoRequestDTO;
 import org.uteq.sacpa.entity.operaciones.UsoCampo;
 
@@ -26,10 +27,10 @@ public interface IUsoCampoService {
     void crearOrdenPedido(OrdenPedidoRequestDTO dto);
 
     /** Lista los pedidos generados por un técnico específico. */
-    List<UsoCampo> listarPedidosPorTecnico(Integer idTecnico);
+    List<PedidoResponseDTO> listarPedidosPorTecnico(Integer idTecnico);
 
     /** Lista pedidos en estado PENDIENTE_BODEGA para el bodeguero. */
-    List<UsoCampo> listarPedidosPendientesBodega();
+    List<PedidoResponseDTO> listarPedidosPendientesBodega();
 
     /** Bodeguero despacha el pedido: libera reserva, resta stock, registra movimiento. */
     void despacharPedido(Integer idOrden, Integer idUsuarioBodeguero);

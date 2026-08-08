@@ -2,18 +2,19 @@ import { TemporadaDTO, PromocionIADTO } from './operaciones.model';
 
 export interface ClienteDTO {
   idCliente: number;
-  nombre: string;
-  cedulaRuc?: string;
+  nombreFinca: string;
+  cedula: string;
   telefono?: string;
-  ubicacionFinca?: string;
+  direccion?: string;
   idEstado?: number;
 }
 
 export interface ClienteCreateRequest {
-  nombre: string;
-  cedulaRuc?: string;
+  nombreFinca: string;
+  cedula: string;
   telefono?: string;
-  ubicacionFinca?: string;
+  direccion?: string;
+  idTecnico: number;
 }
 
 export interface LoteSugeridoDTO {

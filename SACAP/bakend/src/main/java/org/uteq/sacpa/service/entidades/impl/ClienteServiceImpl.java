@@ -20,14 +20,16 @@ public class ClienteServiceImpl implements IClienteService {
 
     @Override
     @Transactional
-    public void crearCliente(ClienteRequestDTO dto) {
+    public Cliente crearCliente(ClienteRequestDTO dto) {
         if (clienteRepository.findByCedula(dto.getCedula()).isPresent()) {
             throw new RuntimeException("Ya existe un cliente registrado con la cédula: " + dto.getCedula());
         }
-        jdbcTemplate.queryForObject(
+        Integer idCliente = jdbcTemplate.queryForObject(
                 "SELECT entidades.fn_crear_cliente(?, ?, ?, ?, ?)",
                 Integer.class,
                 dto.getNombreFinca(), dto.getCedula(), dto.getTelefono(), dto.getDireccion(), dto.getIdTecnico());
+        return clienteRepository.findById(idCliente)
+                .orElseThrow(() -> new RuntimeException("Error al recuperar el cliente recién creado: " + idCliente));
     }
 
     @Override
@@ -40,5 +42,11 @@ public class ClienteServiceImpl implements IClienteService {
     @Transactional(readOnly = true)
     public List<Cliente> listarPorTecnico(Integer idTecnico) {
         return clienteRepository.findByTecnicoAsignado_IdUsuario(idTecnico);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Cliente> buscar(String texto) {
+        return clienteRepository.findByNombreFincaContainingIgnoreCaseOrCedulaContainingIgnoreCase(texto, texto);
     }
 }

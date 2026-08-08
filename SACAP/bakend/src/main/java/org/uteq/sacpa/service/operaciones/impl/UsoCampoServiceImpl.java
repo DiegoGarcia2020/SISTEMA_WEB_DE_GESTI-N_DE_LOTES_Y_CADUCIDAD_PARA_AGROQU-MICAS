@@ -1,12 +1,17 @@
 package org.uteq.sacpa.service.operaciones.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.uteq.sacpa.dto.operaciones.UsoCampoRequestDTO;
 import org.uteq.sacpa.entity.operaciones.UsoCampo;
 import org.uteq.sacpa.repository.operaciones.IUsoCampoRepository;
 import org.uteq.sacpa.service.operaciones.IUsoCampoService;
 
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.Types;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -19,6 +24,9 @@ public class UsoCampoServiceImpl implements IUsoCampoService {
     @Autowired
     private org.uteq.sacpa.repository.inventario.ILoteRepository loteRepository;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     @Override
     @org.springframework.transaction.annotation.Transactional
     public void crearUsoCampo(UsoCampoRequestDTO dto) {
@@ -29,15 +37,22 @@ public class UsoCampoServiceImpl implements IUsoCampoService {
             throw new RuntimeException("El lote seleccionado no tiene suficiente stock disponible (" + (lote.getCantidadActual() == null ? 0 : lote.getCantidadActual()) + " unidades).");
         }
 
-        usoCampoRepository.crearUsoCampo(
-                dto.getCultivoParcela() != null ? dto.getCultivoParcela() : "Parcela General",
-                dto.getCultivoParcela() != null ? dto.getCultivoParcela() : "Cultivo Varios",
-                dto.getFechaUso(),
-                dto.getCantidadUsada(),
-                dto.getObservaciones(),
-                dto.getIdLote(),
-                dto.getIdTecnicoCampo()
-        );
+        String parcela = dto.getCultivoParcela() != null ? dto.getCultivoParcela() : "Parcela General";
+        String cultivo = dto.getCultivoParcela() != null ? dto.getCultivoParcela() : "Cultivo Varios";
+        jdbcTemplate.execute((Connection conn) -> {
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "SELECT operaciones.fn_crear_uso_campo(?, ?, ?, ?, ?, ?, ?)")) {
+                ps.setString(1, parcela);
+                ps.setString(2, cultivo);
+                ps.setDate(3, Date.valueOf(dto.getFechaUso()));
+                ps.setInt(4, dto.getCantidadUsada());
+                ps.setString(5, dto.getObservaciones());
+                ps.setInt(6, dto.getIdLote());
+                ps.setInt(7, dto.getIdTecnicoCampo());
+                ps.execute();
+            }
+            return null;
+        });
 
         int nuevoStock = lote.getCantidadActual() - dto.getCantidadUsada();
         lote.setCantidadActual(nuevoStock);
@@ -53,7 +68,14 @@ public class UsoCampoServiceImpl implements IUsoCampoService {
     @Override
     @org.springframework.transaction.annotation.Transactional
     public void anularUsoCampo(Integer idUsoCampo, Integer idEstadoAnulado) {
-        usoCampoRepository.anularUsoCampo(idUsoCampo);
+        jdbcTemplate.execute((Connection conn) -> {
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "SELECT operaciones.fn_anular_uso_campo(?)")) {
+                ps.setInt(1, idUsoCampo);
+                ps.execute();
+            }
+            return null;
+        });
     }
 
     @Override
@@ -92,40 +114,69 @@ public class UsoCampoServiceImpl implements IUsoCampoService {
             throw new RuntimeException("El lote seleccionado no tiene suficiente stock disponible (" + stockDisponible + " unidades disponibles tras reservas).");
         }
 
-        usoCampoRepository.crearOrdenPedido(
-                dto.getIdCliente(),
-                dto.getDescripcionPlaga(),
-                dto.getIdLote(),
-                dto.getCantidad(),
-                dto.getObservacion() != null ? dto.getObservacion() : "Pedido generado por Técnico-Comercial",
-                dto.getIdTecnico(),
-                dto.getIdComboAplicado()
-        );
+        String observacion = dto.getObservacion() != null ? dto.getObservacion() : "Pedido generado por Técnico-Comercial";
+        jdbcTemplate.execute((Connection conn) -> {
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "SELECT operaciones.fn_crear_orden_pedido(?, ?, ?, ?, ?, ?, ?)")) {
+                ps.setInt(1, dto.getIdCliente());
+                ps.setString(2, dto.getDescripcionPlaga());
+                ps.setInt(3, dto.getIdLote());
+                ps.setInt(4, dto.getCantidad());
+                ps.setString(5, observacion);
+                ps.setInt(6, dto.getIdTecnico());
+                if (dto.getIdComboAplicado() != null) ps.setInt(7, dto.getIdComboAplicado());
+                else ps.setNull(7, Types.INTEGER);
+                ps.execute();
+            }
+            return null;
+        });
     }
 
     @Override
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
-    public List<UsoCampo> listarPedidosPorTecnico(Integer idTecnico) {
-        return usoCampoRepository.findByTecnico_IdUsuarioAndTipoRegistro(idTecnico, "ORDEN_PEDIDO");
+    public List<org.uteq.sacpa.dto.operaciones.PedidoResponseDTO> listarPedidosPorTecnico(Integer idTecnico) {
+        return usoCampoRepository.findByTecnico_IdUsuarioAndTipoRegistro(idTecnico, "ORDEN_PEDIDO")
+                .stream().map(org.uteq.sacpa.dto.operaciones.PedidoResponseDTO::from).toList();
     }
 
     @Override
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
-    public List<UsoCampo> listarPedidosPendientesBodega() {
-        return usoCampoRepository.findByTipoRegistroAndIdEstadoPedido("ORDEN_PEDIDO", 1);
+    public List<org.uteq.sacpa.dto.operaciones.PedidoResponseDTO> listarPedidosPendientesBodega() {
+        return usoCampoRepository.findByTipoRegistroAndIdEstadoPedido("ORDEN_PEDIDO", 1)
+                .stream().map(org.uteq.sacpa.dto.operaciones.PedidoResponseDTO::from).toList();
     }
 
     @Override
     @org.springframework.transaction.annotation.Transactional
     public void despacharPedido(Integer idOrden, Integer idUsuarioBodeguero) {
-        usoCampoRepository.despacharPedido(idOrden, idUsuarioBodeguero);
+        jdbcTemplate.execute((Connection conn) -> {
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "SELECT operaciones.fn_despachar_pedido(?, ?)")) {
+                ps.setInt(1, idOrden);
+                ps.setInt(2, idUsuarioBodeguero);
+                ps.execute();
+            }
+            return null;
+        });
     }
 
     @Override
     @org.springframework.transaction.annotation.Transactional
     public void registrarDevolucionCliente(Integer idPedidoOriginal, String motivo,
                                            Integer cantidad, Integer idLote, Integer idUsuario) {
-        usoCampoRepository.devolucionCliente(idPedidoOriginal, motivo, cantidad, idLote, idUsuario);
+        jdbcTemplate.execute((Connection conn) -> {
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "SELECT operaciones.fn_devolucion_cliente(?, ?, ?, ?, ?)")) {
+                if (idPedidoOriginal != null) ps.setInt(1, idPedidoOriginal);
+                else ps.setNull(1, Types.INTEGER);
+                ps.setString(2, motivo);
+                ps.setInt(3, cantidad);
+                ps.setInt(4, idLote);
+                ps.setInt(5, idUsuario);
+                ps.execute();
+            }
+            return null;
+        });
     }
 }
 
