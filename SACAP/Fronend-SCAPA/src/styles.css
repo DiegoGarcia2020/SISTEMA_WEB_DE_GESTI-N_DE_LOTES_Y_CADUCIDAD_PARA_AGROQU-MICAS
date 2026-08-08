@@ -12,6 +12,9 @@
   --c-bone-bg: #F6F5F0;
   --c-cacao-accent: #C77F3D;
   --c-warm-black: #1A1A16;
+  --c-surface: #FFFFFF;
+  --c-text-muted: #6B7280;
+  --c-border-subtle: #E5E7EB;
 
   /* Colores de estado (Ajustados para encajar en la paleta cálida) */
   --c-error: #B93E3E;

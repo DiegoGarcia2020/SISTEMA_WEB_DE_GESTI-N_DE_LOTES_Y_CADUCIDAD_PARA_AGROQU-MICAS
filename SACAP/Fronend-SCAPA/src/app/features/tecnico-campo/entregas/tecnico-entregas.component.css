@@ -6,9 +6,9 @@
   flex-direction: column;
   height: 100%;
   padding: 2rem;
-  background-color: var(--bg-app, #f8f9fa);
-  font-family: 'Inter', 'Roboto', sans-serif;
-  color: var(--text-dark, #111827);
+  background-color: var(--c-bone-bg, #f8f9fa);
+  font-family: var(--font-sans);
+  color: var(--c-warm-black, #111827);
 }
 
 .entregas-header {
@@ -19,11 +19,11 @@
   font-size: 1.75rem;
   font-weight: 700;
   margin: 0 0 0.5rem 0;
-  color: #15803d;
+  color: var(--c-dark-green);
 }
 
 .entregas-header p {
-  color: #6b7280;
+  color: var(--c-text-muted);
   margin: 0;
 }
 
@@ -37,9 +37,9 @@
 }
 
 .entrega-card {
-  background-color: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  background-color: var(--c-surface);
+  border: 1px solid var(--c-border-subtle);
+  border-radius: var(--radius-card);
   padding: 1.5rem;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   display: flex;
@@ -51,7 +51,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--c-bone-bg);
   padding-bottom: 0.75rem;
 }
 
@@ -63,32 +63,32 @@
 
 .entrega-card__subtitle {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--c-text-muted);
   margin: 0.25rem 0 0 0;
 }
 
 /* BADGES DE ESTADO */
 .badge {
   padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
+  border-radius: var(--radius-btn);
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
 }
 
 .badge-preparada {
-  background-color: #ffedd5;
-  color: #c2410c; /* Naranja */
+  background-color: rgba(199, 127, 61, 0.15);
+  color: var(--c-cacao-accent); /* Naranja */
 }
 
 .badge-entregada {
-  background-color: #dcfce7;
-  color: #15803d; /* Verde */
+  background-color: rgba(61, 122, 88, 0.15);
+  color: var(--c-success); /* Verde */
 }
 
 .badge-devuelta {
-  background-color: #fef9c3;
-  color: #a16207; /* Amarillo */
+  background-color: rgba(199, 127, 61, 0.15);
+  color: var(--c-cacao-accent); /* Amarillo */
 }
 
 .entrega-card__body {
@@ -104,14 +104,14 @@
 }
 
 .info-label {
-  color: #6b7280;
+  color: var(--c-text-muted);
   font-weight: 600;
 }
 
 /* BOTONES DE ACCIÓN */
 .btn {
   padding: 0.75rem 1rem;
-  border-radius: 6px;
+  border-radius: var(--radius-btn);
   font-weight: 600;
   cursor: pointer;
   border: none;
@@ -133,24 +133,24 @@
 }
 
 .btn-success {
-  background-color: #15803d;
-  color: #ffffff;
+  background-color: var(--c-dark-green);
+  color: var(--c-surface);
 }
 
 .btn-warning {
-  background-color: #ffffff;
-  border: 1px solid #f59e0b;
-  color: #d97706;
+  background-color: var(--c-surface);
+  border: 1px solid var(--c-cacao-accent);
+  color: var(--c-cacao-accent);
 }
 
 .empty-state {
   grid-column: 1 / -1;
   text-align: center;
   padding: 4rem;
-  background-color: #ffffff;
-  border: 1px dashed #d1d5db;
-  border-radius: 12px;
-  color: #6b7280;
+  background-color: var(--c-surface);
+  border: 1px dashed var(--c-sage-border);
+  border-radius: var(--radius-card);
+  color: var(--c-text-muted);
 }
 
 /* =================================================================
@@ -170,8 +170,8 @@
 }
 
 .modal-content {
-  background-color: #ffffff;
-  border-radius: 12px;
+  background-color: var(--c-surface);
+  border-radius: var(--radius-card);
   padding: 2rem;
   width: 90%;
   max-width: 450px;
@@ -184,7 +184,7 @@
 .modal-content h2 {
   margin: 0;
   font-size: 1.25rem;
-  color: #111827;
+  color: var(--c-warm-black);
 }
 
 .form-group {
@@ -196,19 +196,19 @@
 .form-group label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--c-warm-black);
 }
 
 .form-control {
   padding: 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
+  border: 1px solid var(--c-sage-border);
+  border-radius: var(--radius-input);
   font-size: 0.875rem;
   outline: none;
 }
 
 .form-control:focus {
-  border-color: #15803d;
+  border-color: var(--c-dark-green);
 }
 
 .modal-actions {
@@ -220,18 +220,18 @@
 
 .btn-ghost {
   background-color: transparent;
-  color: #6b7280;
+  color: var(--c-text-muted);
   border: 1px solid transparent;
   width: auto;
 }
 
 .btn-ghost:hover {
-  background-color: #f3f4f6;
-  color: #374151;
+  background-color: var(--c-bone-bg);
+  color: var(--c-warm-black);
 }
 
 .btn-primary {
-  background-color: #15803d;
-  color: #ffffff;
+  background-color: var(--c-dark-green);
+  color: var(--c-surface);
   width: auto;
 }

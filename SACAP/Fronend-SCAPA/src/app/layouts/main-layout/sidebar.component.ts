@@ -42,9 +42,25 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
         <!-- TÉCNICO DE CAMPO -->
         @if (isRol('tecnic') || isRol('técnic') || isRol('campo') || currentPath().includes('/campo')) {
           <div class="nav-section-title">Espacio Campo</div>
-          <a routerLink="/campo/dashboard" routerLinkActive="active" class="nav-item">
-            <lucide-icon name="activity" class="nav-item__icon"></lucide-icon>
-            <span>Registro de Uso Agronómico</span>
+          
+          <a routerLink="/campo/dashboard" [queryParams]="{tab: 'combos'}" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active" class="nav-item">
+            <lucide-icon name="zap" class="nav-item__icon"></lucide-icon>
+            <span>Combos IA</span>
+          </a>
+          
+          <a routerLink="/campo/dashboard" [queryParams]="{tab: 'receta'}" routerLinkActive="active" class="nav-item">
+            <lucide-icon name="file-plus" class="nav-item__icon"></lucide-icon>
+            <span>Generar Pedido & Receta</span>
+          </a>
+          
+          <a routerLink="/campo/dashboard" [queryParams]="{tab: 'historial'}" routerLinkActive="active" class="nav-item">
+            <lucide-icon name="clipboard-list" class="nav-item__icon"></lucide-icon>
+            <span>Historial de Pedidos</span>
+          </a>
+
+          <a routerLink="/campo/dashboard" [queryParams]="{tab: 'receta', action: 'nuevo-cliente'}" routerLinkActive="active" class="nav-item" style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+            <lucide-icon name="user-plus" class="nav-item__icon"></lucide-icon>
+            <span>Nuevo Cliente</span>
           </a>
         }
 

@@ -147,12 +147,12 @@ public class SecurityConfig {
                     "/api/movimientos/**",
                     "/api/devoluciones/**",
                     "/api/documentos-lote/**"
-                ).hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "BODEGUERO")
+                ).hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "BODEGUERO", "TÉCNICO DE CAMPO", "TECNICO", "TECNICO_CAMPO")
 
                 // TECNICO_CAMPO — uso en campo
                 .requestMatchers(
                     "/api/uso-campo/**"
-                ).hasAuthority("TECNICO_CAMPO")
+                ).hasAnyAuthority("TECNICO_CAMPO", "TÉCNICO DE CAMPO", "TECNICO")
 
                 // Notificaciones: cualquier usuario autenticado
                 .requestMatchers("/api/notificaciones/**").authenticated()

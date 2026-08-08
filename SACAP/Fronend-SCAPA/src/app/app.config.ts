@@ -15,7 +15,7 @@ import {
   List, Briefcase, UploadCloud, FileCheck, Link, MapPin, Zap, Ban, RefreshCw, MoreVertical,
   ListChecks, TrendingUp, BarChart2, Boxes, ChevronLeft, ChevronUp, ArrowUp, ArrowDown,
   Printer, Copy, ExternalLink, Eye as EyeIcon, EyeOff as EyeOffIcon,
-  FilePlus, PackagePlus, Receipt, Warehouse, ShoppingCart
+  FilePlus, PackagePlus, Receipt, Warehouse, ShoppingCart, ClipboardList
 } from 'lucide-angular';
 
 export const appConfig: ApplicationConfig = {
@@ -36,7 +36,7 @@ export const appConfig: ApplicationConfig = {
         ListChecks, TrendingUp, BarChart2, Boxes, ChevronLeft, ChevronUp, ArrowUp, ArrowDown,
         Printer, Copy, ExternalLink,
         EyeIcon, EyeOffIcon,
-        FilePlus, PackagePlus, Receipt, Warehouse, ShoppingCart
+        FilePlus, PackagePlus, Receipt, Warehouse, ShoppingCart, ClipboardList
       })
     )
   ]

@@ -145,7 +145,7 @@ public class MovimientoServiceImpl implements IMovimientoService {
                         .nombreProducto(l.getProducto() != null ? l.getProducto().getNombre() : "Producto Desconocido")
                         .cantidadActual(l.getCantidadActual())
                         .fechaVencimiento(l.getFechaVencimiento())
-                        .nombreProveedor(l.getProveedor() != null ? l.getProveedor().getNombre() : "N/A")
+                        .nombreProveedor(l.getProveedor() != null ? (l.getProveedor().getEmpresa() != null ? l.getProveedor().getEmpresa().getNombre() : l.getProveedor().getNombreRepresentante()) : "N/A")
                         .ubicacionAlmacen(l.getUbicacion() != null ? "Est. " + (l.getUbicacion().getEstanteria() != null ? l.getUbicacion().getEstanteria().getCodigo() : "N/A") + " - Nivel " + l.getUbicacion().getNivel() + " (" + l.getUbicacion().getPosicion() + ")" : "Bodega General")
                         .build())
                 .collect(java.util.stream.Collectors.toList());

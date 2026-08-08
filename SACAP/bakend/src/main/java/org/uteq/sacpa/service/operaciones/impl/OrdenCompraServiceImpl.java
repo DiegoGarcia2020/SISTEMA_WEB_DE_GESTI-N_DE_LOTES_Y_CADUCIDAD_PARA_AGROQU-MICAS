@@ -247,11 +247,12 @@ public class OrdenCompraServiceImpl implements IOrdenCompraService {
 
         // 7. Notificar a Bodega de que llegó la compra
         int lotesFlotantes = dto.getLotes().size();
+        String nombreProv = orden.getProveedor().getEmpresa() != null ? orden.getProveedor().getEmpresa().getNombre() : orden.getProveedor().getNombreRepresentante();
         String mensaje = String.format(
             "{\"tipo\": \"RECEPCION_COMPRA\", \"idOrden\": %d, \"proveedor\": \"%s\", " +
             "\"lotesFlotantes\": %d, \"mensaje\": \"Se recepcionaron %d lotes de %s pendientes de ubicar\"}",
-            orden.getId(), orden.getProveedor().getNombre(),
-            lotesFlotantes, lotesFlotantes, orden.getProveedor().getNombre());
+            orden.getId(), nombreProv,
+            lotesFlotantes, lotesFlotantes, nombreProv);
         messagingTemplate.convertAndSend("/topic/bodega/recepciones", mensaje);
     }
 
@@ -310,7 +311,7 @@ public class OrdenCompraServiceImpl implements IOrdenCompraService {
         return OrdenCompraResponseDTO.builder()
                 .id(orden.getId())
                 .idProveedor(orden.getProveedor() != null ? orden.getProveedor().getIdProveedor() : null)
-                .nombreProveedor(orden.getProveedor() != null ? orden.getProveedor().getNombre() : "Proveedor desconocido")
+                .nombreProveedor(orden.getProveedor() != null ? (orden.getProveedor().getEmpresa() != null ? orden.getProveedor().getEmpresa().getNombre() : orden.getProveedor().getNombreRepresentante()) : "Proveedor desconocido")
                 .numeroFactura(orden.getNumeroFactura())
                 .fechaEmision(orden.getFechaEmision())
                 .subtotalBruto(orden.getSubtotalBruto())
