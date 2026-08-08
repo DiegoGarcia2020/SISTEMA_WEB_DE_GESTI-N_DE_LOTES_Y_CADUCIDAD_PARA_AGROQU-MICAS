@@ -1,12 +1,16 @@
 package org.uteq.sacpa.service.entidades.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.uteq.sacpa.dto.entidades.ProveedorRequestDTO;
 import org.uteq.sacpa.entity.entidades.Proveedor;
 import org.uteq.sacpa.repository.entidades.IProveedorRepository;
 import org.uteq.sacpa.service.entidades.IProveedorService;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,39 +26,58 @@ public class ProveedorServiceImpl implements IProveedorService {
     @Autowired
     private org.uteq.sacpa.repository.inventario.IProductoRepository productoRepository;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     @Override
+    @Transactional
     public void crearProveedor(ProveedorRequestDTO dto) {
         if (proveedorRepository.existsByRuc(dto.getRuc())) {
             throw new RuntimeException("El RUC ya está registrado.");
         }
-        
-        proveedorRepository.crearProveedor(
-                dto.getIdEstado(),
-                dto.getRuc(),
-                dto.getNombreRepresentante(),
-                dto.getDireccion(),
-                null, // telefono, si lo añades al DTO en el futuro
-                dto.getTelefonoEmpresa(),
-                dto.getCorreoContacto(),
-                dto.getIdEmpresa(),
-                dto.getIdCiudad()
-        );
+
+        // Se usa JdbcTemplate + PreparedStatement.execute() en vez de @Modifying/nativeQuery:
+        // fn_crear_proveedor RETURNS void, y Postgres siempre devuelve una fila al hacer
+        // SELECT funcion(), lo que rompe executeUpdate() con "Se retornó un resultado
+        // cuando no se esperaba ninguno".
+        jdbcTemplate.execute((Connection conn) -> {
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "SELECT entidades.fn_crear_proveedor(?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+                ps.setInt(1, dto.getIdEstado());
+                ps.setString(2, dto.getRuc());
+                ps.setString(3, dto.getNombreRepresentante());
+                ps.setString(4, dto.getDireccion());
+                ps.setString(5, null); // telefono, si lo añades al DTO en el futuro
+                ps.setString(6, dto.getTelefonoEmpresa());
+                ps.setString(7, dto.getCorreoContacto());
+                ps.setInt(8, dto.getIdEmpresa());
+                ps.setInt(9, dto.getIdCiudad());
+                ps.execute();
+            }
+            return null;
+        });
     }
 
     @Override
+    @Transactional
     public void actualizarProveedor(Integer id, ProveedorRequestDTO dto) {
-        proveedorRepository.actualizarProveedor(
-                id,
-                dto.getIdEstado(),
-                dto.getRuc(),
-                dto.getNombreRepresentante(),
-                dto.getDireccion(),
-                null,
-                dto.getTelefonoEmpresa(),
-                dto.getCorreoContacto(),
-                dto.getIdEmpresa(),
-                dto.getIdCiudad()
-        );
+        jdbcTemplate.execute((Connection conn) -> {
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "SELECT entidades.fn_actualizar_proveedor(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+                ps.setInt(1, id);
+                ps.setInt(2, dto.getIdEstado());
+                ps.setString(3, dto.getRuc());
+                ps.setString(4, dto.getNombreRepresentante());
+                ps.setString(5, dto.getDireccion());
+                ps.setString(6, null); // telefono
+                ps.setString(7, dto.getTelefonoEmpresa());
+                ps.setString(8, dto.getCorreoContacto());
+                ps.setInt(9, dto.getIdEmpresa());
+                ps.setInt(10, dto.getIdCiudad());
+                ps.execute();
+            }
+            return null;
+        });
     }
 
     @Override
@@ -69,8 +92,16 @@ public class ProveedorServiceImpl implements IProveedorService {
     }
 
     @Override
+    @Transactional
     public void eliminarProveedor(Integer idProveedor) {
-        proveedorRepository.eliminarProveedor(idProveedor);
+        jdbcTemplate.execute((Connection conn) -> {
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "SELECT entidades.fn_eliminar_proveedor(?)")) {
+                ps.setInt(1, idProveedor);
+                ps.execute();
+            }
+            return null;
+        });
     }
 
     @Override
@@ -79,18 +110,18 @@ public class ProveedorServiceImpl implements IProveedorService {
             .orElseThrow(() -> new RuntimeException("Proveedor no encontrado"));
         org.uteq.sacpa.entity.inventario.Producto producto = productoRepository.findById(dto.getIdProducto())
             .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
-            
+
         if (proveedorProductoRepository.existsByProveedor_IdProveedorAndProducto_IdProducto(dto.getIdProveedor(), dto.getIdProducto())) {
             throw new RuntimeException("El producto ya está asociado al proveedor");
         }
-        
+
         org.uteq.sacpa.entity.entidades.ProveedorProducto pp = new org.uteq.sacpa.entity.entidades.ProveedorProducto();
         pp.setProveedor(proveedor);
         pp.setProducto(producto);
         pp.setPrecioReferencial(dto.getPrecioReferencial());
         pp.setCodigoProductoProveedor(dto.getCodigoProductoProveedor());
         pp.setIdEstado(dto.getIdEstado() != null ? dto.getIdEstado() : 1);
-        
+
         proveedorProductoRepository.save(pp);
     }
 

@@ -100,7 +100,6 @@ import { ToastService } from '../../../shared/components/toast/toast.service';
                 <option value="Administrador">Administrador (Gestión y Cuentas)</option>
                 <option value="Supervisor">Supervisor (Control y Operaciones)</option>
                 <option value="Técnico de Campo">Técnico de Campo (Aplicación Agrícola)</option>
-                <option value="Proveedor">Proveedor (Socio Externo / Lotes)</option>
               </select>
               @if (userForm.get('ocupacion')?.touched && userForm.get('ocupacion')?.invalid) {
                 <p class="text-[11px] text-red-500 mt-1">Por favor seleccione un cargo de la lista</p>

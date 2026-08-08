@@ -151,14 +151,6 @@ public class SecurityConfig {
                     "/api/supervisor/**"
                 ).hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR")
 
-                // PROVEEDOR — pre-registro de lotes, documentos, perfil y diagnóstico
-                .requestMatchers(
-                    "/api/lotes/pre-registro",
-                    "/api/documentos-lote/**",
-                    "/api/proveedores/perfil",
-                    "/api/proveedores/diagnostico"
-                ).hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "BODEGUERO", "PROVEEDOR")
-
                 // Lectura de stock disponible para armar pedidos — también accesible al TECNICO
                 .requestMatchers(
                     "/api/movimientos/lotes-disponibles"
@@ -167,6 +159,7 @@ public class SecurityConfig {
                 // ADMINISTRADOR, SUPERVISOR y BODEGUERO — inventario y lotes
                 .requestMatchers(
                     "/api/lotes/**",
+                    "/api/documentos-lote/**",
                     "/api/almacenes/**",
                     "/api/productos/**",
                     "/api/movimientos/**",

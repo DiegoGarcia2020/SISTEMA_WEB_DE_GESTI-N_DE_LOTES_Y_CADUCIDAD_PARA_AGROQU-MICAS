@@ -33,7 +33,6 @@ public class ProveedorController {
         return ResponseEntity.ok(proveedorService.listarTodos());
     }
 
-
     @GetMapping("/{id}")
     public ResponseEntity<Proveedor> obtenerPorId(@PathVariable Integer id) {
         return ResponseEntity.ok(proveedorService.obtenerPorId(id));

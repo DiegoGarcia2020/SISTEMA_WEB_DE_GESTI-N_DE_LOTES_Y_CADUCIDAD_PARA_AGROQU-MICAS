@@ -40,7 +40,6 @@ import { AuditoriaQrComponent } from './features/bodega/auditoria-qr/auditoria-q
 import { SupervisorDashboardComponent as SupervisorBodegasDashboardComponent } from './features/bodega/supervisor-dashboard/supervisor-dashboard.component';
 import { EstructuraFisicaComponent } from './features/inventario/estructura-fisica/estructura-fisica.component';
 import { PreRegistroLoteComponent } from './features/inventario/pre-registro-lote/pre-registro-lote.component';
-import { ProveedorDashboardComponent } from './features/proveedor/proveedor-dashboard/proveedor-dashboard.component';
 
 // Módulo 3: Ventas y Motor IA
 import { VentasDashboardComponent } from './features/ventas/dashboard/ventas-dashboard.component';
@@ -189,14 +188,7 @@ export const routes: Routes = [
         path: 'inventario/pre-registro',
         component: PreRegistroLoteComponent,
         canActivate: [roleGuard],
-        data: { roles: ['Administrador', 'Proveedor', 'Bodeguero'] }
-      },
-      // -- Dashboard Proveedor --
-      {
-        path: 'proveedor/dashboard',
-        component: ProveedorDashboardComponent,
-        canActivate: [roleGuard],
-        data: { roles: ['Proveedor'] }
+        data: { roles: ['Administrador', 'Bodeguero'] }
       },
       // -- Dashboard Supervisor: Mis Bodegas / Lotes (Módulo 2) --
       {
