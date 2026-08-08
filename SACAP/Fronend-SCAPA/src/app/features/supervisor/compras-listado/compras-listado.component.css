@@ -358,6 +358,16 @@
   background: rgba(220, 38, 38, 0.1);
 }
 
+.btn--action-download {
+  color: var(--c-cacao-accent);
+  border: 1px solid var(--c-sage-border);
+}
+
+.btn--action-download:hover {
+  border-color: var(--c-cacao-accent);
+  background: rgba(199, 127, 61, 0.1);
+}
+
 /* ── Estado vacío ── */
 .empty-state {
   display: flex;

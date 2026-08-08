@@ -308,39 +308,45 @@ export class OperacionesService {
   private mockCombosKit: any[] = [
     {
       idPromocion: 101,
-      nombrePromocion: 'Combo Liquidación Rápida Urea + Bioestimulante',
-      descripcion: 'Promo especial para empujar lote LT-2026-089 por caducidad cercana (12 días). Descuento del 20% al llevar más de 10 sacos.',
-      descuentoGlobal: 20.0,
-      fechaInicio: '2026-07-01',
-      fechaFin: '2026-07-15',
+      titulo: 'Combo Liquidación Rápida Urea + Bioestimulante',
+      justificacionIA: 'Promo especial para empujar lote LT-2026-089 por caducidad cercana (12 días). Descuento del 20% al llevar más de 10 sacos.',
+      descuentoSugerido: 20.0,
+      fechaCreacion: '2026-07-01',
+      fechaVigencia: '2026-07-15',
       idEstado: 1, // 1: ACTIVO
-      codigoLoteRef: 'LT-2026-089',
-      productoRef: 'Fertilizante Urea Agrícola 46% N',
-      stockLote: 150
+      estado: 'ACTIVO',
+      codigoLote: 'LT-2026-089',
+      nombreProducto: 'Fertilizante Urea Agrícola 46% N',
+      precioOriginal: 24.50,
+      precioPromocion: 19.60
     },
     {
       idPromocion: 102,
-      nombrePromocion: 'Kit Antifúngico Preventivo Cacao (Carbendazim 4x3)',
-      descripcion: 'Combo diseñado por IA AgroSense para rotar Carbendazim antes de fecha crítica. Descuento del 25% por compra en combo o receta.',
-      descuentoGlobal: 25.0,
-      fechaInicio: '2026-07-02',
-      fechaFin: '2026-07-18',
+      titulo: 'Kit Antifúngico Preventivo Cacao (Carbendazim 4x3)',
+      justificacionIA: 'Combo diseñado por IA AgroSense para rotar Carbendazim antes de fecha crítica. Descuento del 25% por compra en combo o receta.',
+      descuentoSugerido: 25.0,
+      fechaCreacion: '2026-07-02',
+      fechaVigencia: '2026-07-18',
       idEstado: 1, // 1: ACTIVO
-      codigoLoteRef: 'LT-2026-042',
-      productoRef: 'Fungicida Carbendazim 500 SC',
-      stockLote: 45
+      estado: 'ACTIVO',
+      codigoLote: 'LT-2026-042',
+      nombreProducto: 'Fungicida Carbendazim 500 SC',
+      precioOriginal: 18.00,
+      precioPromocion: 13.50
     },
     {
       idPromocion: 103,
-      nombrePromocion: 'Pack Semilla Maíz Trueno + Arranque Fosfatado',
-      descripcion: 'Descuento preventivo por rotación de bodega sur. 15% de rebaja en semilla certificada combinada con abono.',
-      descuentoGlobal: 15.0,
-      fechaInicio: '2026-06-25',
-      fechaFin: '2026-08-10',
+      titulo: 'Pack Semilla Maíz Trueno + Arranque Fosfatado',
+      justificacionIA: 'Descuento preventivo por rotación de bodega sur. 15% de rebaja en semilla certificada combinada con abono.',
+      descuentoSugerido: 15.0,
+      fechaCreacion: '2026-06-25',
+      fechaVigencia: '2026-08-10',
       idEstado: 2, // 2: SUGERIDA / PENDIENTE DE APROBACIÓN SUPERVISOR
-      codigoLoteRef: 'LT-2026-112',
-      productoRef: 'Semilla Híbrida Maíz Trueno',
-      stockLote: 80
+      estado: 'PENDIENTE',
+      codigoLote: 'LT-2026-112',
+      nombreProducto: 'Semilla Híbrida Maíz Trueno',
+      precioOriginal: 32.00,
+      precioPromocion: 27.20
     }
   ];
 

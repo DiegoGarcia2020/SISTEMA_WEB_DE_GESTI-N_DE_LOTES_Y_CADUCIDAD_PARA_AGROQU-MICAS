@@ -168,7 +168,7 @@ import { ComprobanteService } from '../../../core/services/comprobante.service';
                           Ver Detalle
                         </button>
                       }
-                      <button class="btn--action btn--action-view" (click)="descargarPDF(orden.id)" style="color: #0d9488;">
+                      <button class="btn--action btn--action-download" (click)="descargarPDF(orden.id)">
                         <lucide-icon name="download" class="w-3.5 h-3.5"></lucide-icon>
                         Descargar PDF
                       </button>

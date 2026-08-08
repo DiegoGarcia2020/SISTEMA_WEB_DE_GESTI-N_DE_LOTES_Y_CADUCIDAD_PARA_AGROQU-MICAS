@@ -4,6 +4,21 @@ import 'jspdf-autotable';
 import { VentaDTO } from '../models/ventas.model';
 import { OrdenCompra } from '../models/compras.model';
 
+/**
+ * Paleta compartida con el sistema de diseño "Etiqueta de Almacén"
+ * (SACAP/Fronend-SCAPA/src/styles.css). jsPDF no puede leer variables CSS,
+ * así que se replican aquí en RGB para que los comprobantes generados
+ * coincidan visualmente con el resto de la aplicación.
+ */
+const BRAND = {
+  darkGreen: [18, 38, 29] as [number, number, number],   // --c-dark-green
+  midGreen: [47, 93, 69] as [number, number, number],    // --c-mid-green
+  cacao: [199, 127, 61] as [number, number, number],     // --c-cacao-accent
+  boneBg: [246, 245, 240] as [number, number, number],   // --c-bone-bg
+  warmBlack: [26, 26, 22] as [number, number, number],   // --c-warm-black
+  sage: [143, 174, 155] as [number, number, number],     // --c-sage-border
+};
+
 @Injectable({
   providedIn: 'root'
 })
@@ -11,28 +26,38 @@ export class ComprobanteService {
 
   constructor() { }
 
-  generarComprobanteVenta(venta: VentaDTO, nombreArchivo: string = `Comprobante_Venta_${venta.numeroOrden || venta.idVenta}.pdf`) {
-    const doc = new jsPDF();
-    
-    // Configuración de colores y fuentes
-    const primaryColor = [21, 128, 61]; // bg-green-700
-    const textColor = [51, 51, 51];
-    
-    // Cabecera
-    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  /** Dibuja la cabecera de marca compartida por ambos comprobantes. */
+  private dibujarCabecera(doc: jsPDF, subtitulo: string): void {
+    doc.setFillColor(...BRAND.darkGreen);
     doc.rect(0, 0, 210, 40, 'F');
-    
-    doc.setTextColor(255, 255, 255);
+
+    doc.setFillColor(...BRAND.cacao);
+    doc.rect(0, 40, 210, 1.5, 'F');
+
+    doc.setTextColor(...BRAND.boneBg);
     doc.setFontSize(22);
     doc.setFont('helvetica', 'bold');
     doc.text('AGROQUÍMICOS SACPA', 15, 20);
-    
+
     doc.setFontSize(14);
     doc.setFont('helvetica', 'normal');
-    doc.text('Comprobante de Venta', 15, 30);
-    
-    // Información del Cliente y Factura
-    doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+    doc.text(subtitulo, 15, 30);
+  }
+
+  /** Dibuja el pie de página compartido. */
+  private dibujarPie(doc: jsPDF, mensaje: string): void {
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(10);
+    doc.setTextColor(...BRAND.sage);
+    doc.text(mensaje, 105, 280, { align: 'center' });
+  }
+
+  generarComprobanteVenta(venta: VentaDTO, nombreArchivo: string = `Comprobante_Venta_${venta.numeroOrden || venta.idVenta}.pdf`) {
+    const doc = new jsPDF();
+
+    this.dibujarCabecera(doc, 'Comprobante de Venta');
+
+    doc.setTextColor(...BRAND.warmBlack);
     doc.setFontSize(11);
     
     doc.text(`Cliente: ${venta.nombreCliente}`, 15, 55);
@@ -65,9 +90,9 @@ export class ComprobanteService {
       body: tableRows,
       startY: 80,
       theme: 'grid',
-      headStyles: { fillColor: primaryColor, textColor: 255 },
-      styles: { fontSize: 10, cellPadding: 3 },
-      alternateRowStyles: { fillColor: [245, 245, 245] }
+      headStyles: { fillColor: BRAND.midGreen, textColor: BRAND.boneBg },
+      styles: { fontSize: 10, cellPadding: 3, textColor: BRAND.warmBlack },
+      alternateRowStyles: { fillColor: BRAND.boneBg }
     });
     
     // Totales
@@ -80,46 +105,30 @@ export class ComprobanteService {
     doc.text(`Subtotal:`, 130, finalY + 7);
     doc.text(`$${venta.subtotal.toFixed(2)}`, 180, finalY + 7, { align: 'right' });
     
+    let currentY = finalY + 14;
     if (venta.descuentoTotal > 0) {
-      doc.text(`Descuento:`, 130, finalY + 14);
-      doc.text(`-$${venta.descuentoTotal.toFixed(2)}`, 180, finalY + 14, { align: 'right' });
+      doc.text(`Descuento:`, 130, currentY);
+      doc.text(`-$${venta.descuentoTotal.toFixed(2)}`, 180, currentY, { align: 'right' });
+      currentY += 7;
     }
-    
-    // Asumimos IVA 0 por ahora o podemos calcular si estuviera en DTO
-    const currentY = venta.descuentoTotal > 0 ? finalY + 21 : finalY + 14;
     
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
+    doc.setTextColor(...BRAND.darkGreen);
     doc.text(`TOTAL:`, 130, currentY + 9);
     doc.text(`$${venta.total.toFixed(2)}`, 180, currentY + 9, { align: 'right' });
     
-    // Pie de página
-    doc.setFont('helvetica', 'italic');
-    doc.setFontSize(10);
-    doc.setTextColor(150, 150, 150);
-    doc.text('¡Gracias por su compra!', 105, 280, { align: 'center' });
+    this.dibujarPie(doc, '¡Gracias por su compra!');
     
     doc.save(nombreArchivo);
   }
 
   generarComprobanteCompra(orden: OrdenCompra, nombreArchivo: string = `Orden_Compra_OC${orden.id}.pdf`) {
     const doc = new jsPDF();
-    const primaryColor = [15, 23, 42]; // dark slate para compras
-    const textColor = [51, 51, 51];
-    
-    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.rect(0, 0, 210, 40, 'F');
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(22);
-    doc.setFont('helvetica', 'bold');
-    doc.text('AGROQUÍMICOS SACPA', 15, 20);
-    
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Orden de Compra', 15, 30);
-    
-    doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+
+    this.dibujarCabecera(doc, 'Orden de Compra');
+
+    doc.setTextColor(...BRAND.warmBlack);
     doc.setFontSize(11);
     
     doc.text(`Proveedor: ${orden.nombreProveedor}`, 15, 55);
@@ -151,9 +160,9 @@ export class ComprobanteService {
       body: tableRows,
       startY: 80,
       theme: 'grid',
-      headStyles: { fillColor: primaryColor, textColor: 255 },
-      styles: { fontSize: 10, cellPadding: 3 },
-      alternateRowStyles: { fillColor: [245, 245, 245] }
+      headStyles: { fillColor: BRAND.midGreen, textColor: BRAND.boneBg },
+      styles: { fontSize: 10, cellPadding: 3, textColor: BRAND.warmBlack },
+      alternateRowStyles: { fillColor: BRAND.boneBg }
     });
     
     const finalY = (doc as any).lastAutoTable.finalY + 10;
@@ -180,14 +189,12 @@ export class ComprobanteService {
     
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
+    doc.setTextColor(...BRAND.darkGreen);
     offsetY += 9;
     doc.text(`TOTAL NETO:`, 130, offsetY);
     doc.text(`$${orden.totalNeto.toFixed(2)}`, 180, offsetY, { align: 'right' });
     
-    doc.setFont('helvetica', 'italic');
-    doc.setFontSize(10);
-    doc.setTextColor(150, 150, 150);
-    doc.text('Uso interno Administrativo', 105, 280, { align: 'center' });
+    this.dibujarPie(doc, 'Uso interno administrativo');
     
     doc.save(nombreArchivo);
   }
