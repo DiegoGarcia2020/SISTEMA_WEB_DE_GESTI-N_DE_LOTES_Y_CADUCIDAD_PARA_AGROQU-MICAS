@@ -16,76 +16,34 @@
 }
 
 /* ── Cabecera Hero ── */
-.hero-card {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  background: var(--c-dark-green);
-  padding: 1.5rem;
-  border-radius: var(--radius-card); /* 0px */
-  color: var(--c-bone-bg);
+.page-header {
   margin-bottom: 1.5rem;
-  position: relative;
-  overflow: hidden;
 }
 
-@media (min-width: 768px) {
-  .hero-card {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
-}
-
-.hero-card__info {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  z-index: 1;
-}
-
-.hero-card__icon {
-  width: 3.5rem;
-  height: 3.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255,255,255,0.1);
-  color: var(--c-bone-bg);
-}
-
-.hero-card__badge {
+.page-header__badge {
   display: inline-block;
   font-size: 0.6875rem;
-  font-weight: 800;
+  font-weight: 600;
   color: var(--c-bone-bg);
   background: var(--c-mid-green);
-  padding: 0.125rem 0.5rem;
+  padding: 0.1875rem 0.5rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.625rem;
 }
 
-.hero-card__title {
+.page-header__title {
   font-family: var(--font-slab);
-  font-size: 1.375rem;
-  font-weight: 700;
-  color: var(--c-bone-bg);
-  margin: 0;
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--c-dark-green);
+  margin: 0 0 0.5rem 0;
 }
 
-.hero-card__subtitle {
-  font-size: 0.75rem;
-  color: rgba(255,255,255,0.7);
-  margin: 0.125rem 0 0 0;
-}
-
-.hero-card__actions {
-  display: flex;
-  gap: 0.75rem;
-  z-index: 1;
-  background: rgba(0,0,0,0.2);
-  padding: 0.375rem;
+.page-header__subtitle {
+  font-size: 0.875rem;
+  color: var(--c-mid-green);
+  margin: 0 0 1.5rem 0;
 }
 
 /* ── Botones ── */
@@ -125,21 +83,7 @@
   color: var(--c-dark-green);
 }
 
-.btn--tab {
-  background: transparent;
-  color: rgba(255,255,255,0.8);
-  padding: 0.5rem 1rem;
-}
 
-.btn--tab.active {
-  background: var(--c-bone-bg);
-  color: var(--c-dark-green);
-}
-
-.btn--tab:not(.active):hover {
-  color: var(--c-bone-bg);
-  background: rgba(255,255,255,0.1);
-}
 
 .btn--action-view {
   background: transparent;
@@ -257,7 +201,7 @@
 .combo-card__footer {
   padding: 1rem;
   border-top: 1px solid var(--c-sage-border);
-  background: rgba(255,255,255,0.4);
+  background: var(--c-bone-bg);
 }
 
 /* ── Tabla (Historial) ── */

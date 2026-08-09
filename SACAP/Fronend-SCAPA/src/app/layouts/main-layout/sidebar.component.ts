@@ -55,9 +55,25 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
         <!-- TÉCNICO DE CAMPO -->
         @if (isRol('tecnic') || isRol('técnic') || isRol('campo') || currentPath().includes('/campo')) {
           <div class="nav-section-title">Espacio Campo</div>
-          <a routerLink="/campo/dashboard" routerLinkActive="active" class="nav-item">
-            <lucide-icon name="activity" class="nav-item__icon"></lucide-icon>
-            <span>Registro de Uso Agronómico</span>
+          <a routerLink="/campo/combos" routerLinkActive="active" class="nav-item">
+            <lucide-icon name="zap" class="nav-item__icon"></lucide-icon>
+            <span>Combos IA</span>
+          </a>
+          <a routerLink="/admin/ventas/dashboard" routerLinkActive="active" class="nav-item">
+            <lucide-icon name="file-plus" class="nav-item__icon"></lucide-icon>
+            <span>Generar Venta / Pedido</span>
+          </a>
+          <a routerLink="/admin/ventas/sugerencias" routerLinkActive="active" class="nav-item">
+            <lucide-icon name="sparkles" class="nav-item__icon"></lucide-icon>
+            <span>Motor de Sugerencias</span>
+          </a>
+          <a routerLink="/campo/historial-ventas" routerLinkActive="active" class="nav-item">
+            <lucide-icon name="clipboard-list" class="nav-item__icon"></lucide-icon>
+            <span>Historial de Ventas</span>
+          </a>
+          <a routerLink="/campo/entregas" routerLinkActive="active" class="nav-item">
+            <lucide-icon name="truck" class="nav-item__icon"></lucide-icon>
+            <span>Historial de Entregas</span>
           </a>
         }
 

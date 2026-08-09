@@ -69,9 +69,11 @@ export const routes: Routes = [
     component: MainLayoutComponent,
     canActivate: [authGuard],
     children: [
-      { path: 'dashboard', component: CampoDashboardComponent },
+      { path: 'combos', component: CampoDashboardComponent, data: { vista: 'combos' } },
+      { path: 'historial-ventas', component: CampoDashboardComponent, data: { vista: 'historial' } },
       { path: 'entregas', component: TecnicoEntregasComponent },
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
+      { path: 'dashboard', redirectTo: 'combos', pathMatch: 'full' },
+      { path: '', redirectTo: 'combos', pathMatch: 'full' }
     ]
   },
   {

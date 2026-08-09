@@ -1,14 +1,16 @@
 /* =================================================================
    TÉCNICO DE CAMPO - ENTREGAS Y DEVOLUCIONES
+   Alineado al design system "Etiqueta de Almacén".
    ================================================================= */
 .entregas-container {
   display: flex;
   flex-direction: column;
   height: 100%;
   padding: 2rem;
-  background-color: var(--bg-app, #f8f9fa);
-  font-family: 'Inter', 'Roboto', sans-serif;
-  color: var(--text-dark, #111827);
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: var(--font-sans);
+  color: var(--c-warm-black);
 }
 
 .entregas-header {
@@ -16,14 +18,16 @@
 }
 
 .entregas-header h1 {
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-family: var(--font-slab);
+  font-size: 2rem;
+  font-weight: 600;
   margin: 0 0 0.5rem 0;
-  color: #15803d;
+  color: var(--c-dark-green);
 }
 
 .entregas-header p {
-  color: #6b7280;
+  font-size: 0.875rem;
+  color: var(--c-mid-green);
   margin: 0;
 }
 
@@ -37,11 +41,10 @@
 }
 
 .entrega-card {
-  background-color: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  background-color: var(--c-bone-bg);
+  border: 1px solid var(--c-sage-border);
+  border-radius: var(--radius-card);
   padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -51,44 +54,48 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--c-sage-border);
   padding-bottom: 0.75rem;
 }
 
 .entrega-card__title {
-  font-weight: 700;
+  font-family: var(--font-slab);
+  font-weight: 600;
   font-size: 1.125rem;
+  color: var(--c-dark-green);
   margin: 0;
 }
 
 .entrega-card__subtitle {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--c-mid-green);
   margin: 0.25rem 0 0 0;
 }
 
-/* BADGES DE ESTADO */
+/* BADGES DE ESTADO — rectos, sólidos, sin pastel */
 .badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 700;
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--radius-card);
+  font-size: 0.6875rem;
+  font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
 .badge-preparada {
-  background-color: #ffedd5;
-  color: #c2410c; /* Naranja */
+  background-color: var(--c-cacao-accent);
+  color: var(--c-bone-bg);
 }
 
 .badge-entregada {
-  background-color: #dcfce7;
-  color: #15803d; /* Verde */
+  background-color: var(--c-success);
+  color: var(--c-bone-bg);
 }
 
 .badge-devuelta {
-  background-color: #fef9c3;
-  color: #a16207; /* Amarillo */
+  background-color: var(--c-error);
+  color: var(--c-bone-bg);
 }
 
 .entrega-card__body {
@@ -104,57 +111,66 @@
 }
 
 .info-label {
-  color: #6b7280;
+  color: var(--c-mid-green);
   font-weight: 600;
 }
 
 /* BOTONES DE ACCIÓN */
 .btn {
   padding: 0.75rem 1rem;
-  border-radius: 6px;
+  border-radius: var(--radius-card);
   font-weight: 600;
+  font-size: 0.875rem;
+  font-family: inherit;
   cursor: pointer;
-  border: none;
+  border: 1px solid transparent;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  transition: opacity 0.2s;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
   width: 100%;
 }
 
-.btn:hover {
-  opacity: 0.9;
-}
-
 .btn:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
 .btn-success {
-  background-color: #15803d;
-  color: #ffffff;
+  background-color: var(--c-dark-green);
+  border-color: var(--c-dark-green);
+  color: var(--c-bone-bg);
+}
+
+.btn-success:hover:not(:disabled) {
+  background-color: var(--c-mid-green);
+  border-color: var(--c-mid-green);
 }
 
 .btn-warning {
-  background-color: #ffffff;
-  border: 1px solid #f59e0b;
-  color: #d97706;
+  background-color: transparent;
+  border-color: var(--c-cacao-accent);
+  color: var(--c-cacao-accent);
+}
+
+.btn-warning:hover:not(:disabled) {
+  background-color: var(--c-cacao-accent);
+  color: var(--c-bone-bg);
 }
 
 .empty-state {
   grid-column: 1 / -1;
   text-align: center;
-  padding: 4rem;
-  background-color: #ffffff;
-  border: 1px dashed #d1d5db;
-  border-radius: 12px;
-  color: #6b7280;
+  padding: 3rem 2rem;
+  border: 1px solid var(--c-sage-border);
+  border-radius: var(--radius-card);
+  color: var(--c-mid-green);
+  font-size: 0.875rem;
 }
 
 /* =================================================================
-   MODAL DE DEVOLUCIÓN (CSS PURO)
+   MODAL DE DEVOLUCIÓN
    ================================================================= */
 .modal-overlay {
   position: fixed;
@@ -162,7 +178,7 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(18, 38, 29, 0.55);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -170,21 +186,23 @@
 }
 
 .modal-content {
-  background-color: #ffffff;
-  border-radius: 12px;
+  background-color: var(--c-bone-bg);
+  border: 1px solid var(--c-sage-border);
+  border-radius: var(--radius-card);
   padding: 2rem;
   width: 90%;
   max-width: 450px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
 .modal-content h2 {
+  font-family: var(--font-slab);
   margin: 0;
   font-size: 1.25rem;
-  color: #111827;
+  font-weight: 600;
+  color: var(--c-dark-green);
 }
 
 .form-group {
@@ -194,21 +212,26 @@
 }
 
 .form-group label {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--c-mid-green);
 }
 
 .form-control {
   padding: 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
+  border: 1px solid var(--c-sage-border);
+  border-radius: var(--radius-card);
   font-size: 0.875rem;
+  font-family: inherit;
+  color: var(--c-warm-black);
+  background-color: var(--c-bone-bg);
   outline: none;
 }
 
 .form-control:focus {
-  border-color: #15803d;
+  border-color: var(--c-dark-green);
 }
 
 .modal-actions {
@@ -220,18 +243,24 @@
 
 .btn-ghost {
   background-color: transparent;
-  color: #6b7280;
-  border: 1px solid transparent;
+  color: var(--c-mid-green);
+  border-color: var(--c-sage-border);
   width: auto;
 }
 
 .btn-ghost:hover {
-  background-color: #f3f4f6;
-  color: #374151;
+  border-color: var(--c-dark-green);
+  color: var(--c-dark-green);
 }
 
 .btn-primary {
-  background-color: #15803d;
-  color: #ffffff;
+  background-color: var(--c-cacao-accent);
+  border-color: var(--c-cacao-accent);
+  color: var(--c-warm-black);
   width: auto;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--c-cacao-hover, #73361F);
+  color: var(--c-bone-bg);
 }

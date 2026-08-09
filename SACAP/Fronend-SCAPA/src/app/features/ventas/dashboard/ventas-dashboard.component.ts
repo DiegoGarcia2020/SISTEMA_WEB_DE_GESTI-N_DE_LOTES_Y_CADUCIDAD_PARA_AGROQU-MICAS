@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { LucideAngularModule } from 'lucide-angular';
 import { VentasService } from '../../../core/services/ventas.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { CarritoService } from '../../../core/services/carrito.service';
@@ -9,7 +10,7 @@ import { VentaDashboardDTO } from '../../../core/models/ventas.model';
 @Component({
   selector: 'app-ventas-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, LucideAngularModule],
   templateUrl: './ventas-dashboard.component.html',
   styleUrl: './ventas-dashboard.component.css'
 })

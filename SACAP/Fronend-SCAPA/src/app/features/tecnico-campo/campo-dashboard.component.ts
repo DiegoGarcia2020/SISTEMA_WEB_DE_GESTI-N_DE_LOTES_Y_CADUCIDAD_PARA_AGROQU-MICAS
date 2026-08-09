@@ -6,7 +6,7 @@ import { VentasService } from '../../core/services/ventas.service';
 import { CarritoService } from '../../core/services/carrito.service';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { AuthService } from '../../core/services/auth.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-campo-dashboard',
@@ -15,37 +15,17 @@ import { Router } from '@angular/router';
   styleUrls: ['./campo-dashboard.component.css'],
   template: `
     <div class="dashboard-container">
-      <!-- Cabecera Hero -->
-      <div class="hero-card">
-        <div class="hero-card__info">
-          <div class="hero-card__icon">
-            <lucide-icon name="user-check"></lucide-icon>
-          </div>
-          <div>
-            <span class="hero-card__badge">Rol: Técnico-Comercial</span>
-            <h1 class="hero-card__title">Gestión Agronómica & Ventas en Campo</h1>
-            <p class="hero-card__subtitle">Técnico asignado: {{ authService.currentUser()?.correo || 'tecnico@agrosense.ec' }}</p>
-          </div>
-        </div>
-        <div class="hero-card__actions">
-          <button (click)="activeTab.set('combos')" 
-                  [class.active]="activeTab() === 'combos'"
-                  class="btn--tab">
-            <lucide-icon name="zap" class="w-4 h-4"></lucide-icon>
-            <span>Combos IA</span>
-          </button>
-          <button (click)="router.navigate(['/admin/ventas/dashboard'])" 
-                  class="btn--tab">
-            <lucide-icon name="file-plus" class="w-4 h-4"></lucide-icon>
-            <span>Generar Venta / Pedido</span>
-          </button>
-          <button (click)="activeTab.set('historial')" 
-                  [class.active]="activeTab() === 'historial'"
-                  class="btn--tab">
-            <lucide-icon name="clipboard-list" class="w-4 h-4"></lucide-icon>
-            <span>Historial de Ventas</span>
-          </button>
-        </div>
+      <!-- Cabecera -->
+      <div class="page-header">
+        <span class="page-header__badge">Rol: Técnico-Comercial</span>
+        <h1 class="page-header__title">
+          {{ activeTab() === 'combos' ? 'Combos IA' : 'Historial de Ventas' }}
+        </h1>
+        <p class="page-header__subtitle">
+          {{ activeTab() === 'combos'
+              ? 'Promociones estratégicas generadas para empujar lotes próximos a vencer.'
+              : 'Ventas registradas y confirmadas en su cuenta de técnico.' }}
+        </p>
       </div>
 
       <!-- TAB 1: CATÁLOGO Y COMBOS IA -->
@@ -54,7 +34,6 @@ import { Router } from '@angular/router';
           <div class="section-banner">
             <div>
               <h3 class="section-banner__title">Recomendaciones de Venta Inteligente (IA AgroSense)</h3>
-              <p class="section-banner__desc">Promociones estratégicas generadas para empujar lotes próximos a vencer.</p>
             </div>
             <span class="badge badge--pendiente">
               {{ combosActivos().length }} Promociones Activas para Hoy
@@ -111,14 +90,8 @@ import { Router } from '@angular/router';
       @if (activeTab() === 'historial') {
         <div class="table-card">
           <div class="table-card__header">
-            <div>
-              <h3 class="table-card__title">
-                <lucide-icon name="history" class="w-5 h-5"></lucide-icon>
-                <span>Historial de Ventas</span>
-              </h3>
-              <p class="table-card__desc">Ventas registradas y confirmadas en su cuenta de técnico</p>
-            </div>
-            <button (click)="cargarVentas()" class="btn btn--ghost">
+            <div></div>
+            <button (click)="cargarVentas()" class="btn btn--ghost" title="Recargar">
               <lucide-icon name="refresh-cw" class="w-4 h-4"></lucide-icon>
             </button>
           </div>
@@ -184,8 +157,10 @@ export class CampoDashboardComponent implements OnInit {
   private ventasService = inject(VentasService);
   private toast = inject(ToastService);
   private carrito = inject(CarritoService);
+  private route = inject(ActivatedRoute);
   router = inject(Router);
 
+  /** La vista activa ahora viene de la ruta (cada opción es un ítem del menú lateral). */
   activeTab = signal<'combos' | 'historial'>('combos');
 
   combosActivos = signal<any[]>([]);
@@ -193,6 +168,10 @@ export class CampoDashboardComponent implements OnInit {
   ventas = signal<any[]>([]);
 
   ngOnInit(): void {
+    const vista = this.route.snapshot.data['vista'] as 'combos' | 'historial' | undefined;
+    if (vista) {
+      this.activeTab.set(vista);
+    }
     this.cargarCombos();
     this.cargarLotes();
     this.cargarVentas();

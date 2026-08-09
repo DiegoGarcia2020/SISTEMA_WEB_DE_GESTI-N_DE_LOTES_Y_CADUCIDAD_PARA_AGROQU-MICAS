@@ -2,7 +2,7 @@
 
   <div class="vt-hero">
     <div class="vt-hero-text">
-      <p class="vt-greeting">{{ horaDelDia }}, <strong>{{ nombreUsuario }}</strong> 👋</p>
+      <p class="vt-greeting">{{ horaDelDia }}, <strong>{{ nombreUsuario }}</strong></p>
       <h1 class="vt-hero-title">Panel del Técnico de Campo</h1>
       <p class="vt-hero-sub">Temporadas activas, promociones vigentes y tus ventas de hoy</p>
     </div>
@@ -21,19 +21,19 @@
 
     <div class="vt-stats-grid">
       <div class="vt-stat-card vt-stat--ventas">
-        <div class="vt-stat-icon">🛒</div>
+        <div class="vt-stat-icon"><lucide-icon name="shopping-cart"></lucide-icon></div>
         <div><span class="vt-stat-num">{{ dashboard()?.ventasHoyCantidad ?? 0 }}</span><span class="vt-stat-label">Ventas Hoy</span></div>
       </div>
       <div class="vt-stat-card vt-stat--total">
-        <div class="vt-stat-icon">💵</div>
+        <div class="vt-stat-icon"><lucide-icon name="dollar-sign"></lucide-icon></div>
         <div><span class="vt-stat-num">${{ (dashboard()?.ventasHoyTotal ?? 0).toFixed(2) }}</span><span class="vt-stat-label">Total Vendido Hoy</span></div>
       </div>
       <div class="vt-stat-card vt-stat--temporadas">
-        <div class="vt-stat-icon">🌱</div>
+        <div class="vt-stat-icon"><lucide-icon name="sprout"></lucide-icon></div>
         <div><span class="vt-stat-num">{{ dashboard()?.temporadasActivas?.length ?? 0 }}</span><span class="vt-stat-label">Temporadas Activas</span></div>
       </div>
       <div class="vt-stat-card vt-stat--promos">
-        <div class="vt-stat-icon">🏷️</div>
+        <div class="vt-stat-icon"><lucide-icon name="tag"></lucide-icon></div>
         <div><span class="vt-stat-num">{{ dashboard()?.promocionesActivas?.length ?? 0 }}</span><span class="vt-stat-label">Promociones Activas</span></div>
       </div>
     </div>
@@ -41,7 +41,7 @@
     <div class="vt-content-grid">
 
       <div class="vt-section">
-        <h2 class="vt-section-title">🌱 Temporadas Agrícolas Activas</h2>
+        <h2 class="vt-section-title">Temporadas Agrícolas Activas</h2>
         @if (!dashboard()?.temporadasActivas?.length) {
           <p class="vt-empty-text">No hay temporadas activas en este momento.</p>
         } @else {
@@ -60,7 +60,7 @@
       </div>
 
       <div class="vt-section">
-        <h2 class="vt-section-title">🏷️ Promociones Vigentes Hoy</h2>
+        <h2 class="vt-section-title">Promociones Vigentes Hoy</h2>
         @if (!dashboard()?.promocionesActivas?.length) {
           <p class="vt-empty-text">No hay promociones activas todavía.</p>
         } @else {
