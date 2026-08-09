@@ -42,4 +42,5 @@ public class Cliente {
     @JsonIgnore
     private Usuario tecnicoAsignado;
 
+
 }
