@@ -6,6 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.uteq.sacpa.dto.catalogos.CatalogoRequestDTO;
 import org.uteq.sacpa.entity.catalogos.*;
+import org.uteq.sacpa.entity.entidades.Empresa;
+import org.uteq.sacpa.entity.geografia.Ciudad;
 import org.uteq.sacpa.service.catalogos.ICatalogoService;
 
 import java.util.List;
@@ -79,6 +81,18 @@ public class CatalogoController {
             ));
         }
         return ResponseEntity.ok(unificado);
+    }
+
+    // Empresas
+    @GetMapping("/empresas")
+    public ResponseEntity<List<Empresa>> listarEmpresas() {
+        return ResponseEntity.ok(catalogoService.listarEmpresas());
+    }
+
+    // Ciudades
+    @GetMapping("/ciudades")
+    public ResponseEntity<List<Ciudad>> listarCiudades() {
+        return ResponseEntity.ok(catalogoService.listarCiudades());
     }
 
     // Estado General

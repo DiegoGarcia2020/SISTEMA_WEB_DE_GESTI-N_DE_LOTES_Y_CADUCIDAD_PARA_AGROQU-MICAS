@@ -4,7 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.uteq.sacpa.dto.catalogos.CatalogoRequestDTO;
 import org.uteq.sacpa.entity.catalogos.*;
+import org.uteq.sacpa.entity.entidades.Empresa;
+import org.uteq.sacpa.entity.geografia.Ciudad;
 import org.uteq.sacpa.repository.catalogos.*;
+import org.uteq.sacpa.repository.entidades.IEmpresaRepository;
+import org.uteq.sacpa.repository.geografia.ICiudadRepository;
 import org.uteq.sacpa.service.catalogos.ICatalogoService;
 
 import java.util.List;
@@ -22,6 +26,20 @@ public class CatalogoServiceImpl implements ICatalogoService {
     private ICatNivelAlertaRepository nivelAlertaRepo;
     @Autowired
     private ICatTipoMovimientoRepository tipoMovimientoRepo;
+    @Autowired
+    private IEmpresaRepository empresaRepo;
+    @Autowired
+    private ICiudadRepository ciudadRepo;
+
+    @Override
+    public List<Empresa> listarEmpresas() {
+        return empresaRepo.findAll();
+    }
+
+    @Override
+    public List<Ciudad> listarCiudades() {
+        return ciudadRepo.findAll();
+    }
 
     @Override
     public List<CatEstadoGeneral> listarEstadosGenerales() {

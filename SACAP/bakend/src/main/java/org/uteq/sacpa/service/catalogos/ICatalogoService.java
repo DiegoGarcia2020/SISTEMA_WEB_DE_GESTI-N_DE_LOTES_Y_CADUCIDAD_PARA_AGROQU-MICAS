@@ -2,10 +2,18 @@ package org.uteq.sacpa.service.catalogos;
 
 import org.uteq.sacpa.dto.catalogos.CatalogoRequestDTO;
 import org.uteq.sacpa.entity.catalogos.*;
+import org.uteq.sacpa.entity.entidades.Empresa;
+import org.uteq.sacpa.entity.geografia.Ciudad;
 
 import java.util.List;
 
 public interface ICatalogoService {
+
+    // Empresas
+    List<Empresa> listarEmpresas();
+
+    // Ciudades
+    List<Ciudad> listarCiudades();
 
     // Estado General
     List<CatEstadoGeneral> listarEstadosGenerales();

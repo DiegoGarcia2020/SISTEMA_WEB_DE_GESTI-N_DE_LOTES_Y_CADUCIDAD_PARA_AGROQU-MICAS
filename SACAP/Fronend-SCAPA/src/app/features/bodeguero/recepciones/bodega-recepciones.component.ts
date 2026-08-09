@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { environment } from '../../../../environments/environment';
@@ -25,6 +26,7 @@ export interface OrdenCompraListDTO {
 export class BodegaRecepcionesComponent implements OnInit {
   private http = inject(HttpClient);
   private toast = inject(ToastService);
+  private router = inject(Router);
 
   ordenesHoy = signal<OrdenCompraListDTO[]>([]);
   isLoading = signal<boolean>(false);
@@ -44,7 +46,7 @@ export class BodegaRecepcionesComponent implements OnInit {
     this.isLoading.set(true);
     const hoy = new Date().toISOString().substring(0, 10);
     // Filtrar estado=PENDIENTE y desde=HOY, hasta=HOY
-    this.http.get<OrdenCompraListDTO[]>(`${environment.apiUrl}/api/ordenes-compra?estado=PENDIENTE&desde=${hoy}&hasta=${hoy}`)
+    this.http.get<OrdenCompraListDTO[]>(`${environment.apiUrl}/ordenes-compra?estado=PENDIENTE&desde=${hoy}&hasta=${hoy}`)
       .subscribe({
         next: (data) => {
           this.ordenesHoy.set(data);
@@ -61,6 +63,10 @@ export class BodegaRecepcionesComponent implements OnInit {
     return this.processingIds().has(id);
   }
 
+  recepcionarMercancia(idOrden: number) {
+    this.router.navigate(['/bodega/recepcion', idOrden]);
+  }
+
   setProcessing(id: number, status: boolean) {
     const newSet = new Set(this.processingIds());
     if (status) newSet.add(id);
@@ -70,7 +76,7 @@ export class BodegaRecepcionesComponent implements OnInit {
 
   registrarLlegada(idOrden: number) {
     this.setProcessing(idOrden, true);
-    this.http.put(`${environment.apiUrl}/api/ordenes-compra/${idOrden}/llegada-tiempo`, {})
+    this.http.put(`${environment.apiUrl}/ordenes-compra/${idOrden}/llegada-tiempo`, {})
       .subscribe({
         next: (res: any) => {
           this.toast.success('Llegada Registrada', res.mensaje);
@@ -103,7 +109,7 @@ export class BodegaRecepcionesComponent implements OnInit {
     this.isProcessingModal.set(true);
     const payload = { motivo: this.motivoCtrl.value };
 
-    this.http.put(`${environment.apiUrl}/api/ordenes-compra/${id}/reportar-retraso`, payload)
+    this.http.put(`${environment.apiUrl}/ordenes-compra/${id}/reportar-retraso`, payload)
       .subscribe({
         next: (res: any) => {
           this.toast.success('Retraso Reportado', res.mensaje);

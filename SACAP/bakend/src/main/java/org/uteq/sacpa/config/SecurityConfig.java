@@ -111,6 +111,10 @@ public class SecurityConfig {
                 // WebSocket alertas en tiempo real
                 .requestMatchers("/ws-sacpa/**").permitAll()
 
+                // Lectura de catálogos de apoyo (empresas, ciudades) para el formulario de Proveedor — también SUPERVISOR
+                .requestMatchers(HttpMethod.GET, "/api/catalogos/empresas", "/api/catalogos/ciudades")
+                    .hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR")
+
                 // Solo ADMINISTRADOR
                 .requestMatchers(
                     "/api/auth/**",

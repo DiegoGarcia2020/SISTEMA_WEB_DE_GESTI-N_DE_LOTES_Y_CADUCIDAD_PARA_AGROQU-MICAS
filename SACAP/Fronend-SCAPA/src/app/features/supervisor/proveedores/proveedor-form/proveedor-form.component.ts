@@ -63,17 +63,17 @@ export class ProveedorFormComponent implements OnInit {
 
   cargarCatalogos() {
     // Mock endpoints for now, assuming these exist or will be created
-    this.http.get<any[]>(`${environment.apiUrl}/api/catalogos/empresas`).subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/catalogos/empresas`).subscribe({
       next: (res) => this.empresas.set(res),
       error: () => this.empresas.set([{ idEmpresa: 1, nombre: 'Empresa Matriz' }]) // Mock fallback
     });
-    
-    this.http.get<any[]>(`${environment.apiUrl}/api/catalogos/ciudades`).subscribe({
+
+    this.http.get<any[]>(`${environment.apiUrl}/catalogos/ciudades`).subscribe({
       next: (res) => this.ciudades.set(res),
       error: () => this.ciudades.set([{ idCiudad: 1, nombre: 'Quevedo' }]) // Mock fallback
     });
 
-    this.http.get<any[]>(`${environment.apiUrl}/api/productos`).subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/productos`).subscribe({
       next: (res) => this.productosMaestros.set(res),
       error: () => this.productosMaestros.set([
         { idProducto: 1, nombre: 'Urea 46%' },

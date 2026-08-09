@@ -147,6 +147,15 @@
   background-color: rgba(185, 62, 62, 0.1);
 }
 
+.btn--primary {
+  background-color: var(--c-cacao-accent);
+  color: var(--c-bone-bg);
+}
+
+.btn--primary:hover {
+  background-color: var(--c-dark-green);
+}
+
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;

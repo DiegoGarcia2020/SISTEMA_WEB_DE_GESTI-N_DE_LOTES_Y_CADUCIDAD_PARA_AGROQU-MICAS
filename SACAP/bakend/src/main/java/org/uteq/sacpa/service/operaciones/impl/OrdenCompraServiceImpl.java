@@ -42,8 +42,9 @@ import java.util.stream.Collectors;
 @Service
 public class OrdenCompraServiceImpl implements IOrdenCompraService {
 
-    /** Estado para lotes recién ingresados sin ubicación física. Ajustar según catálogo existente */
-    private static final Integer ESTADO_LOTE_FLOTANTE = 5;
+    /** Estado para lotes recién ingresados sin ubicación física (EN_REVISION / FLOTANTE).
+     *  Mismo id que usan LoteServiceImpl.ID_ESTADO_EN_REVISION y SupervisorServiceImpl.ID_ESTADO_EN_REVISION. */
+    private static final Integer ESTADO_LOTE_FLOTANTE = 2;
 
     @Autowired
     private IOrdenCompraRepository ordenCompraRepository;

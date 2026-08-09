@@ -267,6 +267,7 @@ export class ComprasRecepcionComponent implements OnInit {
     const idOrden = this.orden()!.id;
 
     const payload = {
+      idOrdenCompra: idOrden,
       lotes: formValue.lotes.map((l: any) => ({
         idDetalleCompra: l.idDetalleCompra,
         numeroLote: l.numeroLote,
