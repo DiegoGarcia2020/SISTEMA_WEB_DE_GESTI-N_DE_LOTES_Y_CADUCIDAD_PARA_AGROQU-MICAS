@@ -1,0 +1,16 @@
+diff a/SACAP/Fronend-SCAPA/src/app/core/models/compras.model.ts b/SACAP/Fronend-SCAPA/src/app/core/models/compras.model.ts	(rejected hunks)
+@@ -86,3 +86,14 @@ export interface ProductoSimple {
+   unidadMedida: string;
+   precio: number;
+ }
++
++/** Refleja ProveedorProductoDTO del backend: catálogo asociado a UN proveedor específico. */
++export interface ProductoDeProveedor {
++  idProveedorProducto: number;
++  idProveedor: number;
++  idProducto: number;
++  precioReferencial: number | null;
++  codigoProductoProveedor: string | null;
++  nombreProducto: string;
++  unidadMedida: string;
++}

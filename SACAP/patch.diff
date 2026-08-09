@@ -1,0 +1,445 @@
+diff --git a/SACAP/Fronend-SCAPA/src/app/core/models/compras.model.ts b/SACAP/Fronend-SCAPA/src/app/core/models/compras.model.ts
+index 7178a17..c52f7c5 100644
+--- a/SACAP/Fronend-SCAPA/src/app/core/models/compras.model.ts
++++ b/SACAP/Fronend-SCAPA/src/app/core/models/compras.model.ts
+@@ -86,3 +86,14 @@ export interface ProductoSimple {
+   unidadMedida: string;
+   precio: number;
+ }
++
++/** Refleja ProveedorProductoDTO del backend: catálogo asociado a UN proveedor específico. */
++export interface ProductoDeProveedor {
++  idProveedorProducto: number;
++  idProveedor: number;
++  idProducto: number;
++  precioReferencial: number | null;
++  codigoProductoProveedor: string | null;
++  nombreProducto: string;
++  unidadMedida: string;
++}
+diff --git a/SACAP/Fronend-SCAPA/src/app/features/bodega/supervisor-dashboard/supervisor-dashboard.component.css b/SACAP/Fronend-SCAPA/src/app/features/bodega/supervisor-dashboard/supervisor-dashboard.component.css
+index 1609872..c559b8f 100644
+--- a/SACAP/Fronend-SCAPA/src/app/features/bodega/supervisor-dashboard/supervisor-dashboard.component.css
++++ b/SACAP/Fronend-SCAPA/src/app/features/bodega/supervisor-dashboard/supervisor-dashboard.component.css
+@@ -13,42 +13,53 @@
+ }
+ 
+ /* ── Hero ────────────────────────────────────────────── */
+-.sd-hero {
++.sd-page-header {
+   display: flex; align-items: center; justify-content: space-between;
+-  background: linear-gradient(135deg, #0B4628 0%, #166534 50%, #15803d 100%);
+-  border-radius: 20px; padding: 2rem 2.5rem;
+-  margin-bottom: 1.75rem; color: #fff;
+-  box-shadow: 0 8px 32px rgba(11,70,40,.35);
+   gap: 1.5rem; flex-wrap: wrap;
+-  position: relative; overflow: hidden;
++  margin-bottom: 2rem;
+ }
+-.sd-hero::before {
+-  content: '';
+-  position: absolute; top: -60px; right: -60px;
+-  width: 200px; height: 200px; border-radius: 50%;
+-  background: rgba(255,255,255,.06);
++.sd-greeting {
++  font-size: .75rem; margin: 0 0 .5rem;
++  text-transform: uppercase; letter-spacing: .08em;
++  color: var(--c-mid-green, #2F5D45);
++}
++.sd-greeting strong { color: var(--c-cacao-accent, #C77F3D); font-weight: 600; }
++.sd-page-title {
++  font-family: 'Fraunces', serif;
++  font-size: 2rem; font-weight: 600;
++  color: var(--c-dark-green, #12261D);
++  margin: 0 0 .5rem 0;
++}
++.sd-page-subtitle {
++  margin: 0; font-size: .875rem;
++  color: var(--c-text-muted, #666);
+ }
+-.sd-greeting { font-size: .875rem; color: rgba(255,255,255,.75); margin: 0 0 .35rem; font-weight: 500; }
+-.sd-greeting strong { color: #86efac; }
+-.sd-hero-title { font-size: 1.8rem; font-weight: 800; margin: 0 0 .35rem; letter-spacing: -.03em; }
+-.sd-hero-sub { margin: 0; font-size: .875rem; color: rgba(255,255,255,.65); }
+ 
+ .sd-cta-btn {
+   display: inline-flex; align-items: center; gap: .5rem;
+-  background: rgba(255,255,255,.15); backdrop-filter: blur(10px);
+-  border: 1.5px solid rgba(255,255,255,.3);
+-  color: #fff; border-radius: 12px;
+-  padding: .75rem 1.5rem; font-size: .875rem; font-weight: 700;
+-  cursor: pointer; transition: all .2s; font-family: inherit;
+-  white-space: nowrap; z-index: 1;
++  background: var(--c-cacao-accent, #C77F3D);
++  border: 1px solid var(--c-cacao-accent, #C77F3D);
++  color: var(--c-warm-black, #1A1A16);
++  border-radius: var(--radius-card, 0);
++  padding: .75rem 1.5rem; font-size: .875rem; font-weight: 600;
++  cursor: pointer; transition: background-color .2s; font-family: inherit;
++  white-space: nowrap;
+ }
+-.sd-cta-btn:hover:not(:disabled) { background: rgba(255,255,255,.25); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.2); }
+-.sd-cta-btn:disabled { opacity: .5; cursor: not-allowed; }
++.sd-cta-btn:hover:not(:disabled) { background: var(--c-cacao-hover, #73361F); }
++.sd-cta-btn:disabled { opacity: .45; cursor: not-allowed; }
+ 
+ /* ── Sections & titles ───────────────────────────────── */
+ .sd-section-title-row { margin-bottom: .85rem; }
+-.sd-section-title { font-size: 1rem; font-weight: 700; color: #0f172a; margin: 0; }
+-.sd-section-title-inline { font-size: 1rem; font-weight: 700; color: #0f172a; margin: 0; }
++.sd-section-title {
++  font-family: 'Fraunces', serif;
++  font-size: 1.125rem; font-weight: 600;
++  color: var(--c-dark-green, #12261D); margin: 0;
++}
++.sd-section-title-inline {
++  font-family: 'Fraunces', serif;
++  font-size: 1.125rem; font-weight: 600;
++  color: var(--c-dark-green, #12261D); margin: 0;
++}
+ 
+ /* ── Bodegas grid ─────────────────────────────────────── */
+ .sd-bodegas-grid {
+@@ -80,9 +91,13 @@
+ @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+ 
+ /* ── Empty state ──────────────────────────────────────── */
+-.sd-empty { text-align: center; padding: 2rem 1rem; }
+-.sd-empty-title { font-size: .95rem; font-weight: 700; color: #334155; margin: 0 0 .3rem; }
+-.sd-empty-sub { font-size: .82rem; color: #94a3b8; margin: 0 0 1rem; }
++.sd-empty {
++  text-align: center; padding: 2.5rem 1rem;
++  border: 1px solid var(--c-sage-border, #8FAE9B);
++  border-radius: var(--radius-card, 0);
++}
++.sd-empty-title { font-size: .95rem; font-weight: 600; color: var(--c-dark-green, #12261D); margin: 0 0 .35rem; }
++.sd-empty-sub { font-size: .82rem; color: var(--c-text-muted, #666); margin: 0 0 1rem; }
+ 
+ /* ── Stats grid ───────────────────────────────────────── */
+ .sd-stats-grid {
+diff --git a/SACAP/Fronend-SCAPA/src/app/features/bodega/supervisor-dashboard/supervisor-dashboard.component.html b/SACAP/Fronend-SCAPA/src/app/features/bodega/supervisor-dashboard/supervisor-dashboard.component.html
+index b74df0a..77f444b 100644
+--- a/SACAP/Fronend-SCAPA/src/app/features/bodega/supervisor-dashboard/supervisor-dashboard.component.html
++++ b/SACAP/Fronend-SCAPA/src/app/features/bodega/supervisor-dashboard/supervisor-dashboard.component.html
+@@ -1,11 +1,11 @@
+ <div class="sd-bg">
+ 
+-  <!-- ── Hero ─────────────────────────────────── -->
+-  <div class="sd-hero">
+-    <div class="sd-hero-text">
+-      <p class="sd-greeting">{{ horaDelDia }}, <strong>{{ nombreUsuario }}</strong> 👋</p>
+-      <h1 class="sd-hero-title">Dashboard del Supervisor</h1>
+-      <p class="sd-hero-sub">Gestione sus bodegas, cree lotes y organícelos por categoría</p>
++  <!-- ── Encabezado ───────────────────────────── -->
++  <div class="sd-page-header">
++    <div>
++      <p class="sd-greeting">{{ horaDelDia }}, <strong>{{ nombreUsuario }}</strong></p>
++      <h1 class="sd-page-title">Dashboard del Supervisor</h1>
++      <p class="sd-page-subtitle">Gestione sus bodegas, cree lotes y organícelos por categoría.</p>
+     </div>
+     <button class="sd-cta-btn" [disabled]="!bodegaSeleccionada()" (click)="abrirModal()">
+       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+diff --git a/SACAP/Fronend-SCAPA/src/app/features/supervisor/compras-crear/compras-crear.component.ts b/SACAP/Fronend-SCAPA/src/app/features/supervisor/compras-crear/compras-crear.component.ts
+index ec16be8..add3e31 100644
+--- a/SACAP/Fronend-SCAPA/src/app/features/supervisor/compras-crear/compras-crear.component.ts
++++ b/SACAP/Fronend-SCAPA/src/app/features/supervisor/compras-crear/compras-crear.component.ts
+@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
+ import { LucideAngularModule } from 'lucide-angular';
+ import { OperacionesService } from '../../../core/services/operaciones.service';
+ import { ToastService } from '../../../shared/components/toast/toast.service';
+-import { ProductoSimple, ProveedorSimple } from '../../../core/models/compras.model';
++import { ProductoDeProveedor, ProveedorSimple } from '../../../core/models/compras.model';
+ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+ 
+ @Component({
+@@ -93,15 +93,23 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+               <p class="section-card__subtitle">Agregue los ítems comprados y las bonificaciones (regalos)</p>
+             </div>
+             <div class="detalles-actions">
+-               <button type="button" class="btn btn--gift btn--sm" (click)="agregarRegalo()">
++               <button type="button" class="btn btn--gift btn--sm" (click)="agregarRegalo()"
++                       [disabled]="!ordenForm.get('idProveedor')?.value" title="Seleccione un proveedor primero">
+                 <lucide-icon name="gift" class="w-3.5 h-3.5"></lucide-icon> Añadir Regalo
+               </button>
+-              <button type="button" class="btn btn--outline btn--sm" (click)="agregarDetalle()">
++              <button type="button" class="btn btn--outline btn--sm" (click)="agregarDetalle()"
++                      [disabled]="!ordenForm.get('idProveedor')?.value" title="Seleccione un proveedor primero">
+                 <lucide-icon name="plus" class="w-3.5 h-3.5"></lucide-icon> Añadir Producto
+               </button>
+             </div>
+           </div>
+-          
++
++          @if (!ordenForm.get('idProveedor')?.value) {
++            <p style="padding: 0 1.5rem 1rem; color: var(--gray-400); font-size: 0.875rem;">
++              Seleccione un proveedor para ver los productos de su catálogo.
++            </p>
++          }
++
+           <div class="detalles-table-wrapper" formArrayName="detalles">
+             <table class="detalles-table">
+               <thead>
+@@ -120,8 +128,8 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+                     <td>
+                       <select class="detalles-table__input" formControlName="idProducto" (change)="onProductoSeleccionado(i)">
+                         <option [ngValue]="null" disabled>Seleccione producto...</option>
+-                        @for (prod of productos; track prod.idProducto) {
+-                          <option [ngValue]="prod.idProducto">{{ prod.nombre }}</option>
++                        @for (prod of productosProveedor; track prod.idProducto) {
++                          <option [ngValue]="prod.idProducto">{{ prod.nombreProducto }}</option>
+                         }
+                       </select>
+                       @if (detalle.get('esBonificacion')?.value) {
+@@ -244,7 +252,7 @@ export class ComprasCrearComponent implements OnInit {
+ 
+   ordenForm!: FormGroup;
+   proveedores: ProveedorSimple[] = [];
+-  productos: ProductoSimple[] = [];
++  productosProveedor: ProductoDeProveedor[] = [];
+ 
+   totalesCalculados = {
+     subtotalBruto: 0,
+@@ -258,6 +266,30 @@ export class ComprasCrearComponent implements OnInit {
+     this.inicializarFormulario();
+     this.cargarDatosMaestros();
+     this.suscribirseACambios();
++    this.suscribirseACambioProveedor();
++  }
++
++  /** Al cambiar el proveedor, se descarta el detalle previo (pertenecía a otro catálogo) y se recarga. */
++  private suscribirseACambioProveedor(): void {
++    this.ordenForm.get('idProveedor')?.valueChanges.subscribe((idProveedor: number | null) => {
++      if (this.detallesFormArray.length > 0) {
++        this.detallesFormArray.clear();
++        this.toast.info('Proveedor cambiado', 'Se limpiaron los productos agregados; elija del nuevo catálogo.');
++      }
++      this.cargarProductosDelProveedor(idProveedor);
++    });
++  }
++
++  private cargarProductosDelProveedor(idProveedor: number | null): void {
++    this.productosProveedor = [];
++    if (!idProveedor) return;
++
++    this.operacionesService['http'].get<ProductoDeProveedor[]>(
++      `${this.operacionesService['apiUrl']}/proveedores/${idProveedor}/productos`
++    ).subscribe({
++      next: (data) => this.productosProveedor = data,
++      error: () => this.toast.error('Error', 'No se pudo cargar el catálogo de productos de este proveedor.')
++    });
+   }
+ 
+   private inicializarFormulario(): void {
+@@ -297,27 +329,11 @@ export class ComprasCrearComponent implements OnInit {
+   }
+ 
+   private cargarDatosMaestros(): void {
+-    // Proveedores (usando fallback si falla)
++    // El catálogo de productos ya NO se carga aquí de forma global:
++    // depende del proveedor seleccionado (ver cargarProductosDelProveedor).
+     this.operacionesService['http'].get<any[]>(`${this.operacionesService['apiUrl']}/proveedores`).subscribe({
+       next: (data) => this.proveedores = data,
+-      error: () => {
+-        this.proveedores = [
+-          { idProveedor: 1, nombre: 'Agroquímicos del Pacífico', ruc: '0991234567001' },
+-          { idProveedor: 2, nombre: 'Bayer CropScience', ruc: '1791234567001' }
+-        ];
+-      }
+-    });
+-
+-    // Productos (usando fallback si falla)
+-    this.operacionesService['http'].get<any[]>(`${this.operacionesService['apiUrl']}/productos`).subscribe({
+-      next: (data) => this.productos = data,
+-      error: () => {
+-        this.productos = [
+-          { idProducto: 1, nombre: 'Fertilizante Urea Agrícola 46% N', unidadMedida: 'Sacos', precio: 35.00 },
+-          { idProducto: 2, nombre: 'Fungicida Carbendazim 500 SC', unidadMedida: 'Litros', precio: 18.50 },
+-          { idProducto: 3, nombre: 'Insecticida Cipermetrina 20 EC', unidadMedida: 'Litros', precio: 12.00 }
+-        ];
+-      }
++      error: () => this.toast.error('Error', 'No se pudo cargar la lista de proveedores.')
+     });
+   }
+ 
+@@ -338,10 +354,10 @@ export class ComprasCrearComponent implements OnInit {
+             this.toast.info('Precio recuperado', `Se aplicó el último precio pagado: $${response.precioUnitario}`);
+             this.recalcularTotales(); // Forzar recálculo
+           } else {
+-            // Si no hay compras previas, usar el precio de catálogo como sugerencia
+-            const productoCatalogo = this.productos.find(p => p.idProducto === idProducto);
+-            if (productoCatalogo) {
+-              detalleControl.patchValue({ precioUnitario: productoCatalogo.precio }, { emitEvent: false });
++            // Si no hay compras previas, usar el precio referencial pactado con este proveedor
++            const productoProveedor = this.productosProveedor.find(p => p.idProducto === idProducto);
++            if (productoProveedor?.precioReferencial != null) {
++              detalleControl.patchValue({ precioUnitario: productoProveedor.precioReferencial }, { emitEvent: false });
+             }
+           }
+         }
+diff --git a/SACAP/Fronend-SCAPA/src/app/features/supervisor/compras-listado/compras-listado.component.ts b/SACAP/Fronend-SCAPA/src/app/features/supervisor/compras-listado/compras-listado.component.ts
+index 628c6c9..3a39c85 100644
+--- a/SACAP/Fronend-SCAPA/src/app/features/supervisor/compras-listado/compras-listado.component.ts
++++ b/SACAP/Fronend-SCAPA/src/app/features/supervisor/compras-listado/compras-listado.component.ts
+@@ -156,7 +156,7 @@ import { ComprobanteService } from '../../../core/services/comprobante.service';
+                       } @else if (orden.estado === 'PENDIENTE') {
+                         <button class="btn--action btn--action-view" (click)="verOrden(orden.id)">
+                           <lucide-icon name="eye" class="w-3.5 h-3.5"></lucide-icon>
+-                          Recepcionar
++                          Ver Detalle
+                         </button>
+                         <button class="btn--action btn--action-void" (click)="anularOrden(orden.id)">
+                           <lucide-icon name="x" class="w-3.5 h-3.5"></lucide-icon>
+@@ -221,6 +221,116 @@ import { ComprobanteService } from '../../../core/services/comprobante.service';
+         </div>
+       </div>
+     }
++    <!-- Modal Detalle de Orden (solo lectura — recepcionar es tarea del Bodeguero) -->
++    @if (modalDetalleAbierto()) {
++      <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(18,38,29,0.55); display:flex; justify-content:center; align-items:center; z-index:1000;">
++        <div style="background:var(--c-bone-bg); border:1px solid var(--c-sage-border); border-radius:var(--radius-card); width:min(780px, 92vw); max-height:88vh; overflow-y:auto;">
++
++          <div style="background:var(--c-dark-green); padding:1.25rem 1.75rem;">
++            <h2 style="margin:0; font-family:'Fraunces', serif; font-size:1.25rem; color:var(--c-bone-bg);">
++              Detalle de Orden de Compra
++            </h2>
++            @if (ordenDetalle(); as det) {
++              <p style="margin:0.25rem 0 0; font-size:0.8125rem; color:var(--c-sage-border);">
++                OC-{{ det.id }} · Factura {{ det.numeroFactura }}
++              </p>
++            }
++          </div>
++
++          <div style="padding:1.75rem;">
++            @if (ordenDetalle(); as det) {
++              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
++                <div>
++                  <p style="margin:0; font-size:0.6875rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--c-mid-green);">Proveedor</p>
++                  <p style="margin:0.25rem 0 0; font-weight:600; color:var(--c-warm-black);">{{ det.nombreProveedor }}</p>
++                </div>
++                <div>
++                  <p style="margin:0; font-size:0.6875rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--c-mid-green);">Fecha Emisión</p>
++                  <p style="margin:0.25rem 0 0; font-weight:600; color:var(--c-warm-black);">{{ det.fechaEmision }}</p>
++                </div>
++                <div>
++                  <p style="margin:0; font-size:0.6875rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--c-mid-green);">Estado</p>
++                  <p style="margin:0.25rem 0 0; font-weight:600; color:var(--c-warm-black);">{{ det.estado }}</p>
++                </div>
++                <div>
++                  <p style="margin:0; font-size:0.6875rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--c-mid-green);">Cumplimiento</p>
++                  <p style="margin:0.25rem 0 0; font-weight:600; color:var(--c-warm-black);">{{ det.estadoCumplimiento || '—' }}</p>
++                </div>
++                <div>
++                  <p style="margin:0; font-size:0.6875rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--c-mid-green);">Llegada Estimada</p>
++                  <p style="margin:0.25rem 0 0; font-weight:600; color:var(--c-warm-black);">
++                    {{ det.fechaLlegadaEstimada || 'Sin programar' }}
++                    @if (det.ventanaHoraria) { <span style="font-weight:400;"> · {{ det.ventanaHoraria }}</span> }
++                  </p>
++                </div>
++                <div>
++                  <p style="margin:0; font-size:0.6875rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--c-mid-green);">Llegada Real</p>
++                  <p style="margin:0.25rem 0 0; font-weight:600; color:var(--c-warm-black);">
++                    {{ det.fechaLlegadaReal || 'Aún no ha llegado' }}
++                  </p>
++                </div>
++                @if (det.observacionRetraso) {
++                  <div style="grid-column:1 / -1;">
++                    <p style="margin:0; font-size:0.6875rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--c-mid-green);">Observación de Retraso</p>
++                    <p style="margin:0.25rem 0 0; color:var(--c-error);">{{ det.observacionRetraso }}</p>
++                  </div>
++                }
++              </div>
++
++              <table style="width:100%; border-collapse:collapse; font-size:0.875rem; margin-bottom:1.5rem;">
++                <thead>
++                  <tr style="border-bottom:1px solid var(--c-sage-border);">
++                    <th style="text-align:left; padding:0.5rem 0; color:var(--c-mid-green); font-size:0.6875rem; text-transform:uppercase; letter-spacing:0.05em;">Producto</th>
++                    <th style="text-align:right; padding:0.5rem 0; color:var(--c-mid-green); font-size:0.6875rem; text-transform:uppercase; letter-spacing:0.05em;">Cant.</th>
++                    <th style="text-align:right; padding:0.5rem 0; color:var(--c-mid-green); font-size:0.6875rem; text-transform:uppercase; letter-spacing:0.05em;">P. Unit.</th>
++                    <th style="text-align:right; padding:0.5rem 0; color:var(--c-mid-green); font-size:0.6875rem; text-transform:uppercase; letter-spacing:0.05em;">Subtotal</th>
++                  </tr>
++                </thead>
++                <tbody>
++                  @for (d of det.detalles; track d.id) {
++                    <tr style="border-bottom:1px solid rgba(143,174,155,0.35);">
++                      <td style="padding:0.625rem 0; color:var(--c-warm-black);">
++                        {{ d.nombreProducto }}
++                        @if (d.esBonificacion) {
++                          <span style="margin-left:0.5rem; font-size:0.625rem; padding:0.125rem 0.375rem; background:var(--c-success); color:var(--c-bone-bg); letter-spacing:0.04em;">BONIFICACIÓN</span>
++                        }
++                      </td>
++                      <td style="text-align:right; color:var(--c-warm-black);">{{ d.cantidad }}</td>
++                      <td style="text-align:right; color:var(--c-warm-black);">{{ d.precioUnitario | number:'1.2-2' }}</td>
++                      <td style="text-align:right; color:var(--c-warm-black);">{{ d.subtotal | number:'1.2-2' }}</td>
++                    </tr>
++                  }
++                </tbody>
++              </table>
++
++              <div style="border-top:1px solid var(--c-sage-border); padding-top:1rem; display:flex; flex-direction:column; gap:0.375rem; font-size:0.875rem;">
++                <div style="display:flex; justify-content:space-between; color:var(--c-warm-black);">
++                  <span>Subtotal Bruto</span><span>{{ det.subtotalBruto | number:'1.2-2' }}</span>
++                </div>
++                <div style="display:flex; justify-content:space-between; color:var(--c-error);">
++                  <span>Total Descuentos</span><span>-{{ det.totalDescuentos | number:'1.2-2' }}</span>
++                </div>
++                <div style="display:flex; justify-content:space-between; color:var(--c-warm-black);">
++                  <span>IVA</span><span>{{ det.impuestos | number:'1.2-2' }}</span>
++                </div>
++                <div style="display:flex; justify-content:space-between; color:var(--c-warm-black);">
++                  <span>Transporte</span><span>{{ det.costoTransporte | number:'1.2-2' }}</span>
++                </div>
++                <div style="display:flex; justify-content:space-between; font-weight:700; font-size:1rem; color:var(--c-dark-green); border-top:1px solid var(--c-sage-border); padding-top:0.625rem; margin-top:0.25rem;">
++                  <span>TOTAL A PAGAR</span><span>{{ det.totalNeto | number:'1.2-2' }}</span>
++                </div>
++              </div>
++            } @else {
++              <p style="text-align:center; padding:2rem; color:var(--c-mid-green);">Cargando detalle…</p>
++            }
++
++            <div style="display:flex; justify-content:flex-end; margin-top:1.75rem;">
++              <button class="btn btn--ghost" (click)="cerrarDetalle()">Cerrar</button>
++            </div>
++          </div>
++        </div>
++      </div>
++    }
+   `
+ })
+ export class ComprasListadoComponent implements OnInit {
+@@ -275,13 +385,20 @@ export class ComprasListadoComponent implements OnInit {
+   }
+ 
+   verOrden(id: number): void {
+-    const orden = this.ordenes().find(o => o.id === id);
+-    if (orden?.estado === 'PENDIENTE') {
+-      this.router.navigate(['/bodega/recepcion', id]);
+-    } else {
+-      // Para órdenes ya recepcionadas, podemos mostrar un detalle o navegar
+-      this.toast.info('Detalle de Orden', `Visualizando detalle de la Orden OC-${id}.`);
+-    }
++    this.ordenDetalle.set(null);
++    this.modalDetalleAbierto.set(true);
++    this.operacionesService.obtenerOrdenCompra(id).subscribe({
++      next: (orden) => this.ordenDetalle.set(orden),
++      error: () => {
++        this.modalDetalleAbierto.set(false);
++        this.toast.error('Error', 'No se pudo cargar el detalle de la orden.');
++      }
++    });
++  }
++
++  cerrarDetalle(): void {
++    this.modalDetalleAbierto.set(false);
++    this.ordenDetalle.set(null);
+   }
+ 
+   descargarPDF(id: number): void {
+@@ -311,6 +428,8 @@ export class ComprasListadoComponent implements OnInit {
+   // =========================================================================
+ 
+   modalReprogramarAbierto = signal<boolean>(false);
++  modalDetalleAbierto = signal<boolean>(false);
++  ordenDetalle = signal<any | null>(null);
+   ordenReprogramar = signal<number | null>(null);
+   nuevaFechaReprogramar = '';
+   nuevaVentanaReprogramar = '';

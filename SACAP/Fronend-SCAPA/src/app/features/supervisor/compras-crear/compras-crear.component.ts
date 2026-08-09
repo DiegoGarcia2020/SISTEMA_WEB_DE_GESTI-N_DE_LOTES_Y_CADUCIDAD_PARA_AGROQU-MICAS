@@ -4,8 +4,10 @@ import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } fr
 import { Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { OperacionesService } from '../../../core/services/operaciones.service';
+import { ProveedorService } from '../../../core/services/proveedor.service';
+import { ProductoService } from '../../../core/services/producto.service';
 import { ToastService } from '../../../shared/components/toast/toast.service';
-import { ProductoSimple, ProveedorSimple } from '../../../core/models/compras.model';
+import { ProductoSimple, ProveedorSimple, ProductoDeProveedor } from '../../../core/models/compras.model';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
@@ -48,7 +50,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
                         [class.form-group__input--error]="campoInvalido('idProveedor')">
                   <option [ngValue]="null" disabled>Seleccione un proveedor</option>
                   @for (prov of proveedores; track prov.idProveedor) {
-                    <option [ngValue]="prov.idProveedor">{{ prov.nombre }}</option>
+                    <option [ngValue]="prov.idProveedor">{{ prov.nombreRepresentante }}</option>
                   }
                 </select>
               </div>
@@ -91,12 +93,15 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
             <div style="flex-grow: 1">
               <h2 class="section-card__title">Productos Facturados</h2>
               <p class="section-card__subtitle">Agregue los ítems comprados y las bonificaciones (regalos)</p>
+              @if (!ordenForm.get('idProveedor')?.value) {
+                <p class="text-amber-600 text-sm mt-1" style="color: #d97706; font-size: 0.875rem; margin-top: 0.25rem;">Seleccione un proveedor para ver los productos de su catálogo.</p>
+              }
             </div>
             <div class="detalles-actions">
-               <button type="button" class="btn btn--gift btn--sm" (click)="agregarRegalo()">
+               <button type="button" class="btn btn--gift btn--sm" (click)="agregarRegalo()" [disabled]="!ordenForm.get('idProveedor')?.value">
                 <lucide-icon name="gift" class="w-3.5 h-3.5"></lucide-icon> Añadir Regalo
               </button>
-              <button type="button" class="btn btn--outline btn--sm" (click)="agregarDetalle()">
+              <button type="button" class="btn btn--outline btn--sm" (click)="agregarDetalle()" [disabled]="!ordenForm.get('idProveedor')?.value">
                 <lucide-icon name="plus" class="w-3.5 h-3.5"></lucide-icon> Añadir Producto
               </button>
             </div>
@@ -120,8 +125,8 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
                     <td>
                       <select class="detalles-table__input" formControlName="idProducto" (change)="onProductoSeleccionado(i)">
                         <option [ngValue]="null" disabled>Seleccione producto...</option>
-                        @for (prod of productos; track prod.idProducto) {
-                          <option [ngValue]="prod.idProducto">{{ prod.nombre }}</option>
+                        @for (prod of productosProveedor; track prod.idProducto) {
+                          <option [ngValue]="prod.idProducto">{{ prod.nombreProducto }}</option>
                         }
                       </select>
                       @if (detalle.get('esBonificacion')?.value) {
@@ -239,12 +244,14 @@ export class ComprasCrearComponent implements OnInit {
 
   private fb = inject(FormBuilder);
   private operacionesService = inject(OperacionesService);
+  private proveedorService = inject(ProveedorService);
+  private productoService = inject(ProductoService);
   private toast = inject(ToastService);
   private router = inject(Router);
 
   ordenForm!: FormGroup;
   proveedores: ProveedorSimple[] = [];
-  productos: ProductoSimple[] = [];
+  productosProveedor: ProductoDeProveedor[] = [];
 
   totalesCalculados = {
     subtotalBruto: 0,
@@ -259,6 +266,8 @@ export class ComprasCrearComponent implements OnInit {
     this.cargarDatosMaestros();
     this.suscribirseACambios();
   }
+
+
 
   private inicializarFormulario(): void {
     this.ordenForm = this.fb.group({
@@ -297,27 +306,17 @@ export class ComprasCrearComponent implements OnInit {
   }
 
   private cargarDatosMaestros(): void {
-    // Proveedores (usando fallback si falla)
-    this.operacionesService['http'].get<any[]>(`${this.operacionesService['apiUrl']}/proveedores`).subscribe({
-      next: (data) => this.proveedores = data,
-      error: () => {
-        this.proveedores = [
-          { idProveedor: 1, nombre: 'Agroquímicos del Pacífico', ruc: '0991234567001' },
-          { idProveedor: 2, nombre: 'Bayer CropScience', ruc: '1791234567001' }
-        ];
-      }
+    // Proveedores
+    this.proveedorService.listarProveedores().subscribe({
+      next: (data) => this.proveedores = data as unknown as ProveedorSimple[],
+      error: () => this.toast.error('Error', 'No se pudieron cargar los proveedores')
     });
+  }
 
-    // Productos (usando fallback si falla)
-    this.operacionesService['http'].get<any[]>(`${this.operacionesService['apiUrl']}/productos`).subscribe({
-      next: (data) => this.productos = data,
-      error: () => {
-        this.productos = [
-          { idProducto: 1, nombre: 'Fertilizante Urea Agrícola 46% N', unidadMedida: 'Sacos', precio: 35.00 },
-          { idProducto: 2, nombre: 'Fungicida Carbendazim 500 SC', unidadMedida: 'Litros', precio: 18.50 },
-          { idProducto: 3, nombre: 'Insecticida Cipermetrina 20 EC', unidadMedida: 'Litros', precio: 12.00 }
-        ];
-      }
+  private cargarProductosDelProveedor(idProveedor: number): void {
+    this.proveedorService.listarProductos(idProveedor).subscribe({
+      next: (data) => this.productosProveedor = data as unknown as ProductoDeProveedor[],
+      error: () => this.toast.error('Error', 'No se pudieron cargar los productos del proveedor')
     });
   }
 
@@ -339,9 +338,9 @@ export class ComprasCrearComponent implements OnInit {
             this.recalcularTotales(); // Forzar recálculo
           } else {
             // Si no hay compras previas, usar el precio de catálogo como sugerencia
-            const productoCatalogo = this.productos.find(p => p.idProducto === idProducto);
-            if (productoCatalogo) {
-              detalleControl.patchValue({ precioUnitario: productoCatalogo.precio }, { emitEvent: false });
+            const productoCatalogo = this.productosProveedor.find(p => p.idProducto === idProducto);
+            if (productoCatalogo && productoCatalogo.precioReferencial) {
+              detalleControl.patchValue({ precioUnitario: productoCatalogo.precioReferencial }, { emitEvent: false });
             }
           }
         }
@@ -350,6 +349,20 @@ export class ComprasCrearComponent implements OnInit {
   }
 
   private suscribirseACambios(): void {
+    // Escuchar cambios de proveedor para recargar productos
+    this.ordenForm.get('idProveedor')?.valueChanges.subscribe(idProveedor => {
+      if (idProveedor) {
+        if (this.detallesFormArray.length > 0) {
+          this.detallesFormArray.clear();
+          this.toast.info('Atención', 'Se limpió la lista de productos al cambiar de proveedor.');
+          this.recalcularTotales();
+        }
+        this.cargarProductosDelProveedor(idProveedor);
+      } else {
+        this.productosProveedor = [];
+      }
+    });
+
     // Escuchar cambios profundos en el FormArray para recalcular
     this.detallesFormArray.valueChanges.pipe(
       debounceTime(300)

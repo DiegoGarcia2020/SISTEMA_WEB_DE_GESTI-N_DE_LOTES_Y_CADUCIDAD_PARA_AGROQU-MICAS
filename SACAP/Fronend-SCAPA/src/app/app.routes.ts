@@ -54,7 +54,8 @@ export const routes: Routes = [
   {
     path: 'bodega',
     component: MainLayoutComponent,
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['Administrador', 'Bodeguero'] },
     children: [
       { path: 'dashboard', component: BodegaDashboardComponent },
       { path: 'recepciones-hoy', component: BodegaRecepcionesComponent },

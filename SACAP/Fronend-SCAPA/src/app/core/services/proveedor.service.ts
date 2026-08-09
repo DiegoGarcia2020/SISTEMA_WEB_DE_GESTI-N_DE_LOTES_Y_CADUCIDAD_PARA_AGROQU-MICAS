@@ -43,7 +43,7 @@ export interface ProveedorProductoDTO {
 })
 export class ProveedorService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/api/proveedores`;
+  private apiUrl = `${environment.apiUrl}/proveedores`;
 
   listarProveedores(): Observable<Proveedor[]> {
     return this.http.get<Proveedor[]>(this.apiUrl);

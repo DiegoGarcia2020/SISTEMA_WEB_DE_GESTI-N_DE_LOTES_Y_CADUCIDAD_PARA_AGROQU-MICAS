@@ -33,7 +33,7 @@ export interface ProductoDTO {
 })
 export class ProductoService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/api/productos`;
+  private apiUrl = `${environment.apiUrl}/productos`;
 
   listarTodos(): Observable<ProductoDTO[]> {
     return this.http.get<ProductoDTO[]>(this.apiUrl);

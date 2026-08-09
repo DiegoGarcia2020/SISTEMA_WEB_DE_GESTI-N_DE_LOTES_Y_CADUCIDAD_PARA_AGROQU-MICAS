@@ -16,7 +16,7 @@ export interface ClienteDTO {
 })
 export class ClienteService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/api/clientes`;
+  private apiUrl = `${environment.apiUrl}/clientes`;
 
   listarTodos(): Observable<ClienteDTO[]> {
     return this.http.get<ClienteDTO[]>(this.apiUrl);

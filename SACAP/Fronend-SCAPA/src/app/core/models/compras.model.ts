@@ -76,7 +76,8 @@ export interface PrecioMemoria {
 
 export interface ProveedorSimple {
   idProveedor: number;
-  nombre: string;
+  nombreRepresentante: string;
+  nombre?: string;
   ruc: string;
 }
 
@@ -85,4 +86,11 @@ export interface ProductoSimple {
   nombre: string;
   unidadMedida: string;
   precio: number;
+}
+
+export interface ProductoDeProveedor {
+  idProducto: number;
+  nombreProducto: string;
+  unidadMedida?: string;
+  precioReferencial?: number;
 }

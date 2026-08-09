@@ -1,11 +1,11 @@
 <div class="sd-bg">
 
-  <!-- ── Hero ─────────────────────────────────── -->
-  <div class="sd-hero">
-    <div class="sd-hero-text">
-      <p class="sd-greeting">{{ horaDelDia }}, <strong>{{ nombreUsuario }}</strong> 👋</p>
-      <h1 class="sd-hero-title">Dashboard del Supervisor</h1>
-      <p class="sd-hero-sub">Gestione sus bodegas, cree lotes y organícelos por categoría</p>
+  <!-- ── Encabezado ───────────────────────────── -->
+  <div class="sd-page-header">
+    <div>
+      <p class="sd-greeting">{{ horaDelDia }}, <strong>{{ nombreUsuario }}</strong></p>
+      <h1 class="sd-page-title">Dashboard del Supervisor</h1>
+      <p class="sd-page-subtitle">Gestione sus bodegas, cree lotes y organícelos por categoría.</p>
     </div>
     <button class="sd-cta-btn" [disabled]="!bodegaSeleccionada()" (click)="abrirModal()">
       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
