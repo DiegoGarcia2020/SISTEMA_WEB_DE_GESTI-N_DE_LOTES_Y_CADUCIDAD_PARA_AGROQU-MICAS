@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { OperacionesService } from '../../../core/services/operaciones.service';
 import { ProveedorService } from '../../../core/services/proveedor.service';
-import { ProductoService } from '../../../core/services/producto.service';
+import { ProductoService, ProductoDTO } from '../../../core/services/producto.service';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { ProductoSimple, ProveedorSimple, ProductoDeProveedor } from '../../../core/models/compras.model';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
@@ -95,14 +95,19 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
               <p class="section-card__subtitle">Agregue los ítems comprados y las bonificaciones (regalos)</p>
               @if (!ordenForm.get('idProveedor')?.value) {
                 <p class="text-amber-600 text-sm mt-1" style="color: #d97706; font-size: 0.875rem; margin-top: 0.25rem;">Seleccione un proveedor para ver los productos de su catálogo.</p>
+              } @else if (productosProveedor.length === 0) {
+                <p class="text-amber-600 text-sm mt-1" style="color: #d97706; font-size: 0.875rem; margin-top: 0.25rem;">Este proveedor aún no tiene productos registrados. Use "Registrar Producto Nuevo" para agregar el primero.</p>
               }
             </div>
             <div class="detalles-actions">
                <button type="button" class="btn btn--gift btn--sm" (click)="agregarRegalo()" [disabled]="!ordenForm.get('idProveedor')?.value">
                 <lucide-icon name="gift" class="w-3.5 h-3.5"></lucide-icon> Añadir Regalo
               </button>
-              <button type="button" class="btn btn--outline btn--sm" (click)="agregarDetalle()" [disabled]="!ordenForm.get('idProveedor')?.value">
+              <button type="button" class="btn btn--outline btn--sm" (click)="agregarDetalle()" [disabled]="!ordenForm.get('idProveedor')?.value || productosProveedor.length === 0" title="Agrega una línea con un producto ya registrado para este proveedor">
                 <lucide-icon name="plus" class="w-3.5 h-3.5"></lucide-icon> Añadir Producto
+              </button>
+              <button type="button" class="btn btn--primary btn--sm" (click)="abrirModalNuevoProducto()" [disabled]="!ordenForm.get('idProveedor')?.value" title="Registra un producto del catálogo general en el catálogo de este proveedor">
+                <lucide-icon name="package-plus" class="w-3.5 h-3.5"></lucide-icon> Registrar Producto Nuevo
               </button>
             </div>
           </div>
@@ -235,8 +240,65 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
           </button>
         </div>
       </form>
+
+      @if (mostrarModalNuevoProducto) {
+        <div class="modal-overlay" (click)="cerrarModalNuevoProducto()">
+          <div class="modal-box" (click)="$event.stopPropagation()" [formGroup]="nuevoProductoForm">
+            <div class="modal-box__header">
+              <h3>Registrar Producto Nuevo para el Proveedor</h3>
+              <button type="button" class="modal-box__close" (click)="cerrarModalNuevoProducto()">&times;</button>
+            </div>
+            <div class="modal-box__body">
+              <div class="form-group">
+                <label class="form-group__label">Producto del catálogo general *</label>
+                <select class="form-group__select" formControlName="idProducto">
+                  <option [ngValue]="null" disabled>Seleccione producto...</option>
+                  @for (prod of productosDisponiblesParaRegistrar; track prod.idProducto) {
+                    <option [ngValue]="prod.idProducto">{{ prod.nombre }} ({{ prod.unidadMedida }})</option>
+                  }
+                </select>
+                @if (productosDisponiblesParaRegistrar.length === 0) {
+                  <p class="text-amber-600 text-sm mt-1" style="color: #d97706; font-size: 0.875rem; margin-top: 0.25rem;">Todos los productos del catálogo ya están registrados para este proveedor.</p>
+                }
+              </div>
+              <div class="form-group">
+                <label class="form-group__label">Precio Referencial ($)</label>
+                <input type="number" class="form-group__input" formControlName="precioReferencial" step="0.01" min="0">
+              </div>
+              <div class="form-group">
+                <label class="form-group__label">Código del producto en el proveedor</label>
+                <input type="text" class="form-group__input" formControlName="codigoProductoProveedor" placeholder="Opcional">
+              </div>
+            </div>
+            <div class="modal-box__footer">
+              <button type="button" class="btn btn--back" (click)="cerrarModalNuevoProducto()">Cancelar</button>
+              <button type="button" class="btn btn--primary" [disabled]="nuevoProductoForm.invalid" (click)="registrarNuevoProducto()">
+                Registrar y Agregar a la Orden
+              </button>
+            </div>
+          </div>
+        </div>
+      }
     </div>
-  `
+  `,
+  styles: [`
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      display: flex; align-items: center; justify-content: center; z-index: 1000;
+    }
+    .modal-box {
+      background: var(--bg-card, #fff); border-radius: 0.5rem; width: 100%; max-width: 28rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    .modal-box__header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 1.25rem; border-bottom: 1px solid var(--gray-200, #e5e7eb);
+    }
+    .modal-box__header h3 { margin: 0; font-size: 1rem; font-weight: 600; }
+    .modal-box__close { background: none; border: none; font-size: 1.5rem; line-height: 1; cursor: pointer; }
+    .modal-box__body { padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+    .modal-box__footer { display: flex; justify-content: flex-end; gap: 0.5rem; padding: 1rem 1.25rem; border-top: 1px solid var(--gray-200, #e5e7eb); }
+  `]
 })
 export class ComprasCrearComponent implements OnInit {
   
@@ -253,6 +315,10 @@ export class ComprasCrearComponent implements OnInit {
   proveedores: ProveedorSimple[] = [];
   productosProveedor: ProductoDeProveedor[] = [];
 
+  catalogoGeneral: ProductoDTO[] = [];
+  mostrarModalNuevoProducto = false;
+  nuevoProductoForm!: FormGroup;
+
   totalesCalculados = {
     subtotalBruto: 0,
     totalDescuentos: 0,
@@ -263,8 +329,64 @@ export class ComprasCrearComponent implements OnInit {
 
   ngOnInit(): void {
     this.inicializarFormulario();
+    this.nuevoProductoForm = this.fb.group({
+      idProducto: [null, Validators.required],
+      precioReferencial: [0, [Validators.required, Validators.min(0)]],
+      codigoProductoProveedor: ['']
+    });
     this.cargarDatosMaestros();
     this.suscribirseACambios();
+  }
+
+  get productosDisponiblesParaRegistrar(): ProductoDTO[] {
+    const idsYaRegistrados = new Set(this.productosProveedor.map(p => p.idProducto));
+    return this.catalogoGeneral.filter(p => !idsYaRegistrados.has(p.idProducto));
+  }
+
+  abrirModalNuevoProducto(): void {
+    this.nuevoProductoForm.reset({ idProducto: null, precioReferencial: 0, codigoProductoProveedor: '' });
+    this.mostrarModalNuevoProducto = true;
+  }
+
+  cerrarModalNuevoProducto(): void {
+    this.mostrarModalNuevoProducto = false;
+  }
+
+  registrarNuevoProducto(): void {
+    if (this.nuevoProductoForm.invalid) {
+      this.nuevoProductoForm.markAllAsTouched();
+      return;
+    }
+
+    const idProveedor = this.ordenForm.get('idProveedor')?.value;
+    const { idProducto, precioReferencial, codigoProductoProveedor } = this.nuevoProductoForm.getRawValue();
+
+    this.proveedorService.asociarProducto(idProveedor, {
+      idProveedor,
+      idProducto,
+      precioReferencial,
+      codigoProductoProveedor: codigoProductoProveedor || undefined
+    }).subscribe({
+      next: () => {
+        const productoCatalogo = this.catalogoGeneral.find(p => p.idProducto === idProducto);
+        this.productosProveedor = [...this.productosProveedor, {
+          idProducto,
+          nombreProducto: productoCatalogo?.nombre || '',
+          unidadMedida: productoCatalogo?.unidadMedida,
+          precioReferencial
+        }];
+
+        this.agregarDetalle();
+        const nuevaFila = this.detallesFormArray.at(this.detallesFormArray.length - 1);
+        nuevaFila.patchValue({ idProducto, precioUnitario: precioReferencial });
+
+        this.toast.success('Producto registrado', 'El producto se agregó al catálogo del proveedor y a la orden.');
+        this.mostrarModalNuevoProducto = false;
+      },
+      error: (err) => {
+        this.toast.error('Error', err?.error?.mensaje || 'No se pudo registrar el producto para este proveedor.');
+      }
+    });
   }
 
 
@@ -310,6 +432,12 @@ export class ComprasCrearComponent implements OnInit {
     this.proveedorService.listarProveedores().subscribe({
       next: (data) => this.proveedores = data as unknown as ProveedorSimple[],
       error: () => this.toast.error('Error', 'No se pudieron cargar los proveedores')
+    });
+
+    // Catálogo general de productos (para registrar productos nuevos en el proveedor)
+    this.productoService.listarTodos().subscribe({
+      next: (data) => this.catalogoGeneral = data,
+      error: () => this.toast.error('Error', 'No se pudo cargar el catálogo de productos')
     });
   }
 
@@ -453,6 +581,8 @@ export class ComprasCrearComponent implements OnInit {
       idProveedor: formValue.idProveedor,
       numeroFactura: formValue.numeroFactura,
       fechaEmision: formValue.fechaEmision,
+      fechaLlegadaEstimada: formValue.fechaLlegadaEstimada || null,
+      ventanaHoraria: formValue.ventanaHoraria || null,
       costoTransporte: formValue.costoTransporte,
       impuestos: this.totalesCalculados.iva,
       detalles: formValue.detalles.map((d: any) => ({

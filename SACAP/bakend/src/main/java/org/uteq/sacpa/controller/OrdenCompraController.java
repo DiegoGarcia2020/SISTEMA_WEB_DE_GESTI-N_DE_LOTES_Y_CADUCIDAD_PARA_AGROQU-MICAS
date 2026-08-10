@@ -172,4 +172,24 @@ public class OrdenCompraController {
         ordenCompraService.cancelarOrdenCompra(id);
         return ResponseEntity.ok(Map.of("mensaje", "Orden cancelada por incumplimiento de entrega"));
     }
+
+    // ========================================================================
+    // DOCK SCHEDULING — RECEPCIONES ESPERADAS PARA HOY (BODEGUERO)
+    // ========================================================================
+
+    /**
+     * Lista las órdenes de compra programadas para llegar en una fecha específica.
+     * Usado por el Bodeguero en la pantalla "Recepciones Esperadas".
+     * Filtra por fechaLlegadaEstimada (NO por fechaEmision) y solo retorna
+     * órdenes que aún no han sido procesadas (estadoCumplimiento = PENDIENTE o null).
+     *
+     * @param fecha Fecha a consultar. Si no se envía, usa la fecha de hoy.
+     */
+    @GetMapping("/recepciones-hoy")
+    public ResponseEntity<List<OrdenCompraResponseDTO>> listarRecepcionesHoy(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
+        if (fecha == null) fecha = LocalDate.now();
+        return ResponseEntity.ok(ordenCompraService.listarRecepcionesEsperadas(fecha));
+    }
 }
+

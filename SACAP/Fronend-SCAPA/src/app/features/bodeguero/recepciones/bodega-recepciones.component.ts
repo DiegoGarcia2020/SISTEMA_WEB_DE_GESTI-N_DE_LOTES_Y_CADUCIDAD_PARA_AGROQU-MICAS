@@ -43,8 +43,8 @@ export class BodegaRecepcionesComponent implements OnInit {
   cargarRecepcionesHoy() {
     this.isLoading.set(true);
     const hoy = new Date().toISOString().substring(0, 10);
-    // Filtrar estado=PENDIENTE y desde=HOY, hasta=HOY
-    this.http.get<OrdenCompraListDTO[]>(`${environment.apiUrl}/ordenes-compra?estado=PENDIENTE&desde=${hoy}&hasta=${hoy}`)
+    // Usa el endpoint dedicado que filtra por fechaLlegadaEstimada (no por fechaEmision)
+    this.http.get<OrdenCompraListDTO[]>(`${environment.apiUrl}/ordenes-compra/recepciones-hoy?fecha=${hoy}`)
       .subscribe({
         next: (data) => {
           this.ordenesHoy.set(data);

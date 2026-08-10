@@ -34,6 +34,10 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
             <lucide-icon name="package" class="nav-item__icon"></lucide-icon>
             <span>Almacén & Despachos</span>
           </a>
+          <a routerLink="/bodega/recepciones-hoy" routerLinkActive="active" class="nav-item">
+            <lucide-icon name="truck" class="nav-item__icon"></lucide-icon>
+            <span>Recepción de Compras</span>
+          </a>
           <a routerLink="/admin/alertas" routerLinkActive="active" class="nav-item">
             <lucide-icon name="alert-triangle" class="nav-item__icon"></lucide-icon>
             <span>Alertas de Caducidad</span>

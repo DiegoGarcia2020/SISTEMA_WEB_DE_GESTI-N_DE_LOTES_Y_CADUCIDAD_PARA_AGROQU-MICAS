@@ -6,6 +6,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.uteq.sacpa.dto.catalogos.CatalogoRequestDTO;
 import org.uteq.sacpa.entity.catalogos.*;
+import org.uteq.sacpa.entity.entidades.Empresa;
+import org.uteq.sacpa.entity.geografia.Ciudad;
+import org.uteq.sacpa.repository.entidades.IEmpresaRepository;
+import org.uteq.sacpa.repository.geografia.ICiudadRepository;
 import org.uteq.sacpa.service.catalogos.ICatalogoService;
 
 import java.util.List;
@@ -17,6 +21,23 @@ public class CatalogoController {
 
     @Autowired
     private ICatalogoService catalogoService;
+
+    @Autowired
+    private IEmpresaRepository empresaRepository;
+
+    @Autowired
+    private ICiudadRepository ciudadRepository;
+
+    // Usados por el formulario de Proveedor (Supervisor) para poblar los selects de Empresa/Ciudad
+    @GetMapping("/empresas")
+    public ResponseEntity<List<Empresa>> listarEmpresas() {
+        return ResponseEntity.ok(empresaRepository.findAll());
+    }
+
+    @GetMapping("/ciudades")
+    public ResponseEntity<List<Ciudad>> listarCiudades() {
+        return ResponseEntity.ok(ciudadRepository.findAll());
+    }
 
     // Endpoint unificado para el frontend (gestión de catálogos)
     @GetMapping

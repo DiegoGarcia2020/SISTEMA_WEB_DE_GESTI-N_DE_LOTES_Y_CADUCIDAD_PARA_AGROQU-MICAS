@@ -406,7 +406,7 @@ export class OperacionesService {
   }
 
   listarDevolucionesPendientesBodega(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/devoluciones-venta/pendientes-bodega`).pipe(
+    return this.http.get<any[]>(`${this.apiUrl}/operaciones/devoluciones-venta/pendientes-bodega`).pipe(
       catchError(err => {
         if (err.status === 0 || err.status === 404) return of([]);
         return throwError(() => err);

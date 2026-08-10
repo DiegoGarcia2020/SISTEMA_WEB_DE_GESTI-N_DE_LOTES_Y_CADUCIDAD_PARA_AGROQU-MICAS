@@ -387,4 +387,19 @@ public class OrdenCompraServiceImpl implements IOrdenCompraService {
         
         ordenCompraRepository.save(orden);
     }
+
+    // ========================================================================
+    // DOCK SCHEDULING — RECEPCIONES ESPERADAS PARA HOY (BODEGUERO)
+    // ========================================================================
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrdenCompraResponseDTO> listarRecepcionesEsperadas(LocalDate fecha) {
+        if (fecha == null) {
+            fecha = LocalDate.now();
+        }
+        List<OrdenCompra> ordenes = ordenCompraRepository.findRecepcionesEsperadasHoy(fecha);
+        return ordenes.stream().map(this::mapToResponseDTO).collect(Collectors.toList());
+    }
 }
+

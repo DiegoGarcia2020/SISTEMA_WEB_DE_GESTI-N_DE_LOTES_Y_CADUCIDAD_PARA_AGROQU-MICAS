@@ -111,6 +111,12 @@ public class SecurityConfig {
                 // WebSocket alertas en tiempo real
                 .requestMatchers("/ws-sacpa/**").permitAll()
 
+                // Catálogos de Empresa/Ciudad — el Supervisor los necesita para el formulario de Proveedor
+                .requestMatchers(
+                    "/api/catalogos/empresas",
+                    "/api/catalogos/ciudades"
+                ).hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR")
+
                 // Solo ADMINISTRADOR
                 .requestMatchers(
                     "/api/auth/**",

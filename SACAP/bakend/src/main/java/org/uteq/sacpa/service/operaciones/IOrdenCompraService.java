@@ -74,4 +74,11 @@ public interface IOrdenCompraService {
      * Control de SLA - Supervisor: Cancela la orden tras un retraso.
      */
     void cancelarOrdenCompra(Integer idOrden);
+
+    /**
+     * Dock Scheduling (Bodeguero): Lista las órdenes cuya fecha_llegada_estimada
+     * es igual a la fecha dada, en estado PENDIENTE y sin procesar.
+     * Si fecha es null, usa la fecha de hoy.
+     */
+    List<OrdenCompraResponseDTO> listarRecepcionesEsperadas(LocalDate fecha);
 }

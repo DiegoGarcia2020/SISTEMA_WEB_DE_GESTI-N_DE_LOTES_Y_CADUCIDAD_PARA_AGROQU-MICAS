@@ -42,8 +42,8 @@ public interface IOrdenCompraRepository extends JpaRepository<OrdenCompra, Integ
     @Query("SELECT o FROM OrdenCompra o " +
            "WHERE (:estado IS NULL OR o.estado = :estado) " +
            "AND (:idProveedor IS NULL OR o.proveedor.idProveedor = :idProveedor) " +
-           "AND (:desde IS NULL OR o.fechaEmision >= :desde) " +
-           "AND (:hasta IS NULL OR o.fechaEmision <= :hasta) " +
+           "AND (:desde IS NULL OR o.fechaEmision >= CAST(:desde AS date)) " +
+           "AND (:hasta IS NULL OR o.fechaEmision <= CAST(:hasta AS date)) " +
            "AND (:idUsuarioRegistro IS NULL OR o.idUsuarioRegistro = :idUsuarioRegistro) " +
            "ORDER BY o.fechaRegistro DESC")
     List<OrdenCompra> findByFiltros(@Param("estado") String estado,
@@ -78,4 +78,17 @@ public interface IOrdenCompraRepository extends JpaRepository<OrdenCompra, Integ
         "ORDER BY oc.fecha_registro DESC LIMIT 1", nativeQuery = true)
     Optional<BigDecimal> findUltimoPrecioProductoPorProveedor(@Param("idProducto") Integer idProducto,
                                                               @Param("idProveedor") Integer idProveedor);
+
+    /**
+     * Recepciones Esperadas para hoy (Dock Scheduling).
+     * Retorna las órdenes cuya fecha_llegada_estimada coincide con la fecha dada,
+     * que aún están en estado PENDIENTE y cuyo estado de cumplimiento no ha sido procesado.
+     * Ordenadas por ventana_horaria para mostrar las entregas más tempranas primero.
+     */
+    @Query("SELECT o FROM OrdenCompra o " +
+           "WHERE o.fechaLlegadaEstimada = :fecha " +
+           "AND o.estado = 'PENDIENTE' " +
+           "AND (o.estadoCumplimiento IS NULL OR o.estadoCumplimiento = 'PENDIENTE') " +
+           "ORDER BY o.ventanaHoraria ASC NULLS LAST")
+    List<OrdenCompra> findRecepcionesEsperadasHoy(@Param("fecha") LocalDate fecha);
 }
