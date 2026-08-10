@@ -21,12 +21,48 @@ export class CentroAprobacionesComponent implements OnInit {
   despachosPendientes = signal<any[]>([]);
   devolucionesPendientes = signal<any[]>([]);
 
+  // Paginación
+  currentPage = signal<number>(1);
+  itemsPerPage = 10;
+
+  get paginatedPromos() {
+    const startIndex = (this.currentPage() - 1) * this.itemsPerPage;
+    return this.promosPendientes().slice(startIndex, startIndex + this.itemsPerPage);
+  }
+
+  get paginatedDespachos() {
+    const startIndex = (this.currentPage() - 1) * this.itemsPerPage;
+    return this.despachosPendientes().slice(startIndex, startIndex + this.itemsPerPage);
+  }
+
+  get paginatedDevoluciones() {
+    const startIndex = (this.currentPage() - 1) * this.itemsPerPage;
+    return this.devolucionesPendientes().slice(startIndex, startIndex + this.itemsPerPage);
+  }
+
+  nextPage() {
+    this.currentPage.update(p => p + 1);
+  }
+
+  prevPage() {
+    this.currentPage.update(p => Math.max(1, p - 1));
+  }
+
+  getTotalPages(type: string): number {
+    let totalItems = 0;
+    if (type === 'promos') totalItems = this.promosPendientes().length;
+    else if (type === 'despachos') totalItems = this.despachosPendientes().length;
+    else if (type === 'devoluciones') totalItems = this.devolucionesPendientes().length;
+    return Math.max(1, Math.ceil(totalItems / this.itemsPerPage));
+  }
+
   ngOnInit(): void {
     this.loadAll();
   }
 
   setTab(tabIndex: number) {
     this.tabActiva.set(tabIndex);
+    this.currentPage.set(1);
   }
 
   loadAll(): void {

@@ -17,26 +17,23 @@ public interface IMovimientoInventarioRepository extends JpaRepository<Movimient
 
     List<MovimientoInventario> findTop50ByIdEstadoAprobacionOrderByFechaMovimientoDesc(Integer idEstadoAprobacion);
 
-    @Modifying
     @Transactional
     @Query(value = "SELECT operaciones.fn_crear_movimiento_inventario(:cantidad, :observacion, :idLote, :idTipoMovimiento, :idUsuario, :idEstadoAprobacion)", nativeQuery = true)
-    void crearMovimiento(@Param("cantidad") Integer cantidad,
+    Object crearMovimiento(@Param("cantidad") Integer cantidad,
                          @Param("observacion") String observacion,
                          @Param("idLote") Integer idLote,
                          @Param("idTipoMovimiento") Integer idTipoMovimiento,
                          @Param("idUsuario") Integer idUsuario,
                          @Param("idEstadoAprobacion") Integer idEstadoAprobacion);
 
-    @Modifying
     @Transactional
     @Query(value = "SELECT operaciones.fn_actualizar_movimiento_inventario(:idMovimiento, :observacion, :idEstadoAprobacion)", nativeQuery = true)
-    void actualizarMovimiento(@Param("idMovimiento") Integer idMovimiento,
+    Object actualizarMovimiento(@Param("idMovimiento") Integer idMovimiento,
                               @Param("observacion") String observacion,
                               @Param("idEstadoAprobacion") Integer idEstadoAprobacion);
 
-    @Modifying
     @Transactional
     @Query(value = "SELECT operaciones.fn_anular_movimiento_inventario(:idMovimiento, :idEstadoAnulado)", nativeQuery = true)
-    void anularMovimiento(@Param("idMovimiento") Integer idMovimiento,
+    Object anularMovimiento(@Param("idMovimiento") Integer idMovimiento,
                           @Param("idEstadoAnulado") Integer idEstadoAnulado);
 }

@@ -133,3 +133,39 @@
   background-color: #ef4444;
   color: #ffffff;
 }
+
+/* =================================================================
+   PAGINATION CONTROLS
+   ================================================================= */
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+}
+
+.pagination-controls .btn-outline {
+  background-color: transparent;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+}
+
+.pagination-controls .btn-outline:hover:not(:disabled) {
+  background-color: #f3f4f6;
+}
+
+.pagination-controls .btn-outline:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-controls .page-info {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+}

@@ -31,7 +31,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (promo of promosPendientes(); track promo.idPromocion) {
+          @for (promo of paginatedPromos; track promo.idPromocion) {
             <tr>
               <td>PROMO-{{ promo.idPromocion }}</td>
               <td>{{ promo.nombrePromocion || promo.titulo }}</td>
@@ -52,6 +52,12 @@
           }
         </tbody>
       </table>
+
+      <div class="pagination-controls" *ngIf="getTotalPages('promos') > 1">
+        <button class="btn btn-outline" (click)="prevPage()" [disabled]="currentPage() === 1">Anterior</button>
+        <span class="page-info">Página {{ currentPage() }} de {{ getTotalPages('promos') }}</span>
+        <button class="btn btn-outline" (click)="nextPage()" [disabled]="currentPage() >= getTotalPages('promos')">Siguiente</button>
+      </div>
     }
 
     <!-- PESTAÑA 2: DESPACHOS FEFO CRÍTICOS -->
@@ -66,7 +72,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (des of despachosPendientes(); track des.idMovimiento) {
+          @for (des of paginatedDespachos; track des.idMovimiento) {
             <tr>
               <td>MOV-{{ des.idMovimiento }}</td>
               <td>{{ des.lote?.producto?.nombre || 'Producto' }} (Lote: {{ des.lote?.numeroLote }})</td>
@@ -87,6 +93,12 @@
           }
         </tbody>
       </table>
+
+      <div class="pagination-controls" *ngIf="getTotalPages('despachos') > 1">
+        <button class="btn btn-outline" (click)="prevPage()" [disabled]="currentPage() === 1">Anterior</button>
+        <span class="page-info">Página {{ currentPage() }} de {{ getTotalPages('despachos') }}</span>
+        <button class="btn btn-outline" (click)="nextPage()" [disabled]="currentPage() >= getTotalPages('despachos')">Siguiente</button>
+      </div>
     }
 
     <!-- PESTAÑA 3: DEVOLUCIONES A PROVEEDOR -->
@@ -101,7 +113,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (dev of devolucionesPendientes(); track dev.idDevolucion) {
+          @for (dev of paginatedDevoluciones; track dev.idDevolucion) {
             <tr>
               <td>DEV-{{ dev.idDevolucion }}</td>
               <td>{{ dev.proveedor?.nombre || 'Proveedor' }}</td>
@@ -122,6 +134,12 @@
           }
         </tbody>
       </table>
+
+      <div class="pagination-controls" *ngIf="getTotalPages('devoluciones') > 1">
+        <button class="btn btn-outline" (click)="prevPage()" [disabled]="currentPage() === 1">Anterior</button>
+        <span class="page-info">Página {{ currentPage() }} de {{ getTotalPages('devoluciones') }}</span>
+        <button class="btn btn-outline" (click)="nextPage()" [disabled]="currentPage() >= getTotalPages('devoluciones')">Siguiente</button>
+      </div>
     }
 
   </div>
