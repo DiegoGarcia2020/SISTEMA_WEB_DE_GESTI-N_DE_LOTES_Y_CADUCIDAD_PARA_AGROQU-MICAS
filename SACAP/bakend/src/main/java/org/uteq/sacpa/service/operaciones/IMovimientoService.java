@@ -4,6 +4,7 @@ import org.uteq.sacpa.dto.operaciones.MovimientoRequestDTO;
 import org.uteq.sacpa.entity.operaciones.MovimientoInventario;
 
 import java.util.List;
+import org.uteq.sacpa.dto.operaciones.MovimientoResumenDTO;
 
 public interface IMovimientoService {
 
@@ -15,9 +16,9 @@ public interface IMovimientoService {
 
     void despacharFefo(org.uteq.sacpa.dto.operaciones.DespachoRequestDTO dto);
 
-    List<MovimientoInventario> listarPendientes();
+    List<MovimientoResumenDTO> listarPendientes();
 
-    List<MovimientoInventario> listarTodos();
+    List<MovimientoResumenDTO> listarTodos();
 
     void aprobarDespacho(Integer idMovimiento, String observacion);
 

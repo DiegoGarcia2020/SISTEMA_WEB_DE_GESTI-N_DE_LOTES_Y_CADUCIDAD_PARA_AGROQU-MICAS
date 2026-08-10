@@ -9,6 +9,8 @@ import org.uteq.sacpa.repository.operaciones.IDevolucionRepository;
 import org.uteq.sacpa.service.operaciones.IDevolucionService;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import org.uteq.sacpa.dto.operaciones.DevolucionResumenDTO;
 
 @Service
 public class DevolucionServiceImpl implements IDevolucionService {
@@ -73,16 +75,20 @@ public class DevolucionServiceImpl implements IDevolucionService {
 
     @Override
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
-    public List<Devolucion> listarPendientes() {
-        return devolucionRepository.findAll().stream()
-                .filter(d -> d.getIdEstadoAprobacion() != null && d.getIdEstadoAprobacion() == 2)
-                .collect(java.util.stream.Collectors.toList());
+    public List<DevolucionResumenDTO> listarPendientes() {
+        return devolucionRepository.findTop50ByIdEstadoAprobacionOrderByFechaDevolucionDesc(2)
+                .stream()
+                .map(DevolucionResumenDTO::from)
+                .collect(Collectors.toList());
     }
 
     @Override
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
-    public List<Devolucion> listarTodos() {
-        return devolucionRepository.findAll();
+    public List<DevolucionResumenDTO> listarTodos() {
+        return devolucionRepository.findTop50ByOrderByFechaDevolucionDesc()
+                .stream()
+                .map(DevolucionResumenDTO::from)
+                .collect(Collectors.toList());
     }
 
     @Override

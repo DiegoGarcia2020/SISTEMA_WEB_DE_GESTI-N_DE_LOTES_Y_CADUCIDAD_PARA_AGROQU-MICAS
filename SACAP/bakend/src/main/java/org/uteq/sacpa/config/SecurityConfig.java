@@ -115,7 +115,6 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/api/auth/**",
                     "/api/registro/**",
-                    "/api/catalogos/**",
                     "/api/usuarios/**",
                     "/api/roles/**",
                     "/api/seguridad/**",
@@ -146,6 +145,7 @@ public class SecurityConfig {
                     "/api/promociones/**",
                     "/api/temporadas/**",
                     "/api/proveedores/**",
+                    "/api/catalogos/**",
                     "/api/devoluciones/aprobar/**",
                     "/api/movimientos/aprobar/**",
                     "/api/supervisor/**"

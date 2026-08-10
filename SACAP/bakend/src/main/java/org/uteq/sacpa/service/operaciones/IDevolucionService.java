@@ -4,6 +4,7 @@ import org.uteq.sacpa.dto.operaciones.DevolucionRequestDTO;
 import org.uteq.sacpa.entity.operaciones.Devolucion;
 
 import java.util.List;
+import org.uteq.sacpa.dto.operaciones.DevolucionResumenDTO;
 
 public interface IDevolucionService {
 
@@ -15,9 +16,9 @@ public interface IDevolucionService {
 
     void anularDevolucion(Integer idDevolucion, Integer idEstadoAnulado);
 
-    List<Devolucion> listarPendientes();
+    List<DevolucionResumenDTO> listarPendientes();
 
-    List<Devolucion> listarTodos();
+    List<DevolucionResumenDTO> listarTodos();
 
     void cambiarEstadoDevolucion(Integer idDevolucion, org.uteq.sacpa.dto.operaciones.CambioEstadoDevolucionDTO dto);
 }

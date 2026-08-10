@@ -8,8 +8,10 @@ import org.uteq.sacpa.repository.operaciones.IMovimientoInventarioRepository;
 import org.uteq.sacpa.service.operaciones.IMovimientoService;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import org.uteq.sacpa.util.TipoMovimiento;
 import org.uteq.sacpa.util.EstadoAprobacion;
+import org.uteq.sacpa.dto.operaciones.MovimientoResumenDTO;
 
 @Service
 public class MovimientoServiceImpl implements IMovimientoService {
@@ -81,16 +83,20 @@ public class MovimientoServiceImpl implements IMovimientoService {
 
     @Override
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
-    public List<MovimientoInventario> listarPendientes() {
-        return movimientoRepository.findAll().stream()
-                .filter(m -> m.getIdEstadoAprobacion() != null && m.getIdEstadoAprobacion() == EstadoAprobacion.PENDIENTE)
-                .collect(java.util.stream.Collectors.toList());
+    public List<MovimientoResumenDTO> listarPendientes() {
+        return movimientoRepository.findTop50ByIdEstadoAprobacionOrderByFechaMovimientoDesc(EstadoAprobacion.PENDIENTE)
+                .stream()
+                .map(MovimientoResumenDTO::from)
+                .collect(Collectors.toList());
     }
 
     @Override
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
-    public List<MovimientoInventario> listarTodos() {
-        return movimientoRepository.findAll();
+    public List<MovimientoResumenDTO> listarTodos() {
+        return movimientoRepository.findTop50ByOrderByFechaMovimientoDesc()
+                .stream()
+                .map(MovimientoResumenDTO::from)
+                .collect(Collectors.toList());
     }
 
     @Override

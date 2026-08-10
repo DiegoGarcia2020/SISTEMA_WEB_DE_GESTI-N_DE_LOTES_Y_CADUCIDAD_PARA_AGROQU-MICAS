@@ -9,6 +9,7 @@ import org.uteq.sacpa.entity.operaciones.MovimientoInventario;
 import org.uteq.sacpa.service.operaciones.IMovimientoService;
 
 import java.util.List;
+import org.uteq.sacpa.dto.operaciones.MovimientoResumenDTO;
 import java.util.Map;
 
 @RestController
@@ -44,12 +45,12 @@ public class MovimientoController {
     }
 
     @GetMapping("/pendientes")
-    public ResponseEntity<List<MovimientoInventario>> listarPendientes() {
+    public ResponseEntity<List<MovimientoResumenDTO>> listarPendientes() {
         return ResponseEntity.ok(movimientoService.listarPendientes());
     }
 
     @GetMapping
-    public ResponseEntity<List<MovimientoInventario>> listarTodos() {
+    public ResponseEntity<List<MovimientoResumenDTO>> listarTodos() {
         return ResponseEntity.ok(movimientoService.listarTodos());
     }
 

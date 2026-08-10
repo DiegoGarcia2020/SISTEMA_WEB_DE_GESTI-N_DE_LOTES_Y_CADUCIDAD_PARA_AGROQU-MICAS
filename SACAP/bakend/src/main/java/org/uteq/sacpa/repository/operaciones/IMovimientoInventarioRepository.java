@@ -13,6 +13,10 @@ public interface IMovimientoInventarioRepository extends JpaRepository<Movimient
 
     List<MovimientoInventario> findByLote_IdLote(Integer idLote);
 
+    List<MovimientoInventario> findTop50ByOrderByFechaMovimientoDesc();
+
+    List<MovimientoInventario> findTop50ByIdEstadoAprobacionOrderByFechaMovimientoDesc(Integer idEstadoAprobacion);
+
     @Modifying
     @Transactional
     @Query(value = "SELECT operaciones.fn_crear_movimiento_inventario(:cantidad, :observacion, :idLote, :idTipoMovimiento, :idUsuario, :idEstadoAprobacion)", nativeQuery = true)

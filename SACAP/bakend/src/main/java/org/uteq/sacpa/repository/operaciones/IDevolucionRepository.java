@@ -13,6 +13,10 @@ public interface IDevolucionRepository extends JpaRepository<Devolucion, Integer
 
     List<Devolucion> findByLote_IdLote(Integer idLote);
 
+    List<Devolucion> findTop50ByOrderByFechaDevolucionDesc();
+
+    List<Devolucion> findTop50ByIdEstadoAprobacionOrderByFechaDevolucionDesc(Integer idEstadoAprobacion);
+
     @Modifying
     @Transactional
     @Query(value = "SELECT operaciones.fn_crear_devolucion(:motivo, :cantidad, :idLote, :idProveedor, :idUsuarioSupervisor, :idEstadoAprobacion)", nativeQuery = true)

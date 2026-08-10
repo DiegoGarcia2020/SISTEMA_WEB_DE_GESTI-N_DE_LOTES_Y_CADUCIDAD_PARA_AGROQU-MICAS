@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 import org.uteq.sacpa.dto.catalogos.CatalogoRequestDTO;
 import org.uteq.sacpa.entity.catalogos.*;
 import org.uteq.sacpa.service.catalogos.ICatalogoService;
+import org.uteq.sacpa.repository.geografia.ICiudadRepository;
+import org.uteq.sacpa.repository.entidades.IEmpresaRepository;
 
 import java.util.List;
 import java.util.Map;
@@ -17,6 +19,12 @@ public class CatalogoController {
 
     @Autowired
     private ICatalogoService catalogoService;
+
+    @Autowired
+    private ICiudadRepository ciudadRepository;
+
+    @Autowired
+    private IEmpresaRepository empresaRepository;
 
     // Endpoint unificado para el frontend (gestión de catálogos)
     @GetMapping
@@ -139,5 +147,26 @@ public class CatalogoController {
     public ResponseEntity<Map<String, String>> crearTipoMovimiento(@Valid @RequestBody CatalogoRequestDTO request) {
         catalogoService.crearTipoMovimiento(request);
         return ResponseEntity.ok(Map.of("mensaje", "Tipo de movimiento creado exitosamente"));
+    }
+
+    @GetMapping("/ciudades")
+    public ResponseEntity<List<Map<String, Object>>> listarCiudades() {
+        List<Map<String, Object>> lista = ciudadRepository.findAll().stream()
+                .map(c -> Map.<String, Object>of(
+                    "idCiudad", c.getIdCiudad(),
+                    "nombre", c.getNombre()))
+                .toList();
+        return ResponseEntity.ok(lista);
+    }
+
+    @GetMapping("/empresas")
+    public ResponseEntity<List<Map<String, Object>>> listarEmpresas() {
+        List<Map<String, Object>> lista = empresaRepository.findAll().stream()
+                .map(e -> Map.<String, Object>of(
+                    "idEmpresa", e.getIdEmpresa(),
+                    "nombre", e.getNombre(),
+                    "ruc", e.getRuc() != null ? e.getRuc() : ""))
+                .toList();
+        return ResponseEntity.ok(lista);
     }
 }
