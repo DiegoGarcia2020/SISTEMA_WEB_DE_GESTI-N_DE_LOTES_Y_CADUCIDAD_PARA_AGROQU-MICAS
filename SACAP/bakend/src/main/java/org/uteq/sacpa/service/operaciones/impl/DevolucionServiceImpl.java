@@ -48,14 +48,21 @@ public class DevolucionServiceImpl implements IDevolucionService {
 
     @Override
     public void crearDevolucion(DevolucionRequestDTO dto) {
-        devolucionRepository.crearDevolucion(
-                dto.getMotivo() != null ? dto.getMotivo() : "Devolución por defectos al proveedor",
-                dto.getCantidadDevuelta(),
-                dto.getIdLote(),
-                dto.getIdProveedor(),
-                null,
-                dto.getIdEstadoAprobacion() != null ? dto.getIdEstadoAprobacion() : 2 // 2: Pendiente
-        );
+        String motivo = dto.getMotivo() != null ? dto.getMotivo() : "Devolución por defectos al proveedor";
+        Integer idEstado = dto.getIdEstadoAprobacion() != null ? dto.getIdEstadoAprobacion() : 2;
+
+        jdbcTemplate.execute((java.sql.Connection conn) -> {
+            try (java.sql.PreparedStatement ps = conn.prepareStatement("SELECT operaciones.fn_crear_devolucion(?, ?, ?, ?, ?, ?)")) {
+                ps.setString(1, motivo);
+                ps.setInt(2, dto.getCantidadDevuelta());
+                ps.setInt(3, dto.getIdLote());
+                ps.setInt(4, dto.getIdProveedor());
+                ps.setNull(5, java.sql.Types.INTEGER);
+                ps.setInt(6, idEstado);
+                ps.execute();
+            }
+            return null;
+        });
     }
 
     @Override
@@ -65,12 +72,27 @@ public class DevolucionServiceImpl implements IDevolucionService {
 
     @Override
     public void aprobarDevolucion(Integer idDevolucion, Integer idUsuarioAprobador, String observacionesAprobador, Integer idEstadoAprobado) {
-        devolucionRepository.aprobarDevolucion(idDevolucion, idEstadoAprobado);
+        jdbcTemplate.execute((java.sql.Connection conn) -> {
+            try (java.sql.PreparedStatement ps = conn.prepareStatement("SELECT operaciones.fn_aprobar_devolucion(?, ?)")) {
+                ps.setInt(1, idDevolucion);
+                ps.setInt(2, idEstadoAprobado);
+                ps.execute();
+            }
+            return null;
+        });
     }
 
     @Override
     public void anularDevolucion(Integer idDevolucion, Integer idEstadoAnulado) {
-        devolucionRepository.anularDevolucion(idDevolucion, idEstadoAnulado, null);
+        jdbcTemplate.execute((java.sql.Connection conn) -> {
+            try (java.sql.PreparedStatement ps = conn.prepareStatement("SELECT operaciones.fn_anular_devolucion(?, ?, ?)")) {
+                ps.setInt(1, idDevolucion);
+                ps.setInt(2, idEstadoAnulado);
+                ps.setNull(3, java.sql.Types.INTEGER);
+                ps.execute();
+            }
+            return null;
+        });
     }
 
     @Override
@@ -99,7 +121,7 @@ public class DevolucionServiceImpl implements IDevolucionService {
 
         if (dto.getIdEstadoAprobacion() == 1) {
             // 1: Aprobado por el Supervisor
-            devolucionRepository.aprobarDevolucion(idDevolucion, 1);
+            this.aprobarDevolucion(idDevolucion, null, null, 1);
 
             // Ajustar stock en inventario (restar las unidades devueltas por defectos al proveedor)
             if (dev.getLote() != null && dev.getCantidad() != null) {
@@ -110,24 +132,37 @@ public class DevolucionServiceImpl implements IDevolucionService {
 
                 // Disparar Alerta / Sugerencia IA para venta o rotación de productos por defectos/devolución
                 try {
-                    crearSugerenciaJdbc(
-                            java.math.BigDecimal.valueOf(15.00),
-                            "Alerta IA SACPA: Devolución aprobada por defectos (" + dev.getMotivo() + "). Se sugiere auditar lote y considerar promoción/combo de rotación para mitigar merma.",
-                            lote.getIdLote(),
-                            null,
-                            null,
-                            2 // 2: Pendiente de revisión comercial
-                    );
+                    Integer idTemporadaValida = jdbcTemplate.queryForObject("SELECT max(id_temporada) FROM ia_alertas.temporadas_agricolas", Integer.class);
+                    if (idTemporadaValida != null) {
+                        crearSugerenciaJdbc(
+                                java.math.BigDecimal.valueOf(15.00),
+                                "Alerta IA SACPA: Devolución aprobada por defectos (" + dev.getMotivo() + "). Se sugiere auditar lote y considerar promoción/combo de rotación para mitigar merma.",
+                                lote.getIdLote(),
+                                idTemporadaValida,
+                                null,
+                                2 // 2: Pendiente de revisión comercial
+                        );
+                    } else {
+                        System.err.println("Advertencia: No hay temporadas agrícolas. Omitiendo sugerencia IA.");
+                    }
                 } catch (Exception e) {
                     System.err.println("Advertencia: No se pudo generar sugerencia IA automática para la devolución: " + e.getMessage());
                 }
             }
         } else if (dto.getIdEstadoAprobacion() == 3) {
             // 3: Rechazado
-            devolucionRepository.anularDevolucion(idDevolucion, 3, null);
+            this.anularDevolucion(idDevolucion, 3);
         } else {
             // Actualizar motivo u observación si sigue pendiente
-            devolucionRepository.actualizarDevolucion(idDevolucion, dto.getObservacionSupervisor() != null ? dto.getObservacionSupervisor() : "Revisado por Supervisor");
+            String observacion = dto.getObservacionSupervisor() != null ? dto.getObservacionSupervisor() : "Revisado por Supervisor";
+            jdbcTemplate.execute((java.sql.Connection conn) -> {
+                try (java.sql.PreparedStatement ps = conn.prepareStatement("SELECT operaciones.fn_actualizar_devolucion(?, ?)")) {
+                    ps.setInt(1, idDevolucion);
+                    ps.setString(2, observacion);
+                    ps.execute();
+                }
+                return null;
+            });
         }
     }
 }
