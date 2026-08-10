@@ -41,6 +41,9 @@ public interface ILoteService {
     /** Lista lotes pendientes de validacion (estado EN_REVISION) */
     List<LoteResponseDTO> listarPendientesValidacion(Integer idEstadoPendiente);
 
+    /** Lista lotes con stock disponible y vigentes para el catálogo general */
+    List<LoteResponseDTO> listarLotesDisponibles(String busqueda);
+
     /** Anula un lote (funcion inventario.fn_anular_lote) */
     void anularLote(Integer idLote);
 }

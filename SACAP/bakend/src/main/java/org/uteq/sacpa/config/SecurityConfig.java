@@ -153,7 +153,8 @@ public class SecurityConfig {
 
                 // Lectura de stock disponible para armar pedidos — también accesible al TECNICO
                 .requestMatchers(
-                    "/api/movimientos/lotes-disponibles"
+                    "/api/movimientos/lotes-disponibles",
+                    "/api/lotes/disponibles"
                 ).hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "BODEGUERO", "TECNICO", "TECNICO_CAMPO")
 
                 // ADMINISTRADOR, SUPERVISOR y BODEGUERO — inventario y lotes

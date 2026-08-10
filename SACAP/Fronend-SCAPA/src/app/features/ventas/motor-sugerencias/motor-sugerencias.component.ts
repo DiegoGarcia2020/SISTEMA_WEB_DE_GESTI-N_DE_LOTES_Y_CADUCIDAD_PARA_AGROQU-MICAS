@@ -91,9 +91,6 @@ export class MotorSugerenciasComponent implements OnInit {
     }
   }
 
-  irACheckout() {
-    this.router.navigate(['/admin/ventas/checkout']);
-  }
 
   claseUrgencia(score: number): string {
     if (score >= 80) return 'critico';

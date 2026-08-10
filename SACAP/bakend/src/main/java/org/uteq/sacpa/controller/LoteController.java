@@ -91,6 +91,12 @@ public class LoteController {
         return ResponseEntity.ok(loteService.listarPendientesValidacion(idEstadoPendiente));
     }
 
+    @GetMapping("/disponibles")
+    public ResponseEntity<List<LoteResponseDTO>> listarLotesDisponibles(
+            @RequestParam(value = "busqueda", required = false) String busqueda) {
+        return ResponseEntity.ok(loteService.listarLotesDisponibles(busqueda));
+    }
+
     @GetMapping("/{numeroLote}")
     public ResponseEntity<LoteResponseDTO> buscarPorNumeroLote(@PathVariable String numeroLote) {
         return ResponseEntity.ok(loteService.buscarPorNumeroLote(numeroLote));

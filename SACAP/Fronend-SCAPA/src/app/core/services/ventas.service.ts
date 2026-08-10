@@ -24,6 +24,14 @@ export class VentasService {
     return this.http.get<VentaDashboardDTO>(`${this.apiUrl}/ventas/dashboard`);
   }
 
+  // ── Catálogo General ─────────────────────────────────────
+  getLotesDisponibles(busqueda?: string): Observable<any[]> {
+    const params = busqueda ? `?busqueda=${encodeURIComponent(busqueda)}` : '';
+    return this.http.get<any[]>(`${this.apiUrl}/lotes/disponibles${params}`).pipe(
+      catchError(e => e.status === 0 || e.status === 404 ? of([]) : throwError(() => e))
+    );
+  }
+
   // ── Categorías / Motor de Sugerencias ─────────────────────
   getCategorias(): Observable<CategoriaDTO[]> {
     return this.http.get<CategoriaDTO[]>(`${this.apiUrl}/ventas/categorias`).pipe(

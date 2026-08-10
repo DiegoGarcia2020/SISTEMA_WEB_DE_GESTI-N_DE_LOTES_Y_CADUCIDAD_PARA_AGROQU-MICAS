@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -7,20 +7,62 @@ import { CarritoService } from '../../../core/services/carrito.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ClienteDTO } from '../../../core/models/ventas.model';
 import { ToastService } from '../../../shared/components/toast/toast.service';
+import { MotorSugerenciasComponent } from '../motor-sugerencias/motor-sugerencias.component';
 
 @Component({
   selector: 'app-checkout',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, MotorSugerenciasComponent],
   templateUrl: './checkout.component.html',
   styleUrl: './checkout.component.css'
 })
-export class CheckoutComponent {
+export class CheckoutComponent implements OnInit {
   private ventasService = inject(VentasService);
   private router = inject(Router);
   private auth = inject(AuthService);
   private toast = inject(ToastService);
   carrito = inject(CarritoService);
+
+  // Catálogo general
+  textoBusquedaProducto = signal('');
+  lotesDisponibles = signal<any[]>([]);
+  buscandoProductos = signal(false);
+  mostrarSugerenciasIA = signal(false);
+
+  ngOnInit() {
+    this.buscarProductos();
+  }
+
+  buscarProductos() {
+    this.buscandoProductos.set(true);
+    this.ventasService.getLotesDisponibles(this.textoBusquedaProducto()).subscribe({
+      next: (lotes) => {
+        this.lotesDisponibles.set(lotes || []);
+        this.buscandoProductos.set(false);
+      },
+      error: () => {
+        this.lotesDisponibles.set([]);
+        this.buscandoProductos.set(false);
+      }
+    });
+  }
+
+  agregarLoteAlCarrito(lote: any) {
+    this.carrito.agregar({
+      idLote: lote.idLote,
+      numeroLote: lote.numeroLote,
+      nombreProducto: lote.nombreProducto,
+      cantidad: 1,
+      precioUnitario: lote.precioReferencial || lote.producto?.precioReferencial || 0, // Ajustar segun DTO de LoteResponseDTO
+      esComboIA: false,
+      descuentoPct: 0
+    });
+    this.toast.success('Agregado', `${lote.nombreProducto} agregado al carrito`);
+  }
+
+  toggleSugerenciasIA() {
+    this.mostrarSugerenciasIA.update(v => !v);
+  }
 
   // Búsqueda / creación de cliente
   textoBusqueda = signal('');
@@ -103,9 +145,6 @@ export class CheckoutComponent {
     this.carrito.quitar(idLote);
   }
 
-  irASugerencias() {
-    this.router.navigate(['/admin/ventas/sugerencias']);
-  }
 
   confirmarVenta() {
     const cliente = this.carrito.clienteSeleccionado();

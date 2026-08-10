@@ -243,6 +243,13 @@ public class LoteServiceImpl implements ILoteService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<LoteResponseDTO> listarLotesDisponibles(String busqueda) {
+        return loteRepository.findLotesDisponibles(busqueda).stream()
+                .map(LoteResponseDTO::from).toList();
+    }
+
+    @Override
     public void anularLote(Integer idLote) {
         loteRepository.anularLote(idLote);
     }
