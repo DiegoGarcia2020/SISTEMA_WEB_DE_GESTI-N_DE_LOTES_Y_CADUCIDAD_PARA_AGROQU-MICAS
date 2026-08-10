@@ -6,6 +6,7 @@ import { OperacionesService } from '../../../core/services/operaciones.service';
 import { AlertaCaducidadDTO, ReglaNegocioIADTO } from '../../../core/models/operaciones.model';
 import { SectionHeaderComponent } from '../../../shared/components/section-header/section-header.component';
 import { ToastService } from '../../../shared/components/toast/toast.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-alertas-caducidad',
@@ -16,10 +17,12 @@ import { ToastService } from '../../../shared/components/toast/toast.service';
       <!-- Cabecera -->
       <app-section-header title="Alertas Inteligentes de Caducidad e Inventario" 
                           subtitle="Monitoreo predictivo AgroSense de agroquímicos, fertilizantes y semillas próximas a vencer para evitar pérdidas en bodega.">
-        <button (click)="openConfigModal()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold text-sm rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer">
-          <lucide-icon name="sliders" class="w-4 h-4 text-amber-400"></lucide-icon>
-          <span>Configurar Umbrales IA</span>
-        </button>
+        @if (esAdmin) {
+          <button (click)="openConfigModal()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold text-sm rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer">
+            <lucide-icon name="sliders" class="w-4 h-4 text-amber-400"></lucide-icon>
+            <span>Configurar Umbrales IA</span>
+          </button>
+        }
       </app-section-header>
 
       <!-- Barra de Filtros -->
@@ -95,18 +98,23 @@ import { ToastService } from '../../../shared/components/toast/toast.service';
               </div>
 
               <div class="flex items-center gap-1.5">
-                @if (a.estado === 'ACTIVA') {
-                  <button (click)="solicitarPromo(a)" 
+                @if (a.estado === 'ACTIVA' && puedeGestionarAlertas) {
+                  <button (click)="solicitarPromo(a)"
                           class="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1 cursor-pointer"
                           title="Generar combo o descuento IA automático para liquidar">
                     <lucide-icon name="sparkles" class="w-3.5 h-3.5 text-amber-300"></lucide-icon>
                     <span>Promo IA</span>
                   </button>
-                  <button (click)="descartar(a)" 
+                  <button (click)="descartar(a)"
                           class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                           title="Descartar alerta">
                     <lucide-icon name="trash-2" class="w-4 h-4"></lucide-icon>
                   </button>
+                } @else if (a.estado === 'ACTIVA') {
+                  <span class="bg-red-50 text-red-700 text-xs font-bold px-3 py-1 rounded-xl flex items-center gap-1">
+                    <lucide-icon name="alert-triangle" class="w-3.5 h-3.5"></lucide-icon>
+                    <span>Activa</span>
+                  </span>
                 } @else if (a.estado === 'EN_PROMOCION') {
                   <span class="bg-purple-100 text-purple-800 text-xs font-bold px-3 py-1 rounded-xl flex items-center gap-1">
                     <lucide-icon name="sparkles" class="w-3.5 h-3.5 text-purple-600"></lucide-icon>
@@ -195,6 +203,7 @@ import { ToastService } from '../../../shared/components/toast/toast.service';
 export class AlertasCaducidadComponent implements OnInit {
   private opService = inject(OperacionesService);
   private toast = inject(ToastService);
+  private authService = inject(AuthService);
 
   alertas = signal<AlertaCaducidadDTO[]>([]);
   filterPrioridad = signal<string>('TODAS');
@@ -203,9 +212,22 @@ export class AlertasCaducidadComponent implements OnInit {
   isModalOpen = signal<boolean>(false);
   regla: ReglaNegocioIADTO = { idRegla: 1, descuentoMaximo: 35, activarPromociones: true, diasAlertaAnticipada: 60, modeloIaActivo: 'AgroSense Predictor v2.4' };
 
+  /** Los umbrales del motor IA son configuración de negocio — solo el Administrador puede leerlos/editarlos (backend: /api/ia/reglas → ADMINISTRADOR). */
+  get esAdmin(): boolean {
+    return this.authService.currentRole()?.toUpperCase() === 'ADMINISTRADOR';
+  }
+
+  /** Promover a promoción / descartar alerta son decisiones de negocio (backend: /api/alertas/** → solo ADMINISTRADOR/SUPERVISOR). El Bodeguero solo tiene lectura. */
+  get puedeGestionarAlertas(): boolean {
+    const rol = this.authService.currentRole()?.toUpperCase();
+    return rol === 'ADMINISTRADOR' || rol === 'SUPERVISOR';
+  }
+
   ngOnInit(): void {
     this.loadData();
-    this.opService.obtenerReglaNegocioIA().subscribe(r => this.regla = { ...r });
+    if (this.esAdmin) {
+      this.opService.obtenerReglaNegocioIA().subscribe(r => this.regla = { ...r });
+    }
   }
 
   loadData(): void {

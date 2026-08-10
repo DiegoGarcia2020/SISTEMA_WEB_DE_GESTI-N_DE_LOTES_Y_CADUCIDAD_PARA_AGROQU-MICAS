@@ -42,8 +42,8 @@ public interface IOrdenCompraRepository extends JpaRepository<OrdenCompra, Integ
     @Query("SELECT o FROM OrdenCompra o " +
            "WHERE (:estado IS NULL OR o.estado = :estado) " +
            "AND (:idProveedor IS NULL OR o.proveedor.idProveedor = :idProveedor) " +
-           "AND (:desde IS NULL OR o.fechaEmision >= :desde) " +
-           "AND (:hasta IS NULL OR o.fechaEmision <= :hasta) " +
+           "AND (CAST(:desde AS date) IS NULL OR o.fechaEmision >= CAST(:desde AS date)) " +
+           "AND (CAST(:hasta AS date) IS NULL OR o.fechaEmision <= CAST(:hasta AS date)) " +
            "AND (:idUsuarioRegistro IS NULL OR o.idUsuarioRegistro = :idUsuarioRegistro) " +
            "ORDER BY o.fechaRegistro DESC")
     List<OrdenCompra> findByFiltros(@Param("estado") String estado,

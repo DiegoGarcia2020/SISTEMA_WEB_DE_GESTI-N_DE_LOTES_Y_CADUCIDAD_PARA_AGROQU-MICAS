@@ -7,7 +7,11 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 import org.uteq.sacpa.entity.catalogos.CatEstadoLote;
 
+import java.util.Optional;
+
 public interface ICatEstadoLoteRepository extends JpaRepository<CatEstadoLote, Integer> {
+    Optional<CatEstadoLote> findByNombreIgnoreCase(String nombre);
+
     @Modifying @Transactional
     @Query(value = "SELECT catalogos.fn_crear_estado_lote(:nombre)", nativeQuery = true)
     void crearEstado(@Param("nombre") String nombre);

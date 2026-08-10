@@ -65,6 +65,13 @@ export class AsignacionUbicacionComponent implements OnInit {
     this.exito.set('');
   }
 
+  /** Cantidad que quedó registrada al recepcionar el lote — referencia para detectar diferencias al contar físicamente. */
+  cantidadRegistrada(): number | null {
+    const lote = this.loteSeleccionado();
+    if (!lote) return null;
+    return lote.cantidadActual || lote.cantidadInicial || 0;
+  }
+
   // Cascada seleccion
   cargarAlmacenes() {
     this.inventario.getAlmacenes().subscribe({ next: a => this.almacenes.set(a) });
@@ -131,6 +138,17 @@ export class AsignacionUbicacionComponent implements OnInit {
     }
     if (!this.cantidadAUbicar || this.cantidadAUbicar < 1) {
       this.error.set('Ingrese una cantidad válida a ubicar.');
+      return;
+    }
+
+    // Validar contra la cantidad que quedó registrada al recepcionar el lote
+    const cantidadRegistrada = this.cantidadRegistrada() ?? 0;
+    if (this.cantidadAUbicar > cantidadRegistrada) {
+      this.error.set(`⚠️ No puede ubicar más unidades (${this.cantidadAUbicar}) que las registradas en el lote (${cantidadRegistrada}).`);
+      return;
+    }
+    if (this.cantidadAUbicar !== cantidadRegistrada && !this.observaciones.trim()) {
+      this.error.set(`⚠️ Contó ${this.cantidadAUbicar} de ${cantidadRegistrada} unidades registradas. Explique la diferencia en Observaciones antes de confirmar.`);
       return;
     }
 

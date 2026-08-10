@@ -6,10 +6,11 @@ import { environment } from '../../../environments/environment';
 export interface Temporada {
   idTemporada?: number;
   nombre: string;
+  cultivo?: string;
   fechaInicio: string;
-  fechaFin?: string;
+  fechaFinProyectada?: string;
   estado?: string;
-  fechaCreacion?: string;
+  progresoPorcentaje?: number;
 }
 
 @Injectable({
@@ -17,17 +18,17 @@ export interface Temporada {
 })
 export class TemporadaService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/operaciones/temporadas`;
+  private apiUrl = `${environment.apiUrl}/temporadas`;
 
-  aperturarTemporada(data: { nombre: string; fechaInicio: string }): Observable<Temporada> {
-    return this.http.post<Temporada>(`${this.apiUrl}/aperturar`, data);
-  }
-
-  obtenerTemporadaActiva(): Observable<Temporada> {
-    return this.http.get<Temporada>(`${this.apiUrl}/activa`);
+  crearTemporada(data: { nombre: string; cultivo?: string; fechaInicio: string; fechaFinProyectada: string; estado?: string }): Observable<Temporada> {
+    return this.http.post<Temporada>(this.apiUrl, data);
   }
 
   listarTemporadas(): Observable<Temporada[]> {
     return this.http.get<Temporada[]>(this.apiUrl);
+  }
+
+  cambiarEstado(idTemporada: number, estado: string): Observable<{ mensaje: string }> {
+    return this.http.patch<{ mensaje: string }>(`${this.apiUrl}/${idTemporada}/estado`, { estado });
   }
 }

@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { environment } from '../../../../environments/environment';
@@ -25,6 +26,7 @@ export interface OrdenCompraListDTO {
 export class BodegaRecepcionesComponent implements OnInit {
   private http = inject(HttpClient);
   private toast = inject(ToastService);
+  private router = inject(Router);
 
   ordenesHoy = signal<OrdenCompraListDTO[]>([]);
   isLoading = signal<boolean>(false);
@@ -83,6 +85,10 @@ export class BodegaRecepcionesComponent implements OnInit {
           this.setProcessing(idOrden, false);
         }
       });
+  }
+
+  irARecepcion(idOrden: number) {
+    this.router.navigate(['/bodega/recepcion', idOrden]);
   }
 
   abrirModalRetraso(idOrden: number) {

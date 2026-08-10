@@ -168,6 +168,11 @@ public class LoteServiceImpl implements ILoteService {
         int capAct = ubicacion.getCapacidadActual() != null ? ubicacion.getCapacidadActual() : 0;
         int cantidadAAgregar = cantidad != null ? cantidad : lote.getCantidadInicial();
 
+        if (lote.getCantidadInicial() != null && cantidadAAgregar > lote.getCantidadInicial()) {
+            throw new IllegalArgumentException("No puede ubicar más unidades (" + cantidadAAgregar
+                    + ") que las registradas en el lote al recepcionarlo (" + lote.getCantidadInicial() + ").");
+        }
+
         if (capAct + cantidadAAgregar > capMax) {
             int disponible = Math.max(0, capMax - capAct);
             throw new IllegalArgumentException("Capacidad máxima de la estantería/ubicación excedida. " 

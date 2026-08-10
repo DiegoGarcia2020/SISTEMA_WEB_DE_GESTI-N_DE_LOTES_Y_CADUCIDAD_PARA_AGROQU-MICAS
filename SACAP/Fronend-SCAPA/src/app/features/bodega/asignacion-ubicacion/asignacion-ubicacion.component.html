@@ -156,7 +156,15 @@
         <div class="au-grid-2">
           <div class="au-form-group">
             <label class="au-label">Cantidad a Ubicar *</label>
-            <input type="number" [(ngModel)]="cantidadAUbicar" class="au-input" min="1" />
+            <input type="number" [(ngModel)]="cantidadAUbicar" class="au-input" min="1" [max]="cantidadRegistrada()" />
+            @if (cantidadRegistrada() != null) {
+              <span class="au-cap-free" style="margin-top:0.35rem;">
+                Cantidad registrada en el lote: <strong>{{ cantidadRegistrada() }} un.</strong>
+                @if (cantidadAUbicar !== cantidadRegistrada()) {
+                  — ⚠️ no coincide, debe explicar la diferencia en Observaciones
+                }
+              </span>
+            }
           </div>
 
           <div class="au-form-group">

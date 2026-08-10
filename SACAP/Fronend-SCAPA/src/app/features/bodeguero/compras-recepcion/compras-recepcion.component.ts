@@ -267,6 +267,7 @@ export class ComprasRecepcionComponent implements OnInit {
     const idOrden = this.orden()!.id;
 
     const payload = {
+      idOrdenCompra: idOrden,
       lotes: formValue.lotes.map((l: any) => ({
         idDetalleCompra: l.idDetalleCompra,
         numeroLote: l.numeroLote,
@@ -278,8 +279,7 @@ export class ComprasRecepcionComponent implements OnInit {
     this.operacionesService.recepcionarOrden(idOrden, payload).subscribe({
       next: (res) => {
         this.toast.success('Recepción Exitosa', res.mensaje || 'Lotes generados en estado FLOTANTE.');
-        // Navegar a alguna vista del bodeguero, ej. dashboard
-        this.router.navigate(['/supervisor/compras']); // Ajustar a ruta de bodega si existe
+        this.router.navigate(['/bodega/recepciones-hoy']);
       },
       error: () => {
         this.toast.error('Error', 'No se pudo procesar la recepción.');
@@ -289,6 +289,6 @@ export class ComprasRecepcionComponent implements OnInit {
   }
 
   volver(): void {
-    this.router.navigate(['/supervisor/compras']);
+    this.router.navigate(['/bodega/recepciones-hoy']);
   }
 }

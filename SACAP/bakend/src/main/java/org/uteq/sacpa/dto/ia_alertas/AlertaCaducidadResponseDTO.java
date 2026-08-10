@@ -45,9 +45,22 @@ public class AlertaCaducidadResponseDTO {
                 .unidadMedida(lote != null && lote.getProducto() != null ? lote.getProducto().getUnidadMedida() : null)
                 .fechaCaducidad(lote != null ? lote.getFechaVencimiento() : null)
                 .diasRestantes(dias)
-                .nivelPrioridad(a.getNivelAlerta() != null ? a.getNivelAlerta().getNombre() : null)
+                .nivelPrioridad(mapearNivelPrioridad(a.getNivelAlerta() != null ? a.getNivelAlerta().getNombre() : null))
                 .estado(a.getEstado() != null ? a.getEstado().getNombre() : null)
                 .sugerenciaDescuento(sugerenciaDescuento)
                 .build();
+    }
+
+    /**
+     * El catálogo catalogos.cat_nivel_alerta usa INFORMATIVA/PREVENTIVA/ADVERTENCIA/CRÍTICA,
+     * pero el frontend (filtros y badges de prioridad) espera MEDIA/ALTA/URGENTE.
+     */
+    private static String mapearNivelPrioridad(String nombreCatalogo) {
+        if (nombreCatalogo == null) return null;
+        return switch (nombreCatalogo.toUpperCase()) {
+            case "CRÍTICA", "CRITICA" -> "URGENTE";
+            case "ADVERTENCIA" -> "ALTA";
+            default -> "MEDIA"; // PREVENTIVA / INFORMATIVA
+        };
     }
 }

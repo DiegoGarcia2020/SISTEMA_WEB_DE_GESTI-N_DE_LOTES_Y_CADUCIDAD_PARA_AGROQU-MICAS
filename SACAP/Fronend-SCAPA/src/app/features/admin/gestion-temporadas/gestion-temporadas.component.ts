@@ -12,7 +12,7 @@ import { ToastService } from '../../../shared/components/toast/toast.service';
   styleUrl: './gestion-temporadas.component.css',
   template: `
     <div class="temporadas-container">
-      
+
       <!-- Panel Izquierdo: Formulario -->
       <div class="panel-form">
         <div class="panel-header">
@@ -30,10 +30,23 @@ import { ToastService } from '../../../shared/components/toast/toast.service';
           </div>
 
           <div class="form-group">
+            <label class="form-label">Cultivo</label>
+            <input type="text" formControlName="cultivo" class="form-input" placeholder="ej. Maíz y Arroz">
+          </div>
+
+          <div class="form-group">
             <label class="form-label">Fecha de Inicio</label>
             <input type="date" formControlName="fechaInicio" class="form-input">
             @if (temporadaForm.get('fechaInicio')?.invalid && temporadaForm.get('fechaInicio')?.touched) {
               <span class="form-error">La fecha de inicio es requerida</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Fecha de Fin Proyectada</label>
+            <input type="date" formControlName="fechaFinProyectada" class="form-input">
+            @if (temporadaForm.get('fechaFinProyectada')?.invalid && temporadaForm.get('fechaFinProyectada')?.touched) {
+              <span class="form-error">La fecha de fin proyectada es requerida</span>
             }
           </div>
 
@@ -49,7 +62,7 @@ import { ToastService } from '../../../shared/components/toast/toast.service';
         </form>
 
         <div class="alert-warning">
-          <p><strong>Aviso de Cierre:</strong> La temporada actualmente ACTIVA se marcará como INACTIVA y su fecha de fin se establecerá al día de hoy.</p>
+          <p><strong>Aviso de Cierre:</strong> La temporada actualmente ACTIVA se marcará como CERRADA.</p>
         </div>
       </div>
 
@@ -78,8 +91,9 @@ import { ToastService } from '../../../shared/components/toast/toast.service';
               <thead>
                 <tr>
                   <th>Nombre</th>
+                  <th>Cultivo</th>
                   <th>Inicio</th>
-                  <th>Fin</th>
+                  <th>Fin Proyectada</th>
                   <th>Estado</th>
                 </tr>
               </thead>
@@ -87,10 +101,11 @@ import { ToastService } from '../../../shared/components/toast/toast.service';
                 @for (temp of temporadas(); track temp.idTemporada) {
                   <tr>
                     <td class="text-stamped" style="font-size: 0.8125rem; font-family: var(--font-slab); font-weight: 600; color: var(--c-warm-black); letter-spacing: 0.05em; text-transform: uppercase;">{{ temp.nombre }}</td>
+                    <td>{{ temp.cultivo || '—' }}</td>
                     <td>{{ temp.fechaInicio | date:'mediumDate' }}</td>
-                    <td>{{ temp.fechaFin ? (temp.fechaFin | date:'mediumDate') : '—' }}</td>
+                    <td>{{ temp.fechaFinProyectada ? (temp.fechaFinProyectada | date:'mediumDate') : '—' }}</td>
                     <td>
-                      <span class="badge" [ngClass]="temp.estado === 'ACTIVO' ? 'badge-active' : 'badge-inactive'">
+                      <span class="badge" [ngClass]="temp.estado === 'ACTIVA' ? 'badge-active' : 'badge-inactive'">
                         {{ temp.estado }}
                       </span>
                     </td>
@@ -118,7 +133,9 @@ export class GestionTemporadasComponent implements OnInit {
   constructor() {
     this.temporadaForm = this.fb.group({
       nombre: ['', Validators.required],
-      fechaInicio: [new Date().toISOString().split('T')[0], Validators.required]
+      cultivo: [''],
+      fechaInicio: [new Date().toISOString().split('T')[0], Validators.required],
+      fechaFinProyectada: ['', Validators.required]
     });
   }
 
@@ -132,8 +149,8 @@ export class GestionTemporadasComponent implements OnInit {
       next: (data) => {
         // Ordenar para que la activa o las más recientes salgan primero
         data.sort((a, b) => {
-          if (a.estado === 'ACTIVO' && b.estado !== 'ACTIVO') return -1;
-          if (a.estado !== 'ACTIVO' && b.estado === 'ACTIVO') return 1;
+          if (a.estado === 'ACTIVA' && b.estado !== 'ACTIVA') return -1;
+          if (a.estado !== 'ACTIVA' && b.estado === 'ACTIVA') return 1;
           return new Date(b.fechaInicio).getTime() - new Date(a.fechaInicio).getTime();
         });
         this.temporadas.set(data);
@@ -150,17 +167,33 @@ export class GestionTemporadasComponent implements OnInit {
     if (this.temporadaForm.invalid) return;
 
     this.isSubmitting.set(true);
-    this.temporadaService.aperturarTemporada(this.temporadaForm.value).subscribe({
-      next: (nuevaTemp) => {
-        this.toast.success('Éxito', `Temporada "${nuevaTemp.nombre}" aperturada correctamente.`);
-        this.temporadaForm.reset({ fechaInicio: new Date().toISOString().split('T')[0] });
-        this.cargarTemporadas();
-        this.isSubmitting.set(false);
-      },
-      error: (err) => {
-        this.toast.error('Error', err.error?.message || 'No se pudo aperturar la temporada.');
-        this.isSubmitting.set(false);
-      }
-    });
+    const activa = this.temporadas().find(t => t.estado === 'ACTIVA');
+
+    const crear = () => {
+      this.temporadaService.crearTemporada({ ...this.temporadaForm.value, estado: 'ACTIVA' }).subscribe({
+        next: (nuevaTemp) => {
+          this.toast.success('Éxito', `Temporada "${nuevaTemp.nombre}" aperturada correctamente.`);
+          this.temporadaForm.reset({ cultivo: '', fechaInicio: new Date().toISOString().split('T')[0], fechaFinProyectada: '' });
+          this.cargarTemporadas();
+          this.isSubmitting.set(false);
+        },
+        error: (err) => {
+          this.toast.error('Error', err.error?.message || 'No se pudo aperturar la temporada.');
+          this.isSubmitting.set(false);
+        }
+      });
+    };
+
+    if (activa && activa.idTemporada) {
+      this.temporadaService.cambiarEstado(activa.idTemporada, 'CERRADA').subscribe({
+        next: crear,
+        error: (err) => {
+          this.toast.error('Error', err.error?.message || 'No se pudo cerrar la temporada activa anterior.');
+          this.isSubmitting.set(false);
+        }
+      });
+    } else {
+      crear();
+    }
   }
 }
