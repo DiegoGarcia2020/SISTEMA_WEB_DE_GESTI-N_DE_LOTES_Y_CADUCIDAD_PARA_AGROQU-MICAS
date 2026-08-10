@@ -135,4 +135,26 @@ public class DevolucionVentaServiceImpl implements IDevolucionVentaService {
                         .build())
                 .collect(java.util.stream.Collectors.toList());
     }
+    @Override
+    @Transactional(readOnly = true)
+    public java.util.List<org.uteq.sacpa.dto.operaciones.DevolucionVentaResponseDTO> listarPorTecnico(Integer idTecnico) {
+        return devolucionVentaRepository.findByTecnico(idTecnico)
+                .stream()
+                .map(d -> org.uteq.sacpa.dto.operaciones.DevolucionVentaResponseDTO.builder()
+                        .id(d.getId())
+                        .idVenta(d.getVenta().getId())
+                        .numeroComprobante(d.getVenta().getNumeroComprobante())
+                        .nombreCliente(d.getVenta().getCliente().getNombreFinca())
+                        .nombreTecnico(d.getVenta().getTecnico().getNombres() + " " + d.getVenta().getTecnico().getApellidos())
+                        .idProducto(d.getProducto().getIdProducto())
+                        .nombreProducto(d.getProducto().getNombre())
+                        .cantidadDevuelta(d.getCantidadDevuelta())
+                        .motivo(d.getMotivo())
+                        .fechaSolicitud(d.getFechaSolicitud())
+                        .estadoLogistico(d.getEstadoLogistico())
+                        .estadoInventario(d.getEstadoInventario())
+                        .fechaRecepcion(d.getFechaRecepcion())
+                        .build())
+                .collect(java.util.stream.Collectors.toList());
+    }
 }

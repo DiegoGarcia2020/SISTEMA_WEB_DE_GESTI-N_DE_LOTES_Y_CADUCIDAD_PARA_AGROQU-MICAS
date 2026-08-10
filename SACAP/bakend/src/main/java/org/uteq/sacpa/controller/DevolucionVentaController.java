@@ -13,6 +13,7 @@ import org.uteq.sacpa.service.operaciones.IDevolucionVentaService;
 public class DevolucionVentaController {
 
     private final IDevolucionVentaService devolucionService;
+    private final org.uteq.sacpa.security.SecurityContextService securityContextService;
 
     @PostMapping("/campo")
     public ResponseEntity<?> registrarDevolucionCampo(@Valid @RequestBody DevolucionVentaRequestDTO request) {
@@ -29,5 +30,11 @@ public class DevolucionVentaController {
     @GetMapping("/pendientes-bodega")
     public ResponseEntity<java.util.List<org.uteq.sacpa.dto.operaciones.DevolucionVentaResponseDTO>> listarPendientesBodega() {
         return ResponseEntity.ok(devolucionService.listarPendientesBodega());
+    }
+    
+    @GetMapping("/mis-devoluciones")
+    public ResponseEntity<java.util.List<org.uteq.sacpa.dto.operaciones.DevolucionVentaResponseDTO>> listarMisDevoluciones() {
+        Integer idTecnico = securityContextService.obtenerPrincipal().getIdUsuario();
+        return ResponseEntity.ok(devolucionService.listarPorTecnico(idTecnico));
     }
 }

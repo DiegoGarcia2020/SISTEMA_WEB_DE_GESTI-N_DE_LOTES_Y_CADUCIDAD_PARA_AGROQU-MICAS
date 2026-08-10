@@ -7,4 +7,5 @@ public interface IDevolucionVentaService {
     DevolucionVenta registrarDevolucionCampo(DevolucionVentaRequestDTO requestDTO);
     DevolucionVenta recibirDevolucionFisica(Integer idDevolucion, String estadoInventario);
     java.util.List<org.uteq.sacpa.dto.operaciones.DevolucionVentaResponseDTO> listarPendientesBodega();
+    java.util.List<org.uteq.sacpa.dto.operaciones.DevolucionVentaResponseDTO> listarPorTecnico(Integer idTecnico);
 }

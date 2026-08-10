@@ -695,6 +695,25 @@ export class OperacionesService {
     );
   }
 
+  registrarDevolucionCampo(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/operaciones/devoluciones-venta/campo`, payload);
+  }
+
+  listarMisDevolucionesCampo(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/operaciones/devoluciones-venta/mis-devoluciones`).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) return of([]);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  recibirDevolucionFisicaVenta(idDevolucion: number, estadoInventario: string): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/operaciones/devoluciones-venta/${idDevolucion}/recibir-fisica`, {}, {
+      params: { estadoInventario }
+    });
+  }
+
   // ================= ENDPOINTS DE COMBOS / KITTING =================
   listarCombosActivos(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/promociones/activas`).pipe(

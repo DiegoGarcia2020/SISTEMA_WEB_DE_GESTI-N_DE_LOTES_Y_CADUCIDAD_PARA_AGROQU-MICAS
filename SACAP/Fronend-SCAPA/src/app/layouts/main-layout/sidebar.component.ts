@@ -38,6 +38,10 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
             <lucide-icon name="alert-triangle" class="nav-item__icon"></lucide-icon>
             <span>Alertas de Caducidad</span>
           </a>
+          <a routerLink="/bodega/devoluciones" routerLinkActive="active" class="nav-item">
+            <lucide-icon name="corner-up-left" class="nav-item__icon"></lucide-icon>
+            <span>Devoluciones Pendientes</span>
+          </a>
           <a routerLink="/admin/bodega/topologia" routerLinkActive="active" class="nav-item">
             <lucide-icon name="network" class="nav-item__icon"></lucide-icon>
             <span>Topología de Bodega</span>
@@ -74,6 +78,10 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
           <a routerLink="/campo/entregas" routerLinkActive="active" class="nav-item">
             <lucide-icon name="truck" class="nav-item__icon"></lucide-icon>
             <span>Historial de Entregas</span>
+          </a>
+          <a routerLink="/campo/historial-devoluciones" routerLinkActive="active" class="nav-item">
+            <lucide-icon name="corner-up-left" class="nav-item__icon"></lucide-icon>
+            <span>Historial de Devoluciones</span>
           </a>
         }
 

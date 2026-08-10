@@ -217,7 +217,7 @@ public class VentaIAServiceImpl implements IVentaIAService {
     public List<VentaIAResponseDTO> misVentas(Integer idUsuarioAutenticado) {
         // La tabla unificada referencia al Usuario directamente, así que ya no hace
         // falta resolver el perfil TecnicoCampo para listar el historial.
-        return ventaRepository.findByTecnico_IdUsuarioOrderByFechaDesc(idUsuarioAutenticado)
+        return ventaRepository.findTop100ByTecnico_IdUsuarioOrderByFechaDesc(idUsuarioAutenticado)
                 .stream().map(this::construirRespuesta).toList();
     }
 

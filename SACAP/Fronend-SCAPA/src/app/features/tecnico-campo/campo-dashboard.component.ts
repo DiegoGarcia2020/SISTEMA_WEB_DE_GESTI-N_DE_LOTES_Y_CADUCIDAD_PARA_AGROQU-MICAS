@@ -1,5 +1,6 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { OperacionesService } from '../../core/services/operaciones.service';
 import { VentasService } from '../../core/services/ventas.service';
@@ -11,7 +12,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 @Component({
   selector: 'app-campo-dashboard',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule],
   styleUrls: ['./campo-dashboard.component.css'],
   template: `
     <div class="dashboard-container">
@@ -131,6 +132,11 @@ import { Router, ActivatedRoute } from '@angular/router';
                       <button (click)="verDetalleVenta(venta.idVenta)" class="btn--action-view">
                         Ver Detalle
                       </button>
+                      @if (venta.estado === 'ENTREGADA') {
+                        <button (click)="abrirModalDevolucion(venta)" class="btn btn--outline btn--sm" style="margin-left: 8px;">
+                          <lucide-icon name="undo-2"></lucide-icon> Devolver
+                        </button>
+                      }
                     </td>
                   </tr>
                 } @empty {
@@ -145,6 +151,48 @@ import { Router, ActivatedRoute } from '@angular/router';
                 }
               </tbody>
             </table>
+          </div>
+        </div>
+      }
+      
+      <!-- Modal de Devolución -->
+      @if (mostrarModalDevolucion()) {
+        <div class="modal-overlay">
+          <div class="modal-content">
+            <h3>Registrar Devolución de Venta</h3>
+            <p>Venta: {{ ventaSeleccionada()?.numeroOrden || 'VTA-' + ventaSeleccionada()?.idVenta }}</p>
+            
+            <div class="form-group" style="margin-top: 15px;">
+              <label>Producto a devolver (seleccione del detalle):</label>
+              <select [(ngModel)]="devolucionForm.idDetalle" class="form-control" style="width: 100%; padding: 8px; margin-top: 5px;">
+                <option value="">-- Seleccione un producto --</option>
+                @for (item of detallesVenta(); track item.idDetalle) {
+                  <option [value]="item.idDetalle">{{ item.nombreProducto }} (Compró: {{ item.cantidad }})</option>
+                }
+              </select>
+            </div>
+            
+            <div class="form-group" style="margin-top: 15px;">
+              <label>Cantidad a devolver:</label>
+              <input type="number" [(ngModel)]="devolucionForm.cantidad" class="form-control" min="1" style="width: 100%; padding: 8px; margin-top: 5px;" />
+            </div>
+            
+            <div class="form-group" style="margin-top: 15px;">
+              <label>Motivo de la devolución:</label>
+              <select [(ngModel)]="devolucionForm.motivo" class="form-control" style="width: 100%; padding: 8px; margin-top: 5px;">
+                <option value="">-- Seleccione un motivo --</option>
+                <option value="PRODUCTO_CADUCADO">Producto Caducado</option>
+                <option value="EMPAQUE_DANADO">Empaque Dañado</option>
+                <option value="ERROR_DESPACHO">Error en Despacho</option>
+                <option value="CLIENTE_RECHAZA">Cliente Rechaza / No requiere</option>
+                <option value="OTRO">Otro</option>
+              </select>
+            </div>
+            
+            <div class="modal-actions" style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+              <button (click)="cerrarModalDevolucion()" class="btn btn--outline">Cancelar</button>
+              <button (click)="confirmarDevolucion()" class="btn btn--primary" [disabled]="!devolucionForm.idDetalle || devolucionForm.cantidad <= 0 || !devolucionForm.motivo">Confirmar</button>
+            </div>
           </div>
         </div>
       }
@@ -166,6 +214,16 @@ export class CampoDashboardComponent implements OnInit {
   combosActivos = signal<any[]>([]);
   lotesDisponibles = signal<any[]>([]);
   ventas = signal<any[]>([]);
+  
+  // Estado para el modal de devolución
+  mostrarModalDevolucion = signal<boolean>(false);
+  ventaSeleccionada = signal<any | null>(null);
+  detallesVenta = signal<any[]>([]);
+  devolucionForm = {
+    idDetalle: '',
+    cantidad: 1,
+    motivo: ''
+  };
 
   ngOnInit(): void {
     const vista = this.route.snapshot.data['vista'] as 'combos' | 'historial' | undefined;
@@ -222,5 +280,58 @@ export class CampoDashboardComponent implements OnInit {
 
     this.toast.success('Combo agregado al carrito', `${combo.titulo} listo para completar la venta.`);
     this.router.navigate(['/admin/ventas/checkout']);
+  }
+
+  // Lógica de Devolución
+  abrirModalDevolucion(venta: any): void {
+    this.ventaSeleccionada.set(venta);
+    this.mostrarModalDevolucion.set(true);
+    this.devolucionForm = { idDetalle: '', cantidad: 1, motivo: '' };
+    
+    // Cargar detalles de la venta
+    this.ventasService.obtenerVenta(venta.idVenta).subscribe({
+      next: (ventaCompleta: any) => {
+        this.detallesVenta.set(ventaCompleta.lineas || []);
+      },
+      error: () => {
+        this.toast.error('Error', 'No se pudieron cargar los detalles de la venta.');
+        this.cerrarModalDevolucion();
+      }
+    });
+  }
+
+  cerrarModalDevolucion(): void {
+    this.mostrarModalDevolucion.set(false);
+    this.ventaSeleccionada.set(null);
+    this.detallesVenta.set([]);
+  }
+
+  confirmarDevolucion(): void {
+    const detalleSeleccionado = this.detallesVenta().find(d => d.idDetalle == this.devolucionForm.idDetalle);
+    if (!detalleSeleccionado) return;
+
+    if (this.devolucionForm.cantidad > detalleSeleccionado.cantidad) {
+      this.toast.error('Error', 'No puede devolver más cantidad de la que se vendió.');
+      return;
+    }
+
+    const payload = {
+      idVenta: this.ventaSeleccionada()?.idVenta,
+      idLote: detalleSeleccionado.idLote,
+      idProducto: detalleSeleccionado.idProducto,
+      cantidadDevuelta: this.devolucionForm.cantidad,
+      motivo: this.devolucionForm.motivo
+    };
+
+    this.operacionesService.registrarDevolucionCampo(payload).subscribe({
+      next: () => {
+        this.toast.success('Devolución registrada', 'La solicitud de devolución fue enviada a bodega.');
+        this.cerrarModalDevolucion();
+        this.cargarVentas(); // Recargar para actualizar el estado
+      },
+      error: () => {
+        this.toast.error('Error', 'No se pudo registrar la devolución.');
+      }
+    });
   }
 }

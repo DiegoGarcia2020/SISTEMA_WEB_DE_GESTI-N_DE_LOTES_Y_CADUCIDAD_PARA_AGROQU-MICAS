@@ -14,6 +14,7 @@ public interface VentaRepository extends JpaRepository<Venta, Integer> {
 
     /** Historial del técnico, más recientes primero. */
     List<Venta> findByTecnico_IdUsuarioOrderByFechaDesc(Integer idUsuario);
+    List<Venta> findTop100ByTecnico_IdUsuarioOrderByFechaDesc(Integer idUsuario);
 
     Optional<Venta> findByNumeroComprobante(String numeroComprobante);
 }

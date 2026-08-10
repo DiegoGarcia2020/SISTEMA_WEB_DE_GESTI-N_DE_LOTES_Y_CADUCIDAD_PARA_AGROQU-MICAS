@@ -144,6 +144,7 @@ public class MovimientoServiceImpl implements IMovimientoService {
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public List<org.uteq.sacpa.dto.operaciones.LoteDisponibleDTO> listarLotesDisponiblesFefo() {
         return loteRepository.findLotesDisponiblesFefo().stream()
+                .limit(500)
                 .map(l -> org.uteq.sacpa.dto.operaciones.LoteDisponibleDTO.builder()
                         .idLote(l.getIdLote())
                         .numeroLote(l.getNumeroLote())

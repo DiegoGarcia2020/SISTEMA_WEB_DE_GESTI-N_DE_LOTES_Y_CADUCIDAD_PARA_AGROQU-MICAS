@@ -25,6 +25,8 @@ import { ComprasRecepcionComponent } from './features/bodeguero/compras-recepcio
 import { BodegaRecepcionesComponent } from './features/bodeguero/recepciones/bodega-recepciones.component';
 import { BodegaDespachosComponent } from './features/bodeguero/despachos/bodega-despachos.component';
 import { CampoDashboardComponent } from './features/tecnico-campo/campo-dashboard.component';
+import { HistorialDevolucionesComponent } from './features/tecnico-campo/historial-devoluciones.component';
+import { BodegueroDevolucionesComponent } from './features/bodeguero/bodeguero-devoluciones.component';
 
 import { TecnicoEntregasComponent } from './features/tecnico-campo/entregas/tecnico-entregas.component';
 import { SupervisorDashboardComponent } from './features/supervisor/supervisor-dashboard.component';
@@ -61,6 +63,7 @@ export const routes: Routes = [
       { path: 'recepciones-hoy', component: BodegaRecepcionesComponent },
       { path: 'despachos', component: BodegaDespachosComponent },
       { path: 'recepcion/:idOrden', component: ComprasRecepcionComponent },
+      { path: 'devoluciones', component: BodegueroDevolucionesComponent },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },
@@ -71,6 +74,7 @@ export const routes: Routes = [
     children: [
       { path: 'combos', component: CampoDashboardComponent, data: { vista: 'combos' } },
       { path: 'historial-ventas', component: CampoDashboardComponent, data: { vista: 'historial' } },
+      { path: 'historial-devoluciones', component: HistorialDevolucionesComponent },
       { path: 'entregas', component: TecnicoEntregasComponent },
       { path: 'dashboard', redirectTo: 'combos', pathMatch: 'full' },
       { path: '', redirectTo: 'combos', pathMatch: 'full' }
