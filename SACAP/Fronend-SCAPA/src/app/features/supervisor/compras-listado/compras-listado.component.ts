@@ -65,7 +65,7 @@ import { ComprobanteService } from '../../../core/services/comprobante.service';
             <select class="form-group__select" [(ngModel)]="filtroProveedor">
               <option [ngValue]="null">Todos</option>
               @for (prov of proveedores(); track prov.idProveedor) {
-                <option [ngValue]="prov.idProveedor">{{ prov.nombre }}</option>
+                <option [ngValue]="prov.idProveedor">{{ prov.empresa?.nombre || prov.nombreRepresentante || prov.nombre }}</option>
               }
             </select>
           </div>

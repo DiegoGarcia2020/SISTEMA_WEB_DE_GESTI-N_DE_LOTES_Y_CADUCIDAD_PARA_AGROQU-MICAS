@@ -50,7 +50,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
                         [class.form-group__input--error]="campoInvalido('idProveedor')">
                   <option [ngValue]="null" disabled>Seleccione un proveedor</option>
                   @for (prov of proveedores; track prov.idProveedor) {
-                    <option [ngValue]="prov.idProveedor">{{ prov.nombreRepresentante }}</option>
+                    <option [ngValue]="prov.idProveedor">{{ prov.empresa?.nombre || prov.nombreRepresentante || prov.nombre }}</option>
                   }
                 </select>
               </div>
