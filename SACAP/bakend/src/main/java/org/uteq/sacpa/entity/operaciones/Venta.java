@@ -47,6 +47,9 @@ public class Venta {
     @Column(name = "estado", length = 20, nullable = false)
     private String estado; // e.g., 'CONFIRMADA'
 
+    @Column(name = "descuento_total", precision = 10, scale = 2)
+    private BigDecimal descuentoTotal;
+
     // Nuevos campos de Logística y Pagos (Smart POS)
     @Column(name = "costo_envio", precision = 10, scale = 2)
     private BigDecimal costoEnvio;

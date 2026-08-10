@@ -78,7 +78,7 @@ export class BodegaDespachosComponent implements OnInit {
   }
 
   cargarDevoluciones() {
-    this.http.get<DevolucionTransitoDTO[]>(`${environment.apiUrl}/api/operaciones/devoluciones-venta/pendientes-bodega`)
+    this.http.get<DevolucionTransitoDTO[]>(`${environment.apiUrl}/operaciones/devoluciones-venta/pendientes-bodega`)
       .subscribe({
         next: (data) => this.devolucionesEnTransito.set(data),
         error: () => this.toast.error('Error', 'No se pudieron cargar las devoluciones pendientes')
@@ -87,7 +87,7 @@ export class BodegaDespachosComponent implements OnInit {
 
   prepararPaquete(idVenta: number) {
     this.setProcessing(idVenta, true);
-    this.http.put(`${environment.apiUrl}/api/operaciones/despachos/${idVenta}/preparar`, {})
+    this.http.put(`${environment.apiUrl}/operaciones/despachos/${idVenta}/preparar`, {})
       .subscribe({
         next: () => {
           this.toast.success('Paquete Preparado', `La orden #${idVenta} está lista para despacho.`);
@@ -102,7 +102,7 @@ export class BodegaDespachosComponent implements OnInit {
   }
 
   recibirDevolucion(idDevolucion: number, estadoInventario: 'CUARENTENA' | 'DISPONIBLE' | 'DESECHADO') {
-    this.http.put(`${environment.apiUrl}/api/operaciones/devoluciones-venta/${idDevolucion}/recibir-fisica?estadoInventario=${estadoInventario}`, {})
+    this.http.put(`${environment.apiUrl}/operaciones/devoluciones-venta/${idDevolucion}/recibir-fisica?estadoInventario=${estadoInventario}`, {})
       .subscribe({
         next: () => {
           this.toast.success('Devolución Recibida', `El producto ha sido ingresado a ${estadoInventario}.`);

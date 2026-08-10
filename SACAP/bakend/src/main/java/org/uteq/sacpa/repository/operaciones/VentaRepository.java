@@ -4,7 +4,16 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.uteq.sacpa.entity.operaciones.Venta;
 
+import java.util.List;
+import java.util.Optional;
+
 @Repository
 public interface VentaRepository extends JpaRepository<Venta, Integer> {
-    java.util.List<Venta> findByTecnico_IdUsuario(Integer idUsuario);
+
+    List<Venta> findByTecnico_IdUsuario(Integer idUsuario);
+
+    /** Historial del técnico, más recientes primero. */
+    List<Venta> findByTecnico_IdUsuarioOrderByFechaDesc(Integer idUsuario);
+
+    Optional<Venta> findByNumeroComprobante(String numeroComprobante);
 }

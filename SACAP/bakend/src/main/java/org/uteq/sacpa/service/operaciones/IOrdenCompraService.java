@@ -5,6 +5,7 @@ import org.uteq.sacpa.dto.operaciones.OrdenCompraResponseDTO;
 import org.uteq.sacpa.dto.operaciones.RecepcionLoteRequestDTO;
 import org.uteq.sacpa.entity.operaciones.OrdenCompra;
 
+import org.springframework.data.domain.Page;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -30,6 +31,11 @@ public interface IOrdenCompraService {
      * @param hasta       Fecha fin del rango — puede ser null
      */
     List<OrdenCompraResponseDTO> listarOrdenes(String estado, Integer idProveedor, LocalDate desde, LocalDate hasta, Integer idUsuarioRegistro);
+
+    /**
+     * Obtiene órdenes de compra con paginación y búsqueda.
+     */
+    Page<OrdenCompraResponseDTO> obtenerOrdenesPaginadas(String numeroFactura, String estado, int page, int size);
 
     /**
      * Obtiene una orden de compra por ID, incluyendo todos sus detalles con nombres de producto.

@@ -25,6 +25,10 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -164,6 +168,14 @@ public class OrdenCompraServiceImpl implements IOrdenCompraService {
                                                        LocalDate desde, LocalDate hasta, Integer idUsuarioRegistro) {
         List<OrdenCompra> ordenes = ordenCompraRepository.findByFiltros(estado, idProveedor, desde, hasta, idUsuarioRegistro);
         return ordenes.stream().map(this::mapToResponseDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<OrdenCompraResponseDTO> obtenerOrdenesPaginadas(String numeroFactura, String estado, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "fechaRegistro"));
+        Page<OrdenCompra> ordenesPage = ordenCompraRepository.buscarOrdenesPaginadas(numeroFactura, estado, pageable);
+        return ordenesPage.map(this::mapToResponseDTO);
     }
 
     // =========================================================================

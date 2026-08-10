@@ -49,7 +49,7 @@ export class TecnicoEntregasComponent implements OnInit {
     this.ventasService.misVentas().subscribe({
       next: (ventas) => {
         // Mostrar ventas que están listas para entregar, ya entregadas o devueltas
-        const estadosValidos = ['CONFIRMADA', 'ENTREGADA', 'DEVUELTA_PARCIALMENTE', 'DEVUELTA_TOTAL'];
+        const estadosValidos = ['CONFIRMADA', 'PREPARADA', 'ENTREGADA', 'DEVUELTA_PARCIALMENTE', 'DEVUELTA_TOTAL'];
         const filtradas = ventas.filter(v => estadosValidos.includes(v.estado));
         this.entregas.set(filtradas);
       },
@@ -70,7 +70,7 @@ export class TecnicoEntregasComponent implements OnInit {
 
   confirmarEntrega(idVenta: number) {
     this.setProcessing(idVenta, true);
-    this.http.put(`${environment.apiUrl}/api/operaciones/despachos/${idVenta}/entregar`, {})
+    this.http.put(`${environment.apiUrl}/operaciones/despachos/${idVenta}/entregar`, {})
       .subscribe({
         next: () => {
           this.toast.success('Entrega Confirmada', `El paquete #${idVenta} fue entregado exitosamente.`);
@@ -105,7 +105,7 @@ export class TecnicoEntregasComponent implements OnInit {
       ...this.devolucionForm.value
     };
 
-    this.http.post(`${environment.apiUrl}/api/operaciones/devoluciones-venta/campo`, payload)
+    this.http.post(`${environment.apiUrl}/operaciones/devoluciones-venta/campo`, payload)
       .subscribe({
         next: () => {
           this.toast.success('Devolución Registrada', 'La novedad fue notificada a bodega exitosamente.');

@@ -38,4 +38,17 @@ public class DetalleVenta {
     @Builder.Default
     private Boolean esSugerenciaIa = false;
 
+    /**
+     * Lote exacto del que salió esta línea. Permite la trazabilidad de
+     * caducidad y el cumplimiento de FEFO.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_lote")
+    private org.uteq.sacpa.entity.inventario.Lote lote;
+
+    /** Promoción/combo IA que originó esta línea, si aplica. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_promocion")
+    private org.uteq.sacpa.entity.ia_alertas.Promocion promocion;
+
 }

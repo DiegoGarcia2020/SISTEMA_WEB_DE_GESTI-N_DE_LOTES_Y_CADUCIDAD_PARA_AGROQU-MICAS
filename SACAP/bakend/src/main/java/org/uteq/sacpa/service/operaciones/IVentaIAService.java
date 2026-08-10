@@ -28,7 +28,7 @@ public interface IVentaIAService {
     /** Sugerencias por diagnóstico: filtra productos etiquetados con esa plaga (idCultivo opcional) */
     List<SugerenciaComboDTO> obtenerSugerenciasPorPlaga(Integer idPlaga, Integer idCultivo);
 
-    /** Checkout atómico: crea la VentaIA + DetalleVentaIA y reserva stock. Lanza excepción si no hay stock. */
+    /** Checkout atómico: crea la Venta + DetalleVenta (tabla unificada, trazada por lote) y reserva stock. */
     VentaIAResponseDTO crearVenta(Integer idUsuarioAutenticado, VentaCreateRequestDTO dto);
 
     List<VentaIAResponseDTO> misVentas(Integer idUsuarioAutenticado);

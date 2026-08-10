@@ -1,16 +1,18 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
-import { OperacionesService } from '../../../core/services/operaciones.service';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { OperacionesService, PageResponse } from '../../../core/services/operaciones.service';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { ComprobanteService } from '../../../core/services/comprobante.service';
 
 @Component({
   selector: 'app-compras-listado',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, LucideAngularModule],
   styleUrl: './compras-listado.component.css',
   template: `
     <div class="compras-container">
@@ -45,6 +47,10 @@ import { ComprobanteService } from '../../../core/services/comprobante.service';
           Filtros de búsqueda
         </p>
         <div class="filters-grid">
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label class="form-group__label">Buscar por Factura</label>
+            <input type="text" class="form-group__input" [formControl]="searchControl" placeholder="Escriba el número de factura..." />
+          </div>
           <div class="form-group">
             <label class="form-group__label">Estado</label>
             <select class="form-group__select" [(ngModel)]="filtroEstado">
@@ -71,9 +77,9 @@ import { ComprobanteService } from '../../../core/services/comprobante.service';
             <label class="form-group__label">Hasta</label>
             <input type="date" class="form-group__input" [(ngModel)]="filtroHasta" />
           </div>
-          <button class="btn btn--filter btn--sm" (click)="cargarOrdenes()">
+          <button class="btn btn--filter btn--sm" (click)="buscarFiltros()">
             <lucide-icon name="search" class="w-3.5 h-3.5"></lucide-icon>
-            Buscar
+            Filtrar
           </button>
         </div>
       </div>
@@ -82,7 +88,7 @@ import { ComprobanteService } from '../../../core/services/comprobante.service';
       <div class="table-card">
         <div class="table-card__header">
           <h3 class="table-card__title">Historial de Compras</h3>
-          <span class="table-card__count">{{ ordenes().length }} registros</span>
+          <span class="table-card__count">Total: {{ totalElements() }} registros</span>
         </div>
         <div class="table-scroll">
           <table class="data-table">
@@ -191,6 +197,19 @@ import { ComprobanteService } from '../../../core/services/comprobante.service';
             </tbody>
           </table>
         </div>
+        
+        <!-- Paginador -->
+        @if (totalElements() > 0) {
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-top: 1px solid var(--c-sage-border); background: #fafafa;">
+            <span style="font-size: 0.875rem; color: var(--c-warm-black);">
+              Mostrando página {{ currentPage() + 1 }} de {{ totalPages() }}
+            </span>
+            <div style="display: flex; gap: 0.5rem;">
+              <button class="btn btn--ghost" [disabled]="currentPage() === 0" (click)="cambiarPagina(currentPage() - 1)">Anterior</button>
+              <button class="btn btn--ghost" [disabled]="currentPage() >= totalPages() - 1" (click)="cambiarPagina(currentPage() + 1)">Siguiente</button>
+            </div>
+          </div>
+        }
       </div>
     </div>
 
@@ -333,11 +352,14 @@ import { ComprobanteService } from '../../../core/services/comprobante.service';
     }
   `
 })
-export class ComprasListadoComponent implements OnInit {
+export class ComprasListadoComponent implements OnInit, OnDestroy {
   private operacionesService = inject(OperacionesService);
   private comprobanteService = inject(ComprobanteService);
   private toast = inject(ToastService);
   private router = inject(Router);
+
+  private destroy$ = new Subject<void>();
+  searchControl = new FormControl('');
 
   ordenes = signal<any[]>([]);
   proveedores = signal<any[]>([]);
@@ -347,21 +369,81 @@ export class ComprasListadoComponent implements OnInit {
   filtroDesde = '';
   filtroHasta = '';
 
+  // Paginación
+  currentPage = signal<number>(0);
+  pageSize = 100;
+  totalElements = signal<number>(0);
+  totalPages = signal<number>(0);
+
   ngOnInit(): void {
-    this.cargarOrdenes();
     this.cargarProveedores();
+    
+    // Suscripción reactiva al buscador
+    this.searchControl.valueChanges.pipe(
+      debounceTime(500),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.currentPage.set(0); // Reiniciar a página 0 en nueva búsqueda
+      this.cargarOrdenes();
+    });
+
+    // Carga inicial
+    this.cargarOrdenes();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  buscarFiltros(): void {
+    this.currentPage.set(0); // Reiniciar a página 0 en nuevo filtro manual
+    this.cargarOrdenes();
   }
 
   cargarOrdenes(): void {
-    this.operacionesService.listarOrdenesCompra(
-      this.filtroEstado || undefined,
-      this.filtroProveedor || undefined,
-      this.filtroDesde || undefined,
-      this.filtroHasta || undefined
+    const term = this.searchControl.value?.trim() || '';
+    
+    // NOTA: Para este prototipo paginado priorizaremos la llamada paginada básica 
+    // y aplicaremos los demás filtros si están en la versión original. 
+    // Como el endpoint /paginadas generado en el backend solo soporta numeroFactura y estado,
+    // usaremos esos. (Si quisieras todos, deberías añadirlos al Controller backend).
+    
+    this.operacionesService.getOrdenesPaginadas(
+      this.currentPage(),
+      this.pageSize,
+      term
     ).subscribe({
-      next: (data) => this.ordenes.set(data),
+      next: (response: PageResponse<any>) => {
+        // Como 'response' puede que no venga paginado si hubo un error en la conexión 
+        // y se usa el fallback, validamos:
+        if (response && response.content) {
+          // Filtrado local manual (para los campos no implementados en backend por el momento)
+          let filtradas = response.content;
+          if (this.filtroEstado) filtradas = filtradas.filter(o => o.estado === this.filtroEstado);
+          if (this.filtroProveedor) filtradas = filtradas.filter(o => o.idProveedor === this.filtroProveedor);
+          if (this.filtroDesde) filtradas = filtradas.filter(o => o.fechaEmision >= this.filtroDesde);
+          if (this.filtroHasta) filtradas = filtradas.filter(o => o.fechaEmision <= this.filtroHasta);
+          
+          this.ordenes.set(filtradas);
+          this.totalElements.set(response.totalElements);
+          this.totalPages.set(response.totalPages);
+        } else if (Array.isArray(response)) {
+           this.ordenes.set(response);
+           this.totalElements.set(response.length);
+           this.totalPages.set(1);
+        }
+      },
       error: () => this.toast.error('Error', 'No se pudieron cargar las órdenes de compra.')
     });
+  }
+
+  cambiarPagina(nuevaPagina: number): void {
+    if (nuevaPagina >= 0 && nuevaPagina < this.totalPages()) {
+      this.currentPage.set(nuevaPagina);
+      this.cargarOrdenes();
+    }
   }
 
   cargarProveedores(): void {

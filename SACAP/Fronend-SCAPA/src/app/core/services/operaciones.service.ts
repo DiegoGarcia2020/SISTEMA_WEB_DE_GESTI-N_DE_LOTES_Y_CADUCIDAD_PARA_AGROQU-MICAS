@@ -1,9 +1,17 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { TemporadaDTO, AlertaCaducidadDTO, PromocionIADTO, ReglaNegocioIADTO } from '../models/operaciones.model';
+
+export interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -196,6 +204,18 @@ export class OperacionesService {
         return throwError(() => err);
       })
     );
+  }
+
+  getOrdenesPaginadas(page: number, size: number, searchTerm?: string): Observable<PageResponse<any>> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    if (searchTerm) {
+      params = params.set('numeroFactura', searchTerm);
+    }
+
+    return this.http.get<PageResponse<any>>(`${this.apiUrl}/ordenes-compra/paginadas`, { params });
   }
 
   // ================= PROMOCIONES & REGLAS IA =================

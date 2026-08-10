@@ -5,6 +5,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.uteq.sacpa.entity.operaciones.OrdenCompra;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -18,6 +21,14 @@ public interface IOrdenCompraRepository extends JpaRepository<OrdenCompra, Integ
 
     /** Listar órdenes por estado */
     List<OrdenCompra> findByEstadoOrderByFechaRegistroDesc(String estado);
+
+    /** Búsqueda por número de factura y estado opcional, con paginación. */
+    @Query("SELECT o FROM OrdenCompra o WHERE " +
+           "(:numeroFactura IS NULL OR LOWER(o.numeroFactura) LIKE LOWER(CONCAT('%', CAST(:numeroFactura AS string), '%'))) AND " +
+           "(:estado IS NULL OR o.estado = CAST(:estado AS string))")
+    Page<OrdenCompra> buscarOrdenesPaginadas(@Param("numeroFactura") String numeroFactura, 
+                                             @Param("estado") String estado, 
+                                             Pageable pageable);
 
     /** Listar órdenes por proveedor */
     @Query("SELECT o FROM OrdenCompra o WHERE o.proveedor.idProveedor = :idProveedor ORDER BY o.fechaRegistro DESC")

@@ -14,6 +14,8 @@ import org.uteq.sacpa.service.operaciones.IOrdenCompraService;
 import org.uteq.sacpa.security.SecurityContextService;
 import org.uteq.sacpa.security.UsuarioPrincipal;
 
+import org.springframework.data.domain.Page;
+
 import java.util.Arrays;
 
 import java.math.BigDecimal;
@@ -82,6 +84,20 @@ public class OrdenCompraController {
         
         Integer idUsuarioRegistroFiltro = resolverIdOwner(null, "SUPERVISOR");
         return ResponseEntity.ok(ordenCompraService.listarOrdenes(estado, idProveedor, desde, hasta, idUsuarioRegistroFiltro));
+    }
+
+    /**
+     * Listar órdenes de compra con paginación y búsqueda por número de factura.
+     */
+    @GetMapping("/paginadas")
+    public ResponseEntity<Page<OrdenCompraResponseDTO>> obtenerOrdenesPaginadas(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "100") int size,
+            @RequestParam(required = false) String numeroFactura,
+            @RequestParam(required = false) String estado) {
+            
+        Page<OrdenCompraResponseDTO> resultado = ordenCompraService.obtenerOrdenesPaginadas(numeroFactura, estado, page, size);
+        return ResponseEntity.ok(resultado);
     }
 
     /**
