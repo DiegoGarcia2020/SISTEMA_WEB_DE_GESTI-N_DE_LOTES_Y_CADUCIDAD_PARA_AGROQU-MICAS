@@ -28,7 +28,7 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
       <div class="sidebar-nav custom-scrollbar">
         
         <!-- BODEGUERO / ALMACÉN -->
-        @if (isRol('bodeg') || currentPath().includes('/bodega')) {
+        @if (isRol('bodeg')) {
           <div class="nav-section-title">Espacio Bodeguero</div>
           <a routerLink="/bodega/dashboard" routerLinkActive="active" class="nav-item">
             <lucide-icon name="package" class="nav-item__icon"></lucide-icon>
@@ -130,12 +130,17 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
         }
 
         <!-- ADMINISTRADOR / GENERAL -->
-        @if (!isRol('bodeg') && !isRol('tecnic') && !isRol('técnic') && !isRol('campo') && !isRol('supervis') && !currentPath().includes('/bodega') && !currentPath().includes('/campo') && !currentPath().includes('/supervisor')) {
+        @if (!isRol('bodeg') && !isRol('tecnic') && !isRol('técnic') && !isRol('campo') && !isRol('supervis') && !currentPath().includes('/campo') && !currentPath().includes('/supervisor')) {
           <div class="nav-section-title">Principal Admin</div>
           
           <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-item">
             <lucide-icon name="layout-dashboard" class="nav-item__icon"></lucide-icon>
             <span>Dashboard Principal</span>
+          </a>
+
+          <a routerLink="/admin/bodega/topologia" routerLinkActive="active" class="nav-item">
+            <lucide-icon name="network" class="nav-item__icon"></lucide-icon>
+            <span>Bodegas y Supervisores</span>
           </a>
 
           <!-- Acordeón Operaciones & IA -->
