@@ -46,7 +46,7 @@ export class BodegaRecepcionesComponent implements OnInit {
     this.isLoading.set(true);
     const hoy = new Date().toISOString().substring(0, 10);
     // Filtrar estado=PENDIENTE y desde=HOY, hasta=HOY
-    this.http.get<OrdenCompraListDTO[]>(`${environment.apiUrl}/ordenes-compra?estado=PENDIENTE&desde=${hoy}&hasta=${hoy}`)
+    this.http.get<OrdenCompraListDTO[]>(`${environment.apiUrl}/ordenes-compra/recepciones-esperadas?estado=PENDIENTE&desde=${hoy}&hasta=${hoy}`)
       .subscribe({
         next: (data) => {
           this.ordenesHoy.set(data);
@@ -70,15 +70,15 @@ export class BodegaRecepcionesComponent implements OnInit {
     this.processingIds.set(newSet);
   }
 
+  /** Registra la llegada a tiempo y pasa directo al conteo/recepción — son un solo paso, no dos acciones sueltas. */
   registrarLlegada(idOrden: number) {
     this.setProcessing(idOrden, true);
     this.http.put(`${environment.apiUrl}/ordenes-compra/${idOrden}/llegada-tiempo`, {})
       .subscribe({
         next: (res: any) => {
-          this.toast.success('Llegada Registrada', res.mensaje);
-          // Eliminar de la lista local
-          this.ordenesHoy.update(ordenes => ordenes.filter(o => o.id !== idOrden));
+          this.toast.success('Llegada Registrada', res.mensaje || 'Ahora registre lo que llegó.');
           this.setProcessing(idOrden, false);
+          this.irARecepcion(idOrden);
         },
         error: (err) => {
           this.toast.error('Error', 'No se pudo registrar la llegada');

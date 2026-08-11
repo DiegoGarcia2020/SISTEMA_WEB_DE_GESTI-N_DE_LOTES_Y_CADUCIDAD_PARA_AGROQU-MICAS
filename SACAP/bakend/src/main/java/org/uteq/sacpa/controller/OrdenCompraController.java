@@ -87,6 +87,19 @@ public class OrdenCompraController {
     }
 
     /**
+     * Recepciones esperadas (Dock Scheduling del Bodeguero): a diferencia de GET /api/ordenes-compra,
+     * filtra por fecha de LLEGADA estimada del camión, no por fecha de emisión de la factura.
+     */
+    @GetMapping("/recepciones-esperadas")
+    public ResponseEntity<List<OrdenCompraResponseDTO>> listarRecepcionesEsperadas(
+            @RequestParam(required = false) String estado,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta) {
+
+        return ResponseEntity.ok(ordenCompraService.listarRecepcionesEsperadas(estado, desde, hasta));
+    }
+
+    /**
      * Listar órdenes de compra con paginación y búsqueda por número de factura.
      */
     @GetMapping("/paginadas")

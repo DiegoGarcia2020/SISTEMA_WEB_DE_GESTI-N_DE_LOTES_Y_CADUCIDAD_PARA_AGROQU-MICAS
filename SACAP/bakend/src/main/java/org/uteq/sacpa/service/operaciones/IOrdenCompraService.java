@@ -32,6 +32,9 @@ public interface IOrdenCompraService {
      */
     List<OrdenCompraResponseDTO> listarOrdenes(String estado, Integer idProveedor, LocalDate desde, LocalDate hasta, Integer idUsuarioRegistro);
 
+    /** Recepciones esperadas (Dock Scheduling): filtra por fecha de llegada estimada, no de emisión. */
+    List<OrdenCompraResponseDTO> listarRecepcionesEsperadas(String estado, LocalDate desde, LocalDate hasta);
+
     /**
      * Obtiene órdenes de compra con paginación y búsqueda.
      */

@@ -66,7 +66,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
                        [class.form-group__input--error]="campoInvalido('fechaEmision')">
               </div>
               <div class="form-group">
-                <label class="form-group__label">Fecha Estimada Llegada</label>
+                <label class="form-group__label">Fecha Estimada Llegada *</label>
                 <input type="date" class="form-group__input" formControlName="fechaLlegadaEstimada"
                        [class.form-group__input--error]="campoInvalido('fechaLlegadaEstimada')">
               </div>
@@ -274,7 +274,7 @@ export class ComprasCrearComponent implements OnInit {
       idProveedor: [null, Validators.required],
       numeroFactura: ['', Validators.required],
       fechaEmision: [new Date().toISOString().substring(0, 10), Validators.required],
-      fechaLlegadaEstimada: [null],
+      fechaLlegadaEstimada: [null, Validators.required],
       ventanaHoraria: [null],
       costoTransporte: [0, [Validators.required, Validators.min(0)]],
       detalles: this.fb.array([], Validators.required)
@@ -453,6 +453,8 @@ export class ComprasCrearComponent implements OnInit {
       idProveedor: formValue.idProveedor,
       numeroFactura: formValue.numeroFactura,
       fechaEmision: formValue.fechaEmision,
+      fechaLlegadaEstimada: formValue.fechaLlegadaEstimada,
+      ventanaHoraria: formValue.ventanaHoraria,
       costoTransporte: formValue.costoTransporte,
       impuestos: this.totalesCalculados.iva,
       detalles: formValue.detalles.map((d: any) => ({

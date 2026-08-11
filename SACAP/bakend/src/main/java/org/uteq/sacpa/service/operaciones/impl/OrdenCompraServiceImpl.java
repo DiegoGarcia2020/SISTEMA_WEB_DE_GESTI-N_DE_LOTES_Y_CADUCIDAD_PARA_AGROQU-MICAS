@@ -172,6 +172,13 @@ public class OrdenCompraServiceImpl implements IOrdenCompraService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<OrdenCompraResponseDTO> listarRecepcionesEsperadas(String estado, LocalDate desde, LocalDate hasta) {
+        List<OrdenCompra> ordenes = ordenCompraRepository.findByEstadoAndFechaLlegadaEstimadaBetween(estado, desde, hasta);
+        return ordenes.stream().map(this::mapToResponseDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Page<OrdenCompraResponseDTO> obtenerOrdenesPaginadas(String numeroFactura, String estado, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "fechaRegistro"));
         Page<OrdenCompra> ordenesPage = ordenCompraRepository.buscarOrdenesPaginadas(numeroFactura, estado, pageable);

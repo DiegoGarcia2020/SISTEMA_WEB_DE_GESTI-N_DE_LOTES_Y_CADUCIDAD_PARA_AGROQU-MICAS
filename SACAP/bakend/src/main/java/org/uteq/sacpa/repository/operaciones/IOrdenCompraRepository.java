@@ -52,6 +52,19 @@ public interface IOrdenCompraRepository extends JpaRepository<OrdenCompra, Integ
                                     @Param("hasta") LocalDate hasta,
                                     @Param("idUsuarioRegistro") Integer idUsuarioRegistro);
 
+    /**
+     * Recepciones esperadas (Dock Scheduling del Bodeguero): filtra por FECHA DE LLEGADA ESTIMADA,
+     * a diferencia de findByFiltros que filtra por fecha de emisión de la factura.
+     */
+    @Query("SELECT o FROM OrdenCompra o " +
+           "WHERE (:estado IS NULL OR o.estado = :estado) " +
+           "AND CAST(:desde AS date) IS NOT NULL AND CAST(:hasta AS date) IS NOT NULL " +
+           "AND o.fechaLlegadaEstimada BETWEEN CAST(:desde AS date) AND CAST(:hasta AS date) " +
+           "ORDER BY o.fechaLlegadaEstimada ASC")
+    List<OrdenCompra> findByEstadoAndFechaLlegadaEstimadaBetween(@Param("estado") String estado,
+                                                                 @Param("desde") LocalDate desde,
+                                                                 @Param("hasta") LocalDate hasta);
+
     /** Verificar si ya existe una factura con el mismo número para el mismo proveedor */
     Optional<OrdenCompra> findByNumeroFacturaAndProveedorIdProveedor(String numeroFactura, Integer idProveedor);
 
