@@ -29,6 +29,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final org.uteq.sacpa.repository.operaciones.ITecnicoCampoRepository tecnicoCampoRepository;
+    private final org.uteq.sacpa.repository.inventario.ISupervisorRepository supervisorRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -128,6 +129,20 @@ public class UsuarioServiceImpl implements IUsuarioService {
             }
         }
 
+        boolean esRolSupervisor = rol.getNombre() != null && rol.getNombre().toLowerCase().contains("supervis");
+
+        if (esRolSupervisor && supervisorRepository.findByUsuario_IdUsuario(idUsuario).isEmpty()) {
+            org.uteq.sacpa.entity.inventario.Supervisor supervisor = org.uteq.sacpa.entity.inventario.Supervisor.builder()
+                    .cedula(usuario.getCedula() != null ? usuario.getCedula() : "CED-" + idUsuario)
+                    .nombres(usuario.getNombres() != null ? usuario.getNombres() : "Supervisor")
+                    .apellidos(usuario.getApellidos() != null ? usuario.getApellidos() : "SACPA")
+                    .telefono(usuario.getTelefono())
+                    .idEstado(1)
+                    .usuario(usuario)
+                    .build();
+            supervisorRepository.save(supervisor);
+        }
+
         if (usuario.getRoles() == null) {
             usuario.setRoles(new ArrayList<>());
         } else {
@@ -166,6 +181,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
                 .roles(new ArrayList<>())
                 .build();
 
+        boolean asignaRolSupervisor = false;
         if (request.getIdRoles() != null) {
             for (Integer idRol : request.getIdRoles()) {
                 Rol rol = rolRepository.findById(idRol)
@@ -175,10 +191,25 @@ public class UsuarioServiceImpl implements IUsuarioService {
                         .rol(rol)
                         .build();
                 usuario.getRoles().add(usuarioRol);
+                if (rol.getNombre() != null && rol.getNombre().toLowerCase().contains("supervis")) {
+                    asignaRolSupervisor = true;
+                }
             }
         }
 
         Usuario guardado = usuarioRepository.save(usuario);
+
+        if (asignaRolSupervisor) {
+            org.uteq.sacpa.entity.inventario.Supervisor supervisor = org.uteq.sacpa.entity.inventario.Supervisor.builder()
+                    .cedula("CED-" + guardado.getIdUsuario())
+                    .nombres("Supervisor")
+                    .apellidos("SACPA")
+                    .idEstado(1)
+                    .usuario(guardado)
+                    .build();
+            supervisorRepository.save(supervisor);
+        }
+
         emailService.enviarCredencialesUsuario(request.getCorreo(), request.getContrasena());
         return mapToDTO(guardado);
     }
