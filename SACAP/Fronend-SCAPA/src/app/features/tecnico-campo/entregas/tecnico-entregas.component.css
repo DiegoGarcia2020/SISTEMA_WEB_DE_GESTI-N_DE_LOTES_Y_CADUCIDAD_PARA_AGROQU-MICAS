@@ -2,6 +2,11 @@
    TÉCNICO DE CAMPO - ENTREGAS Y DEVOLUCIONES
    Alineado al design system "Etiqueta de Almacén".
    ================================================================= */
+:host {
+  /* No encaja en paleta global: Variante hover del acento cacao */
+  --c-cacao-hover: #73361F;
+}
+
 .entregas-container {
   display: flex;
   flex-direction: column;
@@ -261,6 +266,6 @@
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: var(--c-cacao-hover, #73361F);
+  background-color: var(--c-cacao-hover);
   color: var(--c-bone-bg);
 }

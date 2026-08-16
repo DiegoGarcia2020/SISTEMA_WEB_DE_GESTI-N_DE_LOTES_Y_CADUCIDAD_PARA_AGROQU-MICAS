@@ -5,12 +5,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.uteq.sacpa.dto.ia_alertas.LoteSugeridoDTO;
 import org.uteq.sacpa.dto.ia_alertas.SugerenciaComboDTO;
-import org.uteq.sacpa.entity.catalogos.CatEstadoTemporada;
 import org.uteq.sacpa.entity.ia_alertas.ReglaNegocioIA;
 import org.uteq.sacpa.entity.inventario.Lote;
-import org.uteq.sacpa.repository.catalogos.ICatEstadoTemporadaRepository;
 import org.uteq.sacpa.repository.ia_alertas.IReglaNegocioIARepository;
-import org.uteq.sacpa.repository.ia_alertas.ITemporadaAgricolaRepository;
+import org.uteq.sacpa.repository.operaciones.ITemporadaRepository;
 import org.uteq.sacpa.repository.inventario.ILoteRepository;
 import org.uteq.sacpa.service.ia_alertas.IMotorSugerenciaIAService;
 
@@ -37,8 +35,7 @@ public class MotorSugerenciaIAServiceImpl implements IMotorSugerenciaIAService {
     private static final BigDecimal DESCUENTO_MAXIMO_DEFECTO = new BigDecimal("35.00");
 
     private final ILoteRepository loteRepository;
-    private final ITemporadaAgricolaRepository temporadaRepository;
-    private final ICatEstadoTemporadaRepository catEstadoTemporadaRepository;
+    private final ITemporadaRepository temporadaRepository;
     private final IReglaNegocioIARepository reglaRepository;
 
     @Override
@@ -58,11 +55,16 @@ public class MotorSugerenciaIAServiceImpl implements IMotorSugerenciaIAService {
     private List<SugerenciaComboDTO> construirSugerencias(List<Lote> candidatos) {
         if (candidatos.isEmpty()) return List.of();
 
-        boolean temporadaActiva = hayTemporadaActiva();
         BigDecimal descuentoMaximo = obtenerDescuentoMaximo();
 
         List<LoteSugeridoDTO> puntuados = candidatos.stream()
-                .map(l -> puntuarLote(l, temporadaActiva))
+                .map(l -> {
+                    Integer idCultivo = null;
+                    // Lote -> Producto -> id_categoria podria usarse, pero no tenemos Cultivo en Producto facilmente.
+                    // Se asume sugerencia general si no hay cultivo
+                    boolean tempActiva = hayTemporadaActiva(null);
+                    return puntuarLote(l, tempActiva);
+                })
                 .sorted(Comparator.comparing(LoteSugeridoDTO::getScoreUrgencia).reversed())
                 .toList();
 
@@ -84,14 +86,14 @@ public class MotorSugerenciaIAServiceImpl implements IMotorSugerenciaIAService {
                     .esCombo(true)
                     .score(scoreCombo)
                     .descuentoSugerido(descuento)
-                    .justificacionIA(construirJustificacionCombo(paraCombo, temporadaActiva, scoreCombo, descuento))
+                    .justificacionIA(construirJustificacionCombo(paraCombo, true, scoreCombo, descuento))
                     .lotes(paraCombo)
                     .build());
             relevantes.stream()
                     .filter(l -> !paraCombo.contains(l))
-                    .forEach(l -> resultado.add(individual(l, temporadaActiva, descuentoMaximo)));
+                    .forEach(l -> resultado.add(individual(l, true, descuentoMaximo)));
         } else {
-            relevantes.forEach(l -> resultado.add(individual(l, temporadaActiva, descuentoMaximo)));
+            relevantes.forEach(l -> resultado.add(individual(l, true, descuentoMaximo)));
         }
         return resultado;
     }
@@ -99,7 +101,7 @@ public class MotorSugerenciaIAServiceImpl implements IMotorSugerenciaIAService {
     @Override
     @Transactional(readOnly = true)
     public SugerenciaComboDTO generarSugerenciaParaLote(Lote lote) {
-        boolean temporadaActiva = hayTemporadaActiva();
+        boolean temporadaActiva = hayTemporadaActiva(null);
         BigDecimal descuentoMaximo = obtenerDescuentoMaximo();
         return individual(puntuarLote(lote, temporadaActiva), temporadaActiva, descuentoMaximo);
     }
@@ -155,11 +157,11 @@ public class MotorSugerenciaIAServiceImpl implements IMotorSugerenciaIAService {
         return 0;
     }
 
-    private boolean hayTemporadaActiva() {
-        return catEstadoTemporadaRepository.findByNombreIgnoreCase("ACTIVA")
-                .map(CatEstadoTemporada::getIdEstadoTemporada)
-                .map(idActiva -> !temporadaRepository.findActivasEnFecha(LocalDate.now(), idActiva).isEmpty())
-                .orElse(false);
+    private boolean hayTemporadaActiva(Integer idCultivo) {
+        if (idCultivo != null && temporadaRepository.findByEstadoAndCultivo_IdCultivo("ACTIVO", idCultivo).isPresent()) {
+            return true;
+        }
+        return temporadaRepository.findByEstadoAndCultivoIsNull("ACTIVO").isPresent();
     }
 
     private BigDecimal obtenerDescuentoMaximo() {

@@ -1,3 +1,8 @@
+:host {
+/* No encaja en paleta global: texto secundario */
+  --c-local-text-muted: #6b7280;
+}
+
 /* =================================================================
    AUTH LAYOUT - TARJETA CENTRADA (Reutilizable para Login y Update)
    ================================================================= */
@@ -6,7 +11,7 @@
 .auth-wrapper {
   width: 100vw;
   min-height: 100vh;
-  background-color: #15803d; /* Verde Institucional corporativo */
+  background-color: var(--c-dark-green); /* Verde Institucional corporativo */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -19,7 +24,7 @@
 .auth-card {
   width: 100%;
   max-width: 400px;
-  background-color: #ffffff;
+  background-color: var(--c-bone-bg);
   border-radius: 8px;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   padding: 2.5rem 2rem;
@@ -33,14 +38,14 @@
 }
 
 .auth-header__title {
-  color: #111827;
+  color: var(--c-warm-black);
   font-size: 1.5rem;
   font-weight: 700;
   margin: 0 0 0.5rem 0;
 }
 
 .auth-header__subtitle {
-  color: #6b7280;
+  color: var(--c-local-text-muted);
   font-size: 0.875rem;
   margin: 0;
 }
@@ -62,7 +67,7 @@
 .form-group__label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--c-warm-black);
 }
 
 .form-group__input {
@@ -70,26 +75,26 @@
   padding: 0.625rem 0; /* Padding superior e inferior, sin lados */
   background-color: transparent; /* Sin fondos grises */
   border: none;
-  border-bottom: 1px solid #e5e7eb; /* Solo borde inferior */
+  border-bottom: 1px solid var(--c-sage-border); /* Solo borde inferior */
   font-size: 0.9375rem;
-  color: #111827;
+  color: var(--c-warm-black);
   outline: none;
   transition: border-color 0.2s ease;
   box-sizing: border-box;
 }
 
 .form-group__input::placeholder {
-  color: #9ca3af;
+  color: var(--c-local-text-muted);
 }
 
 .form-group__input:focus {
-  border-bottom-color: #15803d; /* Foco en Verde Institucional */
+  border-bottom-color: var(--c-dark-green); /* Foco en Verde Institucional */
 }
 
 /* Mensajes de Error (Opcional para validaciones) */
 .form-group__error {
   font-size: 0.75rem;
-  color: #dc2626;
+  color: var(--c-error);
   margin-top: 0.25rem;
   display: block; 
 }
@@ -97,8 +102,8 @@
 /* 4. Botón de Acción Principal */
 .auth-btn {
   width: 100%;
-  background-color: #15803d;
-  color: #ffffff;
+  background-color: var(--c-dark-green);
+  color: var(--c-bone-bg);
   padding: 0.75rem 1rem;
   border: none;
   border-radius: 6px;
@@ -114,7 +119,7 @@
 }
 
 .auth-btn:hover:not(:disabled) {
-  background-color: #14532d; /* Verde oscurecido al hacer hover */
+  background-color: var(--c-mid-green); /* Verde oscurecido al hacer hover */
 }
 
 .auth-btn:active:not(:disabled) {
@@ -133,7 +138,7 @@
   bottom: 0.5rem;
   background: none;
   border: none;
-  color: #9ca3af;
+  color: var(--c-local-text-muted);
   cursor: pointer;
   padding: 0;
   display: flex;
@@ -143,7 +148,7 @@
 }
 
 .btn-reveal:hover {
-  color: #15803d;
+  color: var(--c-dark-green);
 }
 
 .auth-options {
@@ -155,13 +160,13 @@
 }
 
 .auth-link {
-  color: #374151;
+  color: var(--c-warm-black);
   text-decoration: none;
   transition: color 0.15s;
 }
 
 .auth-link:hover {
-  color: #15803d;
+  color: var(--c-dark-green);
 }
 
 /* Roles */
@@ -177,7 +182,7 @@
   justify-content: space-between;
   padding: 1rem;
   background: transparent;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--c-sage-border);
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
@@ -185,7 +190,7 @@
 }
 
 .role-btn:hover:not(:disabled) {
-  border-color: #15803d;
+  border-color: var(--c-dark-green);
 }
 
 .role-btn__info {
@@ -195,19 +200,19 @@
 }
 
 .role-btn__icon {
-  color: #15803d;
+  color: var(--c-dark-green);
 }
 
 .role-btn__name {
   font-weight: 600;
   font-size: 0.875rem;
-  color: #111827;
+  color: var(--c-warm-black);
   display: block;
 }
 
 .role-btn__desc {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--c-local-text-muted);
   display: block;
 }
 

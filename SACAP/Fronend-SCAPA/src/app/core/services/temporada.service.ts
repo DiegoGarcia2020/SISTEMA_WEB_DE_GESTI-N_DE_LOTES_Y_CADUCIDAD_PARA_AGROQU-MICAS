@@ -6,7 +6,8 @@ import { environment } from '../../../environments/environment';
 export interface Temporada {
   idTemporada?: number;
   nombre: string;
-  cultivo?: string;
+  idCultivo?: number;
+  nombreCultivo?: string;
   fechaInicio: string;
   fechaFinProyectada?: string;
   estado?: string;
@@ -20,7 +21,7 @@ export class TemporadaService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/temporadas`;
 
-  crearTemporada(data: { nombre: string; cultivo?: string; fechaInicio: string; fechaFinProyectada: string; estado?: string }): Observable<Temporada> {
+  crearTemporada(data: { nombre: string; idCultivo?: number; fechaInicio: string; fechaFinProyectada: string; estado?: string }): Observable<Temporada> {
     return this.http.post<Temporada>(this.apiUrl, data);
   }
 

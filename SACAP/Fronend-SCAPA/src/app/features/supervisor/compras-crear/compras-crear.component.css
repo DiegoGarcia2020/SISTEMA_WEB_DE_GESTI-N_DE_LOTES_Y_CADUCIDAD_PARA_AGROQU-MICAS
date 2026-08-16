@@ -1,27 +1,44 @@
+:host {
+/* Color no estandarizado en paleta */
+  --c-local-custom-f0fdf4: #f0fdf4;
+/* No encaja en paleta global: fondo claro success */
+  --c-local-green-light: #dcfce7;
+/* Color no estandarizado en paleta */
+  --c-local-custom-bbf7d0: #bbf7d0;
+/* Color no estandarizado en paleta */
+  --c-local-custom-fffbeb: #fffbeb;
+/* Color no estandarizado en paleta */
+  --c-local-custom-d97706: #d97706;
+/* No encaja en paleta global: fondo claro error */
+  --c-local-error-light: #fef2f2;
+/* No encaja en paleta global: texto secundario */
+  --c-local-text-muted: #6b7280;
+}
+
 /* =================================================================
    PANTALLA 2: CREACIÓN DE ORDEN DE COMPRA
    Formulario Maestro-Detalle con CSS Puro
    ================================================================= */
 
 :host {
-  --green-700: #15803d;
-  --green-800: #14532d;
-  --green-50: #f0fdf4;
-  --green-100: #dcfce7;
-  --green-200: #bbf7d0;
-  --amber-50: #fffbeb;
-  --amber-600: #d97706;
-  --red-50: #fef2f2;
-  --red-600: #dc2626;
-  --gray-50: #f9fafb;
-  --gray-100: #f3f4f6;
-  --gray-200: #e5e7eb;
-  --gray-300: #d1d5db;
-  --gray-400: #9ca3af;
-  --gray-500: #6b7280;
-  --gray-700: #374151;
-  --gray-900: #111827;
-  --white: #ffffff;
+  --green-700: var(--c-dark-green);
+  --green-800: var(--c-mid-green);
+  --green-50: var(--c-local-custom-f0fdf4);
+  --green-100: var(--c-local-green-light);
+  --green-200: var(--c-local-custom-bbf7d0);
+  --amber-50: var(--c-local-custom-fffbeb);
+  --amber-600: var(--c-local-custom-d97706);
+  --red-50: var(--c-local-error-light);
+  --red-600: var(--c-error);
+  --gray-50: var(--c-bone-bg);
+  --gray-100: var(--c-bone-bg);
+  --gray-200: var(--c-sage-border);
+  --gray-300: var(--c-sage-border);
+  --gray-400: var(--c-local-text-muted);
+  --gray-500: var(--c-local-text-muted);
+  --gray-700: var(--c-warm-black);
+  --gray-900: var(--c-warm-black);
+  --white: var(--c-bone-bg);
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
   --radius: 0.75rem;

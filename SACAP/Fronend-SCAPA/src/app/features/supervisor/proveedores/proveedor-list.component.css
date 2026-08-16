@@ -1,3 +1,10 @@
+:host {
+/* No encaja en paleta global: fondo claro success */
+  --c-local-green-light: #dcfce7;
+/* No encaja en paleta global: fondo claro error */
+  --c-local-error-light: #fef2f2;
+}
+
 .page-container {
   padding: 2rem;
   max-width: 1200px;
@@ -14,12 +21,12 @@
 .page-title {
   font-family: 'Fraunces', serif;
   font-size: 2rem;
-  color: var(--c-dark-green, #12261D);
+  color: var(--c-dark-green);
   margin: 0 0 0.5rem 0;
 }
 
 .page-subtitle {
-  color: var(--c-text-muted, #666);
+  color: var(--c-text-muted);
   margin: 0;
 }
 
@@ -36,17 +43,17 @@
 }
 
 .btn-primary {
-  background-color: var(--c-cacao-accent, #8C472A);
+  background-color: var(--c-cacao-accent);
   color: white;
 }
 
 .btn-primary:hover {
-  background-color: var(--c-cacao-hover, #73361F);
+  background-color: var(--c-cacao-hover);
 }
 
 .table-container {
   background: white;
-  border: 1px solid var(--c-border, #E5E7EB);
+  border: 1px solid var(--c-border);
   border-radius: 0;
 }
 
@@ -59,20 +66,20 @@
 .table td {
   padding: 1rem;
   text-align: left;
-  border-bottom: 1px solid var(--c-border, #E5E7EB);
+  border-bottom: 1px solid var(--c-border);
 }
 
 .table th {
-  background-color: var(--c-surface, #F9FAFB);
+  background-color: var(--c-surface);
   font-weight: 600;
-  color: var(--c-dark-green, #12261D);
+  color: var(--c-dark-green);
 }
 
 .text-stamped {
   font-family: monospace;
-  background: var(--c-surface, #F9FAFB);
+  background: var(--c-surface);
   padding: 0.25rem 0.5rem;
-  border: 1px dashed var(--c-border, #E5E7EB);
+  border: 1px dashed var(--c-border);
   letter-spacing: 1px;
 }
 
@@ -84,13 +91,13 @@
 }
 
 .badge-active {
-  background-color: #DEF7EC;
-  color: #03543F;
+  background-color: var(--c-local-green-light);
+  color: var(--c-dark-green);
 }
 
 .badge-inactive {
-  background-color: #FDE8E8;
-  color: #9B1C1C;
+  background-color: var(--c-local-error-light);
+  color: var(--c-error);
 }
 
 .actions {
@@ -103,22 +110,22 @@
   border: none;
   cursor: pointer;
   padding: 0.5rem;
-  color: var(--c-text-muted, #666);
+  color: var(--c-text-muted);
   border-radius: 0;
   transition: all 0.2s;
 }
 
 .btn-icon:hover {
-  background-color: var(--c-surface, #F9FAFB);
-  color: var(--c-dark-green, #12261D);
+  background-color: var(--c-surface);
+  color: var(--c-dark-green);
 }
 
 .btn-icon-danger:hover {
-  color: #9B1C1C;
-  background-color: #FDE8E8;
+  color: var(--c-error);
+  background-color: var(--c-local-error-light);
 }
 
 .empty-state {
   padding: 3rem;
-  color: var(--c-text-muted, #666);
+  color: var(--c-text-muted);
 }

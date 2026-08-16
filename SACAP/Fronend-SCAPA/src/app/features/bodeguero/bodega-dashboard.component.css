@@ -138,7 +138,7 @@
 }
 
 .btn--tab:not(.active):hover {
-  color: #fff;
+  color: var(--c-bone-bg);
   background: rgba(255,255,255,0.1);
 }
 
@@ -496,5 +496,5 @@
 }
 
 .modal-close:hover {
-  color: #fff;
+  color: var(--c-bone-bg);
 }

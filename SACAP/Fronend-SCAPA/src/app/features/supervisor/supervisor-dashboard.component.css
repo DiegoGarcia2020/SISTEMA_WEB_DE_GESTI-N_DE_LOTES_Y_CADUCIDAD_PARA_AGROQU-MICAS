@@ -1,14 +1,17 @@
 /* supervisor-dashboard.component.css */
 
 :host {
-  /* Variables de Diseño Minimalista Verde Institucional */
-  --bg-layout: #f9fafb;
-  --bg-card: #ffffff;
-  --border-color: #e5e7eb;
-  --text-main: #111827;
+  /* Variables de Diseño Minimalista Verde Institucional -> Reemplazadas por Etiqueta de Almacén */
+  --bg-layout: var(--c-bone-bg);
+  --bg-card: var(--c-bone-bg);
+  --border-color: var(--c-sage-border);
+  --text-main: var(--c-warm-black);
+  /* No encaja en paleta global: texto secundario */
   --text-muted: #6b7280;
-  --green-main: #15803d;
+  --green-main: var(--c-success);
+  /* No encaja en paleta global: variante hover de success */
   --green-hover: #166534;
+  /* No encaja en paleta global: fondo claro para success */
   --green-light: #dcfce7;
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   
@@ -331,10 +334,11 @@
 
 .btn--danger {
   background-color: var(--bg-layout);
-  color: #dc2626;
+  color: var(--c-error);
   border-color: var(--border-color);
 }
 .btn--danger:hover {
+  /* No encaja en paleta global: fondo claro para error */
   background-color: #fef2f2;
 }
 
@@ -383,8 +387,8 @@
 }
 
 .welcome-box {
-  background-color: #ffffff;
-  border: 1px dashed #d1d5db;
+  background-color: var(--c-bone-bg);
+  border: 1px dashed var(--c-sage-border);
   border-radius: 12px;
   padding: 3rem;
   text-align: center;
@@ -395,7 +399,7 @@
 .welcome-icon {
   width: 3rem;
   height: 3rem;
-  color: #15803d;
+  color: var(--c-success);
   margin-bottom: 1rem;
   opacity: 0.8;
 }
@@ -403,12 +407,12 @@
 .welcome-box h2 {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--c-warm-black);
   margin-bottom: 0.75rem;
 }
 
 .welcome-box p {
-  color: #6b7280;
+  color: var(--text-muted);
   line-height: 1.6;
   margin: 0;
 }

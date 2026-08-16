@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.uteq.sacpa.entity.catalogos.CatEstadoAprobacion;
 import org.uteq.sacpa.entity.inventario.Lote;
+import org.uteq.sacpa.entity.operaciones.Temporada;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -21,7 +22,7 @@ public class SugerenciaIA {
     @JoinColumn(name = "id_lote") private Lote lote;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_temporada") private TemporadaAgricola temporada;
+    @JoinColumn(name = "id_temporada") private Temporada temporada;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_ejecucion") private EjecucionIA ejecucion;

@@ -11,6 +11,7 @@ import org.uteq.sacpa.entity.catalogos.CatEstadoPromocion;
 import org.uteq.sacpa.entity.ia_alertas.Promocion;
 import org.uteq.sacpa.repository.catalogos.ICatEstadoPromocionRepository;
 import org.uteq.sacpa.repository.ia_alertas.IPromocionRepository;
+import org.uteq.sacpa.repository.ia_alertas.ISugerenciaIARepository;
 import org.uteq.sacpa.service.ia_alertas.IPromocionService;
 
 import java.math.BigDecimal;
@@ -26,6 +27,7 @@ import java.util.List;
 public class PromocionServiceImpl implements IPromocionService {
 
     private final IPromocionRepository promocionRepository;
+    private final ISugerenciaIARepository sugerenciaIARepository;
     private final ICatEstadoPromocionRepository catEstadoPromocionRepository;
     private final JdbcTemplate jdbcTemplate;
 
@@ -33,7 +35,7 @@ public class PromocionServiceImpl implements IPromocionService {
     @Transactional
     public PromocionResponseDTO crearPromocion(PromocionRequestDTO dto, Integer idUsuarioAprueba) {
         crearPromocionJdbc(dto.getNombre(), dto.getDescripcion(), dto.getPorcentajeDescuento(),
-                dto.getFechaInicio(), dto.getFechaFin(), null, idUsuarioAprueba, dto.getIdEstado());
+                dto.getFechaInicio(), dto.getFechaFin(), null, idUsuarioAprueba, dto.getIdEstado(), dto.getIdLote());
         return PromocionResponseDTO.from(promocionRepository.findTopByOrderByIdPromocionDesc());
     }
 
@@ -43,7 +45,10 @@ public class PromocionServiceImpl implements IPromocionService {
                                                        BigDecimal descuentoGlobal, LocalDate fechaInicio, LocalDate fechaFin,
                                                        Integer idUsuarioAprueba) {
         Integer idSugerida = resolverIdEstado("SUGERIDA");
-        crearPromocionJdbc(nombre, descripcion, descuentoGlobal, fechaInicio, fechaFin, idSugerencia, idUsuarioAprueba, idSugerida);
+        Integer idLote = sugerenciaIARepository.findById(idSugerencia)
+                .map(s -> s.getLote().getIdLote())
+                .orElse(null);
+        crearPromocionJdbc(nombre, descripcion, descuentoGlobal, fechaInicio, fechaFin, idSugerencia, idUsuarioAprueba, idSugerida, idLote);
         return PromocionResponseDTO.from(promocionRepository.findTopByOrderByIdPromocionDesc());
     }
 
@@ -99,10 +104,10 @@ public class PromocionServiceImpl implements IPromocionService {
 
     private void crearPromocionJdbc(String nombre, String descripcion, BigDecimal descuentoGlobal,
                                      LocalDate fechaInicio, LocalDate fechaFin,
-                                     Integer idSugerencia, Integer idUsuarioAprueba, Integer idEstado) {
+                                     Integer idSugerencia, Integer idUsuarioAprueba, Integer idEstado, Integer idLote) {
         jdbcTemplate.execute((Connection conn) -> {
             try (PreparedStatement ps = conn.prepareStatement(
-                    "SELECT ia_alertas.fn_crear_promocion(?, ?, ?, ?, ?, ?, ?, ?)")) {
+                    "SELECT ia_alertas.fn_crear_promocion(?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
                 ps.setString(1, nombre);
                 ps.setString(2, descripcion);
                 ps.setBigDecimal(3, descuentoGlobal);
@@ -111,6 +116,7 @@ public class PromocionServiceImpl implements IPromocionService {
                 if (idSugerencia != null) ps.setInt(6, idSugerencia); else ps.setNull(6, Types.INTEGER);
                 if (idUsuarioAprueba != null) ps.setInt(7, idUsuarioAprueba); else ps.setNull(7, Types.INTEGER);
                 ps.setInt(8, idEstado);
+                if (idLote != null) ps.setInt(9, idLote); else ps.setNull(9, Types.INTEGER);
                 ps.execute();
             }
             return null;

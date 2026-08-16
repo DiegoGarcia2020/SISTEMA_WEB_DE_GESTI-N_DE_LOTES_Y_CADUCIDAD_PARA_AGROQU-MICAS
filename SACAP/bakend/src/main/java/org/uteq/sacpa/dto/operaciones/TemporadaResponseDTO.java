@@ -20,4 +20,6 @@ public class TemporadaResponseDTO {
     private LocalDate fechaFin;
     private String estado;
     private LocalDateTime fechaCreacion;
+    private Integer idCultivo;
+    private String nombreCultivo;
 }

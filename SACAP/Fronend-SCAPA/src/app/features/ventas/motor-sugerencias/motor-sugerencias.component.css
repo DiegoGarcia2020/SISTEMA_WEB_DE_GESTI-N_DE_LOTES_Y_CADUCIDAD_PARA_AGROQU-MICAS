@@ -1,3 +1,8 @@
+:host {
+  /* No encaja en paleta global: Variante hover del acento cacao */
+  --c-cacao-hover: #73361F;
+}
+
 .vt-bg { font-family: var(--font-sans); min-height: 100vh; padding: 1.5rem; max-width: 1200px; margin: 0 auto; color: var(--c-warm-black); }
 
 .vt-hero {
@@ -16,7 +21,7 @@
   color: var(--c-warm-black); border-radius: var(--radius-card); padding: .7rem 1.4rem; font-size: .85rem; font-weight: 600;
   cursor: pointer; transition: background-color .2s, color .2s; font-family: inherit;
 }
-.vt-cta-btn:hover { background: var(--c-cacao-hover, #73361F); color: var(--c-bone-bg); }
+.vt-cta-btn:hover { background: var(--c-cacao-hover); color: var(--c-bone-bg); }
 .vt-cart-badge { position: absolute; top: -8px; right: -8px; background: var(--c-cacao-accent); color: var(--c-bone-bg); border-radius: 100px; font-size: .68rem; font-weight: 800; padding: .1rem .4rem; }
 
 .vt-section { background: var(--c-bone-bg); border: 1px solid var(--c-sage-border); border-radius: var(--radius-card); padding: 1.5rem; }

@@ -30,8 +30,8 @@ import { ToastService } from '../../../shared/components/toast/toast.service';
           </div>
 
           <div class="form-group">
-            <label class="form-label">Cultivo</label>
-            <input type="text" formControlName="cultivo" class="form-input" placeholder="ej. Maíz y Arroz">
+            <label class="form-label">ID Cultivo (Opcional)</label>
+            <input type="number" formControlName="idCultivo" class="form-input" placeholder="Ej. 1 (Dejar vacío para general)">
           </div>
 
           <div class="form-group">
@@ -101,7 +101,7 @@ import { ToastService } from '../../../shared/components/toast/toast.service';
                 @for (temp of temporadas(); track temp.idTemporada) {
                   <tr>
                     <td class="text-stamped" style="font-size: 0.8125rem; font-family: var(--font-slab); font-weight: 600; color: var(--c-warm-black); letter-spacing: 0.05em; text-transform: uppercase;">{{ temp.nombre }}</td>
-                    <td>{{ temp.cultivo || '—' }}</td>
+                    <td>{{ temp.nombreCultivo || 'General' }}</td>
                     <td>{{ temp.fechaInicio | date:'mediumDate' }}</td>
                     <td>{{ temp.fechaFinProyectada ? (temp.fechaFinProyectada | date:'mediumDate') : '—' }}</td>
                     <td>
@@ -133,7 +133,7 @@ export class GestionTemporadasComponent implements OnInit {
   constructor() {
     this.temporadaForm = this.fb.group({
       nombre: ['', Validators.required],
-      cultivo: [''],
+      idCultivo: [null],
       fechaInicio: [new Date().toISOString().split('T')[0], Validators.required],
       fechaFinProyectada: ['', Validators.required]
     });
@@ -167,13 +167,14 @@ export class GestionTemporadasComponent implements OnInit {
     if (this.temporadaForm.invalid) return;
 
     this.isSubmitting.set(true);
-    const activa = this.temporadas().find(t => t.estado === 'ACTIVA');
+    const formCultivo = this.temporadaForm.value.idCultivo;
+    const activa = this.temporadas().find(t => t.estado === 'ACTIVA' && t.idCultivo === formCultivo);
 
     const crear = () => {
       this.temporadaService.crearTemporada({ ...this.temporadaForm.value, estado: 'ACTIVA' }).subscribe({
         next: (nuevaTemp) => {
           this.toast.success('Éxito', `Temporada "${nuevaTemp.nombre}" aperturada correctamente.`);
-          this.temporadaForm.reset({ cultivo: '', fechaInicio: new Date().toISOString().split('T')[0], fechaFinProyectada: '' });
+          this.temporadaForm.reset({ idCultivo: null, fechaInicio: new Date().toISOString().split('T')[0], fechaFinProyectada: '' });
           this.cargarTemporadas();
           this.isSubmitting.set(false);
         },

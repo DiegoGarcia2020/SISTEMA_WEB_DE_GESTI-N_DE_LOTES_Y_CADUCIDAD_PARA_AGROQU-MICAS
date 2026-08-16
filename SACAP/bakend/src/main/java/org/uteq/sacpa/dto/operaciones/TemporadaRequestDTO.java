@@ -15,4 +15,5 @@ public class TemporadaRequestDTO {
     
     private String nombre;
     private LocalDate fechaInicio;
+    private Integer idCultivo;
 }

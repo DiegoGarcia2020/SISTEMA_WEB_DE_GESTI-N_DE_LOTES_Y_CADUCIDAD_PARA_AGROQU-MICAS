@@ -34,4 +34,7 @@ public class PromocionRequestDTO {
 
     @NotNull(message = "El ID del estado es obligatorio")
     private Integer idEstado;
+
+    @NotNull(message = "El lote es obligatorio para combos creados manualmente")
+    private Integer idLote;
 }

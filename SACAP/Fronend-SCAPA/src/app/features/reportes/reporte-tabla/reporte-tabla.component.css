@@ -1,0 +1,57 @@
+:host {
+  display: block;
+}
+
+.table-container {
+  background: white;
+  border: 1px solid var(--c-sage-border, #8FAE9B);
+  border-radius: var(--radius-card, 8px);
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  margin-top: 1rem;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.data-table th {
+  background: var(--c-bone-bg, #F6F5F0);
+  color: var(--c-dark-green, #12261D);
+  font-family: var(--font-slab, 'Fraunces', serif);
+  font-weight: 600;
+  padding: 1rem;
+  font-size: 0.875rem;
+  border-bottom: 2px solid var(--c-sage-border, #8FAE9B);
+  letter-spacing: 0.05em;
+}
+
+.data-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--c-bone-bg, #F6F5F0);
+  color: var(--c-warm-black, #1A1A16);
+  font-size: 0.875rem;
+}
+
+.data-table tbody tr:hover td {
+  background-color: rgba(143, 174, 155, 0.1);
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.text-right {
+  text-align: right;
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+}
+
+.empty-state {
+  padding: 3rem;
+  text-align: center;
+  color: var(--c-mid-green, #2F5D45);
+  font-style: italic;
+}

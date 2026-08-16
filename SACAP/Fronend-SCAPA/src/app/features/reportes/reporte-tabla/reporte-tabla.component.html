@@ -1,0 +1,35 @@
+<div class="table-container custom-scrollbar">
+  <div *ngIf="loading" class="empty-state">
+    <p>Cargando datos...</p>
+  </div>
+  
+  <div *ngIf="!loading && data.length === 0" class="empty-state">
+    <p>No se encontraron resultados para los filtros seleccionados.</p>
+  </div>
+
+  <table *ngIf="!loading && data.length > 0" class="data-table">
+    <thead>
+      <tr>
+        <th *ngFor="let col of columns">{{ formatHeader(col) }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of data">
+        <td *ngFor="let col of columns" [ngClass]="{'text-right': isNumber(row[col])}">
+          <ng-container *ngIf="isNumber(row[col]); else textData">
+            <!-- Si la columna sugiere que es moneda o cantidad decimal, formatear -->
+            <span *ngIf="col.includes('total') || col.includes('ganancia') || col.includes('descuento'); else justNumber">
+              ${{ row[col] | number:'1.2-2' }}
+            </span>
+            <ng-template #justNumber>
+              {{ row[col] | number:'1.0-2' }}
+            </ng-template>
+          </ng-container>
+          <ng-template #textData>
+            {{ row[col] }}
+          </ng-template>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

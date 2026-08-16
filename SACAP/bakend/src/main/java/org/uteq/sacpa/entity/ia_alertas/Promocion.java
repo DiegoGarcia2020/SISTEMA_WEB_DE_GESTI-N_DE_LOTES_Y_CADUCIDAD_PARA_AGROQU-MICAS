@@ -3,6 +3,7 @@ package org.uteq.sacpa.entity.ia_alertas;
 import jakarta.persistence.*;
 import lombok.*;
 import org.uteq.sacpa.entity.catalogos.CatEstadoPromocion;
+import org.uteq.sacpa.entity.inventario.Lote;
 import org.uteq.sacpa.entity.seguridad.Usuario;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -27,4 +28,8 @@ public class Promocion {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario_aprueba") private Usuario usuarioAprueba;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_lote")
+    private Lote lote;
 }

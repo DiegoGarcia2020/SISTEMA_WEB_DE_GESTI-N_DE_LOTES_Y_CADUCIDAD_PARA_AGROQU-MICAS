@@ -1,3 +1,8 @@
+:host {
+/* No encaja en paleta global: texto secundario */
+  --c-local-text-muted: #6b7280;
+}
+
 /* =================================================================
    CENTRO DE APROBACIONES - TABS EN CSS PURO
    ================================================================= */
@@ -6,9 +11,9 @@
   flex-direction: column;
   height: 100%;
   padding: 2rem;
-  background-color: var(--bg-app, #f8f9fa);
+  background-color: var(--bg-app);
   font-family: 'Inter', 'Roboto', sans-serif;
-  color: #111827;
+  color: var(--c-warm-black);
 }
 
 .aprobaciones-header {
@@ -19,11 +24,11 @@
   font-size: 1.75rem;
   font-weight: 700;
   margin: 0 0 0.5rem 0;
-  color: #15803d; /* Verde Institucional */
+  color: var(--c-dark-green); /* Verde Institucional */
 }
 
 .aprobaciones-header p {
-  color: #6b7280;
+  color: var(--c-local-text-muted);
   margin: 0;
 }
 
@@ -32,7 +37,7 @@
    ================================================================= */
 .tabs-container {
   display: flex;
-  border-bottom: 2px solid #e5e7eb;
+  border-bottom: 2px solid var(--c-sage-border);
   margin-bottom: 1.5rem;
 }
 
@@ -42,7 +47,7 @@
   padding: 1rem 1.5rem;
   font-size: 1rem;
   font-weight: 600;
-  color: #6b7280; /* Gris sutil inactivo */
+  color: var(--c-local-text-muted); /* Gris sutil inactivo */
   cursor: pointer;
   border-bottom: 3px solid transparent; /* Borde grueso */
   margin-bottom: -2px;
@@ -50,21 +55,21 @@
 }
 
 .tab-btn:hover {
-  color: #374151;
+  color: var(--c-warm-black);
 }
 
 .tab-btn.active {
-  color: #15803d; /* Texto Verde Institucional */
-  border-bottom-color: #15803d; /* Borde Verde Institucional */
+  color: var(--c-dark-green); /* Texto Verde Institucional */
+  border-bottom-color: var(--c-dark-green); /* Borde Verde Institucional */
 }
 
 /* =================================================================
    CONTENIDO DE LA PESTAÑA Y TABLAS
    ================================================================= */
 .tab-content {
-  background-color: #ffffff;
+  background-color: var(--c-bone-bg);
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--c-sage-border);
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   overflow: hidden;
 }
@@ -75,19 +80,19 @@
 }
 
 .data-table th {
-  background-color: #f9fafb;
+  background-color: var(--c-bone-bg);
   padding: 1rem;
   text-align: left;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #374151;
-  border-bottom: 1px solid #e5e7eb;
+  color: var(--c-warm-black);
+  border-bottom: 1px solid var(--c-sage-border);
 }
 
 .data-table td {
   padding: 1rem;
   font-size: 0.875rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--c-sage-border);
   vertical-align: middle;
 }
 
@@ -98,7 +103,7 @@
 .empty-state {
   text-align: center;
   padding: 4rem 2rem;
-  color: #6b7280;
+  color: var(--c-local-text-muted);
 }
 
 /* Botones de acción */
@@ -125,13 +130,13 @@
 }
 
 .btn-primary {
-  background-color: #15803d;
-  color: #ffffff;
+  background-color: var(--c-dark-green);
+  color: var(--c-bone-bg);
 }
 
 .btn-danger {
-  background-color: #ef4444;
-  color: #ffffff;
+  background-color: var(--c-error);
+  color: var(--c-bone-bg);
 }
 
 /* =================================================================
@@ -143,20 +148,20 @@
   justify-content: flex-end;
   gap: 1rem;
   padding: 1rem;
-  background-color: #f9fafb;
-  border-top: 1px solid #e5e7eb;
+  background-color: var(--c-bone-bg);
+  border-top: 1px solid var(--c-sage-border);
 }
 
 .pagination-controls .btn-outline {
   background-color: transparent;
-  color: #374151;
-  border: 1px solid #d1d5db;
+  color: var(--c-warm-black);
+  border: 1px solid var(--c-sage-border);
   padding: 0.5rem 1rem;
   font-weight: 500;
 }
 
 .pagination-controls .btn-outline:hover:not(:disabled) {
-  background-color: #f3f4f6;
+  background-color: var(--c-bone-bg);
 }
 
 .pagination-controls .btn-outline:disabled {
@@ -167,5 +172,5 @@
 .pagination-controls .page-info {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--c-local-text-muted);
 }

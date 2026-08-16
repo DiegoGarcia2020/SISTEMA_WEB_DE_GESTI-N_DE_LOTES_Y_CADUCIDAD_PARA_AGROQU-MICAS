@@ -34,6 +34,10 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
             <lucide-icon name="package" class="nav-item__icon"></lucide-icon>
             <span>Almacén & Despachos</span>
           </a>
+          <a routerLink="/admin/reportes" routerLinkActive="active" class="nav-item">
+            <lucide-icon name="bar-chart-2" class="nav-item__icon"></lucide-icon>
+            <span>Inteligencia & Reportes</span>
+          </a>
           <a routerLink="/bodega/recepciones-hoy" routerLinkActive="active" class="nav-item">
             <lucide-icon name="package-check" class="nav-item__icon"></lucide-icon>
             <span>Recepción de Compras</span>
@@ -67,6 +71,10 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
             <lucide-icon name="zap" class="nav-item__icon"></lucide-icon>
             <span>Combos IA</span>
           </a>
+          <a routerLink="/admin/reportes" routerLinkActive="active" class="nav-item">
+            <lucide-icon name="bar-chart-2" class="nav-item__icon"></lucide-icon>
+            <span>Inteligencia & Reportes</span>
+          </a>
           <a routerLink="/admin/ventas/dashboard" routerLinkActive="active" class="nav-item">
             <lucide-icon name="file-plus" class="nav-item__icon"></lucide-icon>
             <span>Generar Venta / Pedido</span>
@@ -96,6 +104,11 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
           <a routerLink="/supervisor/dashboard" routerLinkActive="active" class="nav-item">
             <lucide-icon name="layout-dashboard" class="nav-item__icon"></lucide-icon>
             <span>Dashboard Principal</span>
+          </a>
+
+          <a routerLink="/admin/reportes" routerLinkActive="active" class="nav-item">
+            <lucide-icon name="bar-chart-2" class="nav-item__icon"></lucide-icon>
+            <span>Inteligencia & Reportes</span>
           </a>
 
           <a routerLink="/admin/supervisor/dashboard" routerLinkActive="active" class="nav-item">
@@ -136,6 +149,11 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
           <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-item">
             <lucide-icon name="layout-dashboard" class="nav-item__icon"></lucide-icon>
             <span>Dashboard Principal</span>
+          </a>
+
+          <a routerLink="/admin/reportes" routerLinkActive="active" class="nav-item">
+            <lucide-icon name="bar-chart-2" class="nav-item__icon"></lucide-icon>
+            <span>Inteligencia & Reportes</span>
           </a>
 
           <a routerLink="/admin/bodega/topologia" routerLinkActive="active" class="nav-item">

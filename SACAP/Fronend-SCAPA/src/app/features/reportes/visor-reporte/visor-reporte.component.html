@@ -1,0 +1,58 @@
+<div class="visor-container">
+  <div class="header-section">
+    <div class="title-group">
+      <a routerLink="/admin/reportes" class="back-link">
+        <lucide-icon name="arrow-left" class="w-4 h-4"></lucide-icon>
+        Volver al Catálogo
+      </a>
+      <h1 class="page-title">{{ tituloReporte }}</h1>
+    </div>
+    <div class="actions-group">
+      <button class="btn-outline" (click)="cargarReporte()" title="Recargar">
+        <lucide-icon name="refresh-cw" [class.animate-spin]="loading" class="w-4 h-4"></lucide-icon>
+        Actualizar
+      </button>
+    </div>
+  </div>
+
+  <div class="filtros-panel">
+    <form [formGroup]="filtrosForm" (ngSubmit)="onSubmitFiltros()" class="filtros-grid">
+      <div class="form-group">
+        <label>Fecha Inicio</label>
+        <input type="date" formControlName="fechaInicio" class="form-input">
+      </div>
+      <div class="form-group">
+        <label>Fecha Fin</label>
+        <input type="date" formControlName="fechaFin" class="form-input">
+      </div>
+      <div class="form-group align-bottom">
+        <button type="submit" class="btn-primary" [disabled]="loading">
+          <lucide-icon name="filter" class="w-4 h-4"></lucide-icon>
+          Filtrar
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Gráfico CSS Simple (Top 10) -->
+  <div class="chart-panel" *ngIf="showChart && chartData.length > 0">
+    <h3 class="panel-subtitle">Visualización (Top 10)</h3>
+    <div class="bar-chart-container">
+      <div class="bar-row" *ngFor="let item of chartData">
+        <div class="bar-label">{{ item.label }}</div>
+        <div class="bar-track">
+          <div class="bar-fill" [style.width.%]="item.percentage"></div>
+        </div>
+        <div class="bar-value">{{ item.value | number:'1.0-2' }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla Dinámica -->
+  <div class="table-panel">
+    <app-reporte-tabla 
+      [data]="reporteData?.data || []" 
+      [loading]="loading">
+    </app-reporte-tabla>
+  </div>
+</div>

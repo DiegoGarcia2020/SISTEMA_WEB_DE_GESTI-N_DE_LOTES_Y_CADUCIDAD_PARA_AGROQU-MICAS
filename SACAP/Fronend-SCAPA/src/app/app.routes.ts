@@ -49,6 +49,9 @@ import { MotorSugerenciasComponent } from './features/ventas/motor-sugerencias/m
 import { CheckoutComponent } from './features/ventas/checkout/checkout.component';
 import { ConfirmacionPedidoComponent } from './features/ventas/confirmacion/confirmacion-pedido.component';
 
+// Módulo: Reportería
+import { ReportesDashboardComponent } from './features/reportes/reportes-dashboard/reportes-dashboard.component';
+import { VisorReporteComponent } from './features/reportes/visor-reporte/visor-reporte.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -208,25 +211,38 @@ export const routes: Routes = [
         path: 'ventas/dashboard',
         component: VentasDashboardComponent,
         canActivate: [roleGuard],
-        data: { roles: ['Tecnico', 'Administrador'] }
+        data: { roles: ['TÉCNICO DE CAMPO', 'Administrador'] }
       },
       {
         path: 'ventas/sugerencias',
         component: MotorSugerenciasComponent,
         canActivate: [roleGuard],
-        data: { roles: ['Tecnico', 'Administrador'] }
+        data: { roles: ['TÉCNICO DE CAMPO', 'Administrador'] }
       },
       {
         path: 'ventas/checkout',
         component: CheckoutComponent,
         canActivate: [roleGuard],
-        data: { roles: ['Tecnico', 'Administrador'] }
+        data: { roles: ['TÉCNICO DE CAMPO', 'Administrador'] }
       },
       {
         path: 'ventas/confirmacion/:idVenta',
         component: ConfirmacionPedidoComponent,
         canActivate: [roleGuard],
-        data: { roles: ['Tecnico', 'Administrador'] }
+        data: { roles: ['TÉCNICO DE CAMPO', 'Administrador'] }
+      },
+      // -- Módulo de Reportes --
+      {
+        path: 'reportes',
+        component: ReportesDashboardComponent,
+        canActivate: [roleGuard],
+        data: { roles: [] } // Visible para todos los autenticados; el dashboard filtra según rol internamente
+      },
+      {
+        path: 'reportes/:categoria/:reporteId',
+        component: VisorReporteComponent,
+        canActivate: [roleGuard],
+        data: { roles: [] } // De nuevo, todos pueden ver la ruta de visor, pero la vista fallará 403 si intentan algo ilegal
       },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]

@@ -2,13 +2,14 @@ package org.uteq.sacpa.entity.operaciones;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.uteq.sacpa.entity.catalogos.CatCultivo;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
  * Representa una temporada agrícola en el sistema.
- * Solo puede haber una temporada ACTIVA a la vez.
+ * Pueden coexistir varias temporadas ACTIVAS si tienen distinto cultivo.
  */
 @Entity
 @Table(name = "temporada", schema = "operaciones")
@@ -34,4 +35,8 @@ public class Temporada {
 
     @Column(name = "fecha_creacion", nullable = false, updatable = false)
     private LocalDateTime fechaCreacion;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_cultivo")
+    private CatCultivo cultivo;
 }
