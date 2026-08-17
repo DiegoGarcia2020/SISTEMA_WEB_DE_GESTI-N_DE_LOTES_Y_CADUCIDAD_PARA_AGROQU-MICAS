@@ -10,6 +10,9 @@ public interface IAlertaCaducidadService {
     /** Crea una nueva alerta usando la funcion PL/pgSQL ia_alertas.fn_crear_alerta_caducidad */
     void crearAlerta(AlertaRequestDTO dto);
 
+    /** Obtiene todas las alertas (para el dashboard) */
+    List<AlertaCaducidad> listarTodas();
+
     /** Obtiene todas las alertas activas */
     List<AlertaCaducidad> listarAlertasActivas(Integer idEstadoActivo);
 

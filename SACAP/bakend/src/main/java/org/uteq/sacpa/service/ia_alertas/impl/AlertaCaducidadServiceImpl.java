@@ -26,6 +26,11 @@ public class AlertaCaducidadServiceImpl implements IAlertaCaducidadService {
     }
 
     @Override
+    public List<AlertaCaducidad> listarTodas() {
+        return alertaRepository.findAll();
+    }
+
+    @Override
     public List<AlertaCaducidad> listarAlertasActivas(Integer idEstadoActivo) {
         return alertaRepository.findAlertasActivas(idEstadoActivo);
     }

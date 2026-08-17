@@ -136,6 +136,18 @@ public class SecurityConfig {
                     "/api/movimientos/aprobar/**"
                 ).hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR")
 
+                // ADMINISTRADOR, GERENTE y SUPERVISOR — ranking de ventas (Dashboard IA)
+                .requestMatchers("/api/ventas/mas-vendidos/**")
+                .hasAnyAuthority("ADMINISTRADOR", "GERENTE", "SUPERVISOR")
+
+                // ADMINISTRADOR, GERENTE y SUPERVISOR — análisis IA
+                .requestMatchers("/api/ia/analisis/**")
+                .hasAnyAuthority("ADMINISTRADOR", "GERENTE", "SUPERVISOR")
+
+                // ADMINISTRADOR, SUPERVISOR y BODEGUERO — registro de ventas
+                .requestMatchers("/api/ventas/**")
+                .hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "BODEGUERO")
+
                 // ADMINISTRADOR, SUPERVISOR y BODEGUERO — inventario y lotes
                 .requestMatchers(
                     "/api/lotes/**",

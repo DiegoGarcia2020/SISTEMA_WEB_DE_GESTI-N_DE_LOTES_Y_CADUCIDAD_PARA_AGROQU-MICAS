@@ -24,6 +24,11 @@ public class AlertaController {
         return ResponseEntity.ok(Map.of("mensaje", "Alerta de caducidad creada exitosamente"));
     }
 
+    @GetMapping
+    public ResponseEntity<List<AlertaCaducidad>> listarTodas() {
+        return ResponseEntity.ok(alertaService.listarTodas());
+    }
+
     @GetMapping("/activas")
     public ResponseEntity<List<AlertaCaducidad>> listarAlertasActivas(@RequestParam("idEstadoActivo") Integer idEstadoActivo) {
         return ResponseEntity.ok(alertaService.listarAlertasActivas(idEstadoActivo));
