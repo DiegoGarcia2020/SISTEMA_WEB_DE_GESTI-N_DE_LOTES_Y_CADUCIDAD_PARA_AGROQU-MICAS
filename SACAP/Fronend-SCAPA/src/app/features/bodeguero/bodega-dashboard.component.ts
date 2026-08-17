@@ -27,15 +27,6 @@ import { WebsocketService } from '../../core/services/websocket.service';
           </div>
         </div>
         <div class="hero-card__actions">
-          <button (click)="activeTab.set('PEDIDOS_VENTAS')"
-                  [class.active]="activeTab() === 'PEDIDOS_VENTAS'"
-                  class="btn--tab">
-            <lucide-icon name="truck" class="w-4 h-4"></lucide-icon>
-            <span>Despachos de Pedidos</span>
-            @if (pedidosPendientes().length > 0) {
-              <span class="badge-tab">{{ pedidosPendientes().length }}</span>
-            }
-          </button>
           <button (click)="activeTab.set('KITTING')"
                   [class.active]="activeTab() === 'KITTING'"
                   class="btn--tab">
@@ -61,19 +52,7 @@ import { WebsocketService } from '../../core/services/websocket.service';
       </div>
 
       <!-- Tarjetas KPI -->
-      <!-- Tarjetas KPI -->
       <div class="kpi-grid">
-        <div class="kpi-card">
-          <div>
-            <p class="kpi-card__title">Órdenes por Despachar</p>
-            <p class="kpi-card__value">{{ pedidosPendientes().length }}</p>
-            <p class="kpi-card__desc">Reserva activa en stock</p>
-          </div>
-          <div class="kpi-card__icon">
-            <lucide-icon name="clipboard-check" class="w-6 h-6"></lucide-icon>
-          </div>
-        </div>
-
         <div class="kpi-card">
           <div>
             <p class="kpi-card__title">Alertas para Kitting</p>
@@ -107,82 +86,6 @@ import { WebsocketService } from '../../core/services/websocket.service';
           </div>
         </div>
       </div>
-
-      <!-- TAB 1: DESPACHOS DE PEDIDOS (VENTAS) -->
-      @if (activeTab() === 'PEDIDOS_VENTAS') {
-        <div class="table-card">
-          <div class="table-card__header">
-            <div>
-              <h3 class="table-card__title">
-                <lucide-icon name="truck" class="w-5 h-5"></lucide-icon>
-                <span>Órdenes de Pedido Emitidas por Técnicos</span>
-              </h3>
-              <p class="table-card__desc">Al pulsar en "Despachar", el sistema libera la reserva, descuenta el stock del lote y genera la orden de salida al cliente.</p>
-            </div>
-            <button (click)="loadAll()" class="btn btn--ghost">
-              <lucide-icon name="refresh-cw" class="w-4 h-4"></lucide-icon>
-            </button>
-          </div>
-
-          <div class="table-scroll">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Orden # / Fecha</th>
-                  <th>Finca / Cliente Destino</th>
-                  <th>Insumo & Lote FEFO</th>
-                  <th>Reservado</th>
-                  <th>Receta / Dosis Prescrita</th>
-                  <th style="text-align: right;">Acción Operativa</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (ped of pedidosPendientes(); track ped.idUso) {
-                  <tr>
-                    <td>
-                      <span class="data-table__id block">ORD-{{ ped.idUso }}</span>
-                      <span style="font-size: 0.6875rem; color: var(--c-sage-border);">{{ ped.fechaAplicacion }}</span>
-                    </td>
-                    <td>
-                      <div style="font-weight: 700; color: var(--c-warm-black);">{{ ped.cliente?.nombreFinca }}</div>
-                      <div style="font-size: 0.6875rem; color: var(--c-dark-green);">CI: {{ ped.cliente?.cedula }}</div>
-                    </td>
-                    <td>
-                      <div style="font-weight: 700; color: var(--c-warm-black);">{{ ped.lote?.nombreProducto || ped.lote?.producto?.nombre }}</div>
-                      <div style="font-size: 0.6875rem; color: var(--c-sage-border);">Lote: {{ ped.lote?.numeroLote || ped.idLote }}</div>
-                      <div style="font-size: 0.625rem; color: var(--c-sage-border); margin-top: 2px;">{{ ped.lote?.ubicacionAlmacen }}</div>
-                    </td>
-                    <td>
-                      <span class="badge badge--pendiente">
-                        {{ ped.cantidadUsada || ped.cantidadReservada }} unds
-                      </span>
-                    </td>
-                    <td style="font-size: 0.75rem; color: var(--c-warm-black); max-width: 200px;">
-                      {{ ped.descripcionPlaga || ped.observacion }}
-                    </td>
-                    <td style="text-align: right;">
-                      <button (click)="despacharPedido(ped.idUso)" class="btn btn--primary">
-                        <lucide-icon name="check-circle" class="w-4 h-4"></lucide-icon>
-                        <span>Despachar (Aplicar FEFO)</span>
-                      </button>
-                    </td>
-                  </tr>
-                } @empty {
-                  <tr>
-                    <td colspan="6">
-                      <div class="empty-state">
-                        <lucide-icon name="check-circle" class="empty-state__icon"></lucide-icon>
-                        <p class="empty-state__title">No hay órdenes de pedido pendientes en bodega</p>
-                        <p class="empty-state__text">Todas las órdenes emitidas por los técnicos han sido procesadas o despachadas.</p>
-                      </div>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        </div>
-      }
 
       <!-- TAB 2: KITTING Y COMBOS FÍSICOS -->
       @if (activeTab() === 'KITTING') {
@@ -402,11 +305,10 @@ export class BodegaDashboardComponent implements OnInit {
   private wsService = inject(WebsocketService);
 
   Math = Math;
-  activeTab = signal<'PEDIDOS_VENTAS' | 'KITTING' | 'LOTES' | 'DEVOLUCION_CLIENTE'>('PEDIDOS_VENTAS');
+  activeTab = signal<'KITTING' | 'LOTES' | 'DEVOLUCION_CLIENTE'>('KITTING');
 
   lotes = signal<any[]>([]);
   alertasKitting = signal<any[]>([]);
-  pedidosPendientes = signal<any[]>([]);
   isKitModalOpen = signal<boolean>(false);
   devolucionesClienteCount = signal<number>(0);
   devolucionesPendientesCount = signal<number>(0);
@@ -456,22 +358,8 @@ export class BodegaDashboardComponent implements OnInit {
 
   loadAll(): void {
     this.operacionesService.listarLotesDisponiblesFefo().subscribe(data => this.lotes.set(data));
-    this.operacionesService.listarPedidosPendientesBodega().subscribe(data => this.pedidosPendientes.set(data));
     this.operacionesService.listarAlertas().subscribe(data => this.alertasKitting.set(data));
-    this.operacionesService.listarDevolucionesPendientesBodega().subscribe(data => this.devolucionesPendientesCount.set(data.length));
-  }
-
-  despacharPedido(idOrden: number): void {
-    const bodegueroId = this.authService.currentUser()?.idUsuario || 3;
-    this.operacionesService.despacharPedido(idOrden, bodegueroId).subscribe({
-      next: (res) => {
-        this.toast.success('Despacho Completado', 'Se ha descontado el stock del lote según prioridad FEFO y notificado al cliente.');
-        this.loadAll();
-      },
-      error: (err) => {
-        this.toast.error('Error', err.error?.message || 'No se pudo despachar el pedido.');
-      }
-    });
+    this.operacionesService.listarDevolucionesPendientesBodega(0, 1).subscribe(page => this.devolucionesPendientesCount.set(page.totalElements));
   }
 
   armarKitDesdeAlerta(alerta: any): void {

@@ -35,6 +35,9 @@ public interface IUsoCampoService {
     /** Bodeguero despacha el pedido: libera reserva, resta stock, registra movimiento. */
     void despacharPedido(Integer idOrden, Integer idUsuarioBodeguero);
 
+    /** Técnico confirma la entrega en destino al cliente: DESPACHADO -> ENTREGADO. */
+    void confirmarEntregaPedido(Integer idOrden);
+
     /** Devolución de cliente: suma stock de vuelta al lote inmediatamente. */
     void registrarDevolucionCliente(Integer idPedidoOriginal, String motivo,
                                     Integer cantidad, Integer idLote, Integer idUsuario);

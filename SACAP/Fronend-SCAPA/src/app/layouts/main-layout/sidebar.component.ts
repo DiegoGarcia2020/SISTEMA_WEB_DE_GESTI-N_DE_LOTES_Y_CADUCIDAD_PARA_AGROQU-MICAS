@@ -34,6 +34,10 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
             <lucide-icon name="package" class="nav-item__icon"></lucide-icon>
             <span>Almacén & Despachos</span>
           </a>
+          <a routerLink="/bodega/despachos" routerLinkActive="active" class="nav-item">
+            <lucide-icon name="truck" class="nav-item__icon"></lucide-icon>
+            <span>Despachos de Ventas</span>
+          </a>
           <a routerLink="/admin/reportes" routerLinkActive="active" class="nav-item">
             <lucide-icon name="bar-chart-2" class="nav-item__icon"></lucide-icon>
             <span>Inteligencia & Reportes</span>

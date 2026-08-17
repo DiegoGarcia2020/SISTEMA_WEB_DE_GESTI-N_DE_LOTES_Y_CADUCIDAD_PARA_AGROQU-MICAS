@@ -139,10 +139,20 @@ public class AlmacenServiceImpl implements IAlmacenService {
     @Override
     @Transactional(readOnly = true)
     public List<UbicacionInternaResponseDTO> listarUbicacionesPorEstanteria(Integer idEstanteria) {
+        java.util.Map<Integer, Integer> ocupacionReal = obtenerOcupacionRealPorUbicacion();
         return ubicacionRepository.findByEstanteria_IdEstanteria(idEstanteria)
                 .stream()
-                .map(UbicacionInternaResponseDTO::from)
+                .map(u -> UbicacionInternaResponseDTO.from(u, ocupacionReal.getOrDefault(u.getIdUbicacion(), 0)))
                 .toList();
+    }
+
+    /** Unidades realmente ocupadas por ubicación, sumando cantidad_actual de los lotes reales — ver ILoteRepository.sumCantidadActualAgrupadoPorUbicacion */
+    private java.util.Map<Integer, Integer> obtenerOcupacionRealPorUbicacion() {
+        java.util.Map<Integer, Integer> mapa = new java.util.HashMap<>();
+        for (Object[] fila : loteRepository.sumCantidadActualAgrupadoPorUbicacion()) {
+            mapa.put((Integer) fila[0], ((Number) fila[1]).intValue());
+        }
+        return mapa;
     }
 
     // ── Módulo 2: Topología Jerárquica (Árbol) ───────────────
@@ -151,6 +161,7 @@ public class AlmacenServiceImpl implements IAlmacenService {
     @Transactional(readOnly = true)
     public List<NodoTopologiaDTO> obtenerArbolTopologia() {
         List<Almacen> almacenes = almacenRepository.findAll();
+        java.util.Map<Integer, Integer> ocupacionReal = obtenerOcupacionRealPorUbicacion();
         List<NodoTopologiaDTO> arbol = new ArrayList<>();
 
         for (Almacen alm : almacenes) {
@@ -188,7 +199,7 @@ public class AlmacenServiceImpl implements IAlmacenService {
                     List<UbicacionInterna> ubicaciones = ubicacionRepository.findByEstanteria_IdEstanteria(est.getIdEstanteria());
                     for (UbicacionInterna u : ubicaciones) {
                         int capMax = u.getCapacidadMaxima() != null ? u.getCapacidadMaxima() : 100;
-                        int capAct = u.getCapacidadActual() != null ? u.getCapacidadActual() : 0;
+                        int capAct = ocupacionReal.getOrDefault(u.getIdUbicacion(), 0);
                         int pct = capMax > 0 ? (int) Math.round(((double) capAct / capMax) * 100.0) : 0;
                         String qr = u.getCodigoQr() != null ? u.getCodigoQr() : ("UBIC-EST" + est.getIdEstanteria() + "-N" + u.getNivel() + "-P" + u.getPosicion());
 

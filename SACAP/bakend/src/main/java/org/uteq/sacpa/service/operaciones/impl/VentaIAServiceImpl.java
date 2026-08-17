@@ -143,10 +143,23 @@ public class VentaIAServiceImpl implements IVentaIAService {
         List<LineaCalculada> lineasCalculadas = new ArrayList<>();
 
         for (DetalleVentaIARequestDTO linea : dto.getLineas()) {
-            Lote lote = loteRepository.findById(linea.getIdLote())
+            // Bloqueo pesimista: evita que dos ventas concurrentes sobrevendan el mismo lote
+            Lote lote = loteRepository.findByIdForUpdate(linea.getIdLote())
                     .orElseThrow(() -> new EntityNotFoundException("Lote no encontrado: " + linea.getIdLote()));
             if (lote.getProducto() == null || lote.getProducto().getPrecio() == null) {
                 throw new IllegalStateException("El lote " + lote.getNumeroLote() + " no tiene precio configurado");
+            }
+
+            if (lote.getFechaVencimiento() != null && !lote.getFechaVencimiento().isAfter(LocalDate.now())) {
+                throw new IllegalStateException("El lote " + lote.getNumeroLote() + " de " + lote.getProducto().getNombre()
+                    + " está vencido (venció el " + lote.getFechaVencimiento() + ") y no puede venderse.");
+            }
+
+            int disponible = (lote.getCantidadActual() != null ? lote.getCantidadActual() : 0)
+                    - (lote.getCantidadReservada() != null ? lote.getCantidadReservada() : 0);
+            if (disponible < linea.getCantidad()) {
+                throw new IllegalStateException("Stock insuficiente para " + lote.getProducto().getNombre()
+                    + " (lote " + lote.getNumeroLote() + "). Disponible: " + disponible + ", solicitado: " + linea.getCantidad());
             }
 
             BigDecimal precioUnitario = lote.getProducto().getPrecio();
@@ -167,7 +180,7 @@ public class VentaIAServiceImpl implements IVentaIAService {
 
             subtotal = subtotal.add(precioLinea);
             descuentoTotal = descuentoTotal.add(descuentoLinea);
-            lineasCalculadas.add(new LineaCalculada(linea, precioUnitario, subtotalLinea));
+            lineasCalculadas.add(new LineaCalculada(linea, lote, precioUnitario, subtotalLinea));
         }
         BigDecimal total = subtotal.subtract(descuentoTotal);
 
@@ -188,8 +201,7 @@ public class VentaIAServiceImpl implements IVentaIAService {
                 .build();
 
         for (LineaCalculada lc : lineasCalculadas) {
-            Lote lote = loteRepository.findById(lc.dto().getIdLote())
-                    .orElseThrow(() -> new EntityNotFoundException("Lote no encontrado: " + lc.dto().getIdLote()));
+            Lote lote = lc.lote();
 
             Promocion promo = lc.dto().getIdPromocion() != null
                     ? promocionRepository.findById(lc.dto().getIdPromocion()).orElse(null)
@@ -206,6 +218,10 @@ public class VentaIAServiceImpl implements IVentaIAService {
                     .build();
 
             venta.agregarDetalle(detalle);
+
+            // Descontar stock real del lote: recién aquí sale físicamente de bodega
+            lote.setCantidadActual(lote.getCantidadActual() - lc.dto().getCantidad());
+            loteRepository.save(lote);
         }
 
         Venta ventaCreada = ventaRepository.save(venta);
@@ -245,5 +261,5 @@ public class VentaIAServiceImpl implements IVentaIAService {
         return VentaIAResponseDTO.from(venta, lineas, nombreTecnico);
     }
 
-    private record LineaCalculada(DetalleVentaIARequestDTO dto, BigDecimal precioUnitario, BigDecimal subtotalLinea) {}
+    private record LineaCalculada(DetalleVentaIARequestDTO dto, Lote lote, BigDecimal precioUnitario, BigDecimal subtotalLinea) {}
 }

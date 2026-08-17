@@ -21,6 +21,16 @@ public interface ILoteRepository extends JpaRepository<Lote, Integer> {
 
     Optional<Lote> findByNumeroLote(String numeroLote);
 
+    /**
+     * Unidades realmente ocupadas por ubicación física, calculado en vivo sumando
+     * cantidad_actual de los lotes que apuntan ahí — reemplaza el contador
+     * ubicacion_interna.capacidad_actual, que solo se incrementaba al recibir/asignar
+     * lotes manualmente y nunca se descontaba (quedaba desincronizado de la venta real).
+     */
+    @Query("SELECT l.ubicacion.idUbicacion, COALESCE(SUM(l.cantidadActual), 0) FROM Lote l " +
+           "WHERE l.ubicacion IS NOT NULL GROUP BY l.ubicacion.idUbicacion")
+    List<Object[]> sumCantidadActualAgrupadoPorUbicacion();
+
     /** Lotes proximos a vencer segun fecha limite */
     @Query("SELECT l FROM Lote l WHERE l.fechaVencimiento <= :fechaLimite AND l.idEstadoLote = :idEstadoActivo ORDER BY l.fechaVencimiento ASC")
     List<Lote> findLotesProximosAVencer(@Param("fechaLimite") LocalDate fechaLimite, @Param("idEstadoActivo") Integer idEstadoActivo);
@@ -57,6 +67,11 @@ public interface ILoteRepository extends JpaRepository<Lote, Integer> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT l FROM Lote l WHERE l.producto.idProducto = :idProducto ORDER BY l.fechaVencimiento ASC")
     List<Lote> findByProductoForUpdate(@Param("idProducto") Integer idProducto);
+
+    /** Lote puntual con bloqueo pesimista, para descontar stock en ventas concurrentes sin sobrevender */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT l FROM Lote l WHERE l.idLote = :idLote")
+    Optional<Lote> findByIdForUpdate(@Param("idLote") Integer idLote);
 
     /** Todos los lotes con stock realmente disponible (cantidad_actual - cantidad_reservada > 0), orden FEFO */
     @Query("SELECT l FROM Lote l WHERE (l.cantidadActual - COALESCE(l.cantidadReservada, 0)) > 0 ORDER BY l.fechaVencimiento ASC")
@@ -97,6 +112,7 @@ public interface ILoteRepository extends JpaRepository<Lote, Integer> {
     @Query("SELECT l FROM Lote l WHERE l.ubicacion IS NOT NULL " +
            "AND l.producto.categoria.idCategoria = :idCategoria " +
            "AND l.idEstadoLote = :idEstadoActivo " +
+           "AND l.fechaVencimiento > CURRENT_DATE " +
            "AND (l.cantidadActual - COALESCE(l.cantidadReservada, 0)) > 0 " +
            "ORDER BY l.fechaVencimiento ASC")
     List<Lote> findDisponiblesParaVenta(@Param("idCategoria") Integer idCategoria, @Param("idEstadoActivo") Integer idEstadoActivo);
@@ -110,6 +126,7 @@ public interface ILoteRepository extends JpaRepository<Lote, Integer> {
            "AND pl.idPlaga = :idPlaga " +
            "AND (:idCultivo IS NULL OR EXISTS (SELECT 1 FROM l.producto.cultivos c WHERE c.idCultivo = :idCultivo)) " +
            "AND l.idEstadoLote = :idEstadoActivo " +
+           "AND l.fechaVencimiento > CURRENT_DATE " +
            "AND (l.cantidadActual - COALESCE(l.cantidadReservada, 0)) > 0 " +
            "ORDER BY l.fechaVencimiento ASC")
     List<Lote> findDisponiblesParaVentaPorPlaga(@Param("idPlaga") Integer idPlaga, @Param("idCultivo") Integer idCultivo, @Param("idEstadoActivo") Integer idEstadoActivo);

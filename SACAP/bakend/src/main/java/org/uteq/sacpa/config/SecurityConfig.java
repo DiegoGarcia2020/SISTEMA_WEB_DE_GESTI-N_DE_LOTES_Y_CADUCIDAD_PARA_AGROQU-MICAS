@@ -132,7 +132,7 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/api/promociones/activas",
                     "/api/promociones/combos/activos"
-                ).hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "TECNICO", "TECNICO_CAMPO")
+                ).hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "TECNICO", "TECNICO_CAMPO", "TÉCNICO DE CAMPO")
 
                 // Lectura de alertas de caducidad — también accesible al BODEGUERO (dashboard de kitting)
                 .requestMatchers(HttpMethod.GET, "/api/alertas", "/api/alertas/activas", "/api/alertas/lote/**")
@@ -155,7 +155,7 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/api/movimientos/lotes-disponibles",
                     "/api/lotes/disponibles"
-                ).hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "BODEGUERO", "TECNICO", "TECNICO_CAMPO")
+                ).hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "BODEGUERO", "TECNICO", "TECNICO_CAMPO", "TÉCNICO DE CAMPO")
 
                 // ADMINISTRADOR, SUPERVISOR y BODEGUERO — inventario y lotes
                 .requestMatchers(
@@ -170,32 +170,37 @@ public class SecurityConfig {
                 // TECNICO_CAMPO — uso en campo
                 .requestMatchers(
                     "/api/uso-campo/**"
-                ).hasAuthority("TECNICO_CAMPO")
+                ).hasAnyAuthority("TECNICO", "TECNICO_CAMPO", "TÉCNICO DE CAMPO")
 
                 // TECNICO — Módulo 3: Ventas y Motor IA
-                // Nota: la autoridad JWT es el valor literal de seguridad.rol.nombre (sin transformar,
-                // ver UsuarioPrincipal.getAuthorities()); el rol seed canónico es "TECNICO", no "TECNICO_CAMPO"
-                // (que usa el matcher preexistente de /api/uso-campo/** y no corresponde a ningún rol sembrado).
+                // Nota: la autoridad JWT es el valor literal de seguridad.rol.nombre en MAYÚSCULAS
+                // (ver UsuarioPrincipal.getAuthorities()); el catálogo seguridad.rol quedó con dos
+                // filas de merges distintos para "técnico" ("TECNICO" y "Técnico de Campo"), por eso
+                // se aceptan ambas variantes (más "TECNICO_CAMPO" del matcher histórico de uso-campo).
                 .requestMatchers(
                     "/api/clientes/**",
                     "/api/ventas/**"
-                ).hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "TECNICO", "TECNICO_CAMPO")
+                ).hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "TECNICO", "TECNICO_CAMPO", "TÉCNICO DE CAMPO")
 
                 // Ventas operativas — solo TECNICO + ADMINISTRADOR + SUPERVISOR
                 .requestMatchers("/api/operaciones/ventas/**")
-                    .hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "TECNICO", "TECNICO_CAMPO")
+                    .hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "TECNICO", "TECNICO_CAMPO", "TÉCNICO DE CAMPO")
 
                 // Pedidos operativos — TECNICO (crea/consulta) + BODEGUERO (despacha) + ADMINISTRADOR + SUPERVISOR
                 .requestMatchers("/api/operaciones/pedidos/**")
-                    .hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "TECNICO", "TECNICO_CAMPO", "BODEGUERO")
+                    .hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "TECNICO", "TECNICO_CAMPO", "TÉCNICO DE CAMPO", "BODEGUERO")
 
-                // Despachos — solo BODEGUERO + ADMINISTRADOR
+                // Confirmar entrega (Última Milla) — la hace el TECNICO en campo, no Bodega
+                .requestMatchers(HttpMethod.PUT, "/api/operaciones/despachos/*/entregar")
+                    .hasAnyAuthority("ADMINISTRADOR", "BODEGUERO", "TECNICO", "TECNICO_CAMPO", "TÉCNICO DE CAMPO")
+
+                // Resto de Despachos (preparar) — solo BODEGUERO + ADMINISTRADOR
                 .requestMatchers("/api/operaciones/despachos/**")
                     .hasAnyAuthority("ADMINISTRADOR", "BODEGUERO")
 
                 // Devoluciones de venta — TECNICO (registra en campo) + BODEGUERO (recibe física) + ADMINISTRADOR + SUPERVISOR
                 .requestMatchers("/api/operaciones/devoluciones-venta/**")
-                    .hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "TECNICO", "TECNICO_CAMPO", "BODEGUERO")
+                    .hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR", "TECNICO", "TECNICO_CAMPO", "TÉCNICO DE CAMPO", "BODEGUERO")
 
                 // Órdenes de compra — SUPERVISOR (crea/anula) + BODEGUERO (recepciona) + ADMINISTRADOR
                 .requestMatchers("/api/ordenes-compra/**")

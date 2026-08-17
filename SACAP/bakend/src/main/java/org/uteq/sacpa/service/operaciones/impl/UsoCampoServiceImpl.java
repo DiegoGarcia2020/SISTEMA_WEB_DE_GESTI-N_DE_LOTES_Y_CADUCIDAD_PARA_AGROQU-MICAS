@@ -162,6 +162,19 @@ public class UsoCampoServiceImpl implements IUsoCampoService {
 
     @Override
     @org.springframework.transaction.annotation.Transactional
+    public void confirmarEntregaPedido(Integer idOrden) {
+        jdbcTemplate.execute((Connection conn) -> {
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "SELECT operaciones.fn_entregar_pedido(?)")) {
+                ps.setInt(1, idOrden);
+                ps.execute();
+            }
+            return null;
+        });
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
     public void registrarDevolucionCliente(Integer idPedidoOriginal, String motivo,
                                            Integer cantidad, Integer idLote, Integer idUsuario) {
         jdbcTemplate.execute((Connection conn) -> {

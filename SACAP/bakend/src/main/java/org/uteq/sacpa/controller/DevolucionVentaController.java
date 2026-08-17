@@ -2,9 +2,14 @@ package org.uteq.sacpa.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.uteq.sacpa.dto.operaciones.DevolucionVentaRequestDTO;
+import org.uteq.sacpa.dto.operaciones.DevolucionVentaResponseDTO;
 import org.uteq.sacpa.service.operaciones.IDevolucionVentaService;
 
 @RestController
@@ -28,8 +33,9 @@ public class DevolucionVentaController {
     }
 
     @GetMapping("/pendientes-bodega")
-    public ResponseEntity<java.util.List<org.uteq.sacpa.dto.operaciones.DevolucionVentaResponseDTO>> listarPendientesBodega() {
-        return ResponseEntity.ok(devolucionService.listarPendientesBodega());
+    public ResponseEntity<Page<DevolucionVentaResponseDTO>> listarPendientesBodega(
+            @PageableDefault(size = 20, sort = "fechaSolicitud", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(devolucionService.listarPendientesBodega(pageable));
     }
     
     @GetMapping("/mis-devoluciones")

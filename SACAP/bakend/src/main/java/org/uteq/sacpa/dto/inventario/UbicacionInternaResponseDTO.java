@@ -22,9 +22,14 @@ public class UbicacionInternaResponseDTO {
     private String  codigoQr;
 
     public static UbicacionInternaResponseDTO from(UbicacionInterna u) {
+        return from(u, u.getCapacidadActual() != null ? u.getCapacidadActual() : 0);
+    }
+
+    /** @param capacidadActualReal ocupación real calculada en vivo desde los lotes (ver AlmacenServiceImpl.obtenerOcupacionRealPorUbicacion) */
+    public static UbicacionInternaResponseDTO from(UbicacionInterna u, int capacidadActualReal) {
         String codigoEst = u.getEstanteria() != null ? u.getEstanteria().getCodigo() : "?";
         int capMax = u.getCapacidadMaxima() != null ? u.getCapacidadMaxima() : 100;
-        int capAct = u.getCapacidadActual() != null ? u.getCapacidadActual() : 0;
+        int capAct = capacidadActualReal;
         int capDisp = Math.max(0, capMax - capAct);
         int pctOcup = capMax > 0 ? (int) Math.round(((double) capAct / capMax) * 100.0) : 0;
         String qr = u.getCodigoQr() != null ? u.getCodigoQr() : ("UBIC-EST" + (u.getEstanteria() != null ? u.getEstanteria().getIdEstanteria() : "0") + "-N" + u.getNivel() + "-P" + u.getPosicion());

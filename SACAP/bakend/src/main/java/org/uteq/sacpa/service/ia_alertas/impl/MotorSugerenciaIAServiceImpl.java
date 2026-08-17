@@ -150,6 +150,7 @@ public class MotorSugerenciaIAServiceImpl implements IMotorSugerenciaIAService {
     }
 
     private int puntajeUrgencia(long dias) {
+        if (dias < 0) return 0; // ya venció: no es "urgente vender", es no vendible
         if (dias <= 15) return 70;
         if (dias <= 30) return 55;
         if (dias <= 60) return 35;

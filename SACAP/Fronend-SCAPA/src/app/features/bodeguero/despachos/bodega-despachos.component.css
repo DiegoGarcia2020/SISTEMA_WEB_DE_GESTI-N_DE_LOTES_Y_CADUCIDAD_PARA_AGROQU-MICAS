@@ -30,6 +30,23 @@
   margin: 0;
 }
 
+.busqueda-input {
+  width: 100%;
+  max-width: 420px;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--c-sage-border);
+  border-radius: 6px;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  color: var(--c-warm-black);
+  background-color: white;
+}
+
+.busqueda-input:focus {
+  outline: none;
+  border-color: var(--c-dark-green);
+}
+
 /* =================================================================
    PESTAÑAS (TABS)
    ================================================================= */

@@ -20,7 +20,7 @@ import { ToastService } from '../../shared/components/toast/toast.service';
 
       <div class="table-card" style="margin-top: 1rem;">
         <div class="table-card__header">
-          <h3 style="font-size: 1rem; font-weight: 600; color: var(--c-warm-black);">Devoluciones Pendientes (En Tránsito)</h3>
+          <h3 style="font-size: 1rem; font-weight: 600; color: var(--c-warm-black);">Devoluciones Pendientes (En Tránsito) — {{ totalElementos() }} en total</h3>
           <button (click)="cargarDevoluciones()" class="btn btn--ghost" title="Actualizar">
             <lucide-icon name="refresh-cw" class="w-4 h-4"></lucide-icon>
           </button>
@@ -77,6 +77,14 @@ import { ToastService } from '../../shared/components/toast/toast.service';
             </tbody>
           </table>
         </div>
+
+        @if (totalPaginas() > 1) {
+          <div class="table-card__footer" style="display: flex; justify-content: center; align-items: center; gap: 1rem; padding: 0.75rem;">
+            <button class="btn btn--ghost btn--sm" [disabled]="paginaActual() === 0" (click)="irAPagina(paginaActual() - 1)">← Anterior</button>
+            <span style="font-size: 0.875rem;">Página {{ paginaActual() + 1 }} de {{ totalPaginas() }}</span>
+            <button class="btn btn--ghost btn--sm" [disabled]="paginaActual() + 1 >= totalPaginas()" (click)="irAPagina(paginaActual() + 1)">Siguiente →</button>
+          </div>
+        }
       </div>
 
       <!-- Modal Recibir Devolución -->
@@ -111,6 +119,10 @@ export class BodegueroDevolucionesComponent implements OnInit {
   private toast = inject(ToastService);
 
   devoluciones = signal<any[]>([]);
+  paginaActual = signal<number>(0);
+  totalPaginas = signal<number>(0);
+  totalElementos = signal<number>(0);
+  tamanoPagina = 20;
   mostrarModal = signal<boolean>(false);
   devSeleccionada = signal<any | null>(null);
   estadoInventarioSeleccionado = 'CUARENTENA';
@@ -120,10 +132,19 @@ export class BodegueroDevolucionesComponent implements OnInit {
   }
 
   cargarDevoluciones(): void {
-    this.operacionesService.listarDevolucionesPendientesBodega().subscribe({
-      next: (data) => this.devoluciones.set(data),
+    this.operacionesService.listarDevolucionesPendientesBodega(this.paginaActual(), this.tamanoPagina).subscribe({
+      next: (pagina) => {
+        this.devoluciones.set(pagina.content);
+        this.totalPaginas.set(pagina.totalPages);
+        this.totalElementos.set(pagina.totalElements);
+      },
       error: () => this.toast.error('Error', 'No se pudieron cargar las devoluciones pendientes.')
     });
+  }
+
+  irAPagina(pagina: number): void {
+    this.paginaActual.set(pagina);
+    this.cargarDevoluciones();
   }
 
   abrirModalRecibir(dev: any): void {

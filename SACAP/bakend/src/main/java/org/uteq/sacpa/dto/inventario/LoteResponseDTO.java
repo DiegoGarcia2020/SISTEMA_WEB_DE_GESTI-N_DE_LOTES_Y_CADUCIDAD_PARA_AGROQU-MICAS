@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.uteq.sacpa.entity.inventario.Lote;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -23,6 +24,7 @@ public class LoteResponseDTO {
     // Datos desnormalizados para evitar lazy
     private Integer idProducto;
     private String  nombreProducto;
+    private BigDecimal precio;
     private Integer idProveedor;
     private String  nombreProveedor;
     private Integer idUbicacion;
@@ -54,6 +56,7 @@ public class LoteResponseDTO {
                 .idEstadoLote(l.getIdEstadoLote())
                 .idProducto(l.getProducto()   != null ? l.getProducto().getIdProducto()     : null)
                 .nombreProducto(l.getProducto() != null ? l.getProducto().getNombre()       : null)
+                .precio(l.getProducto()       != null ? l.getProducto().getPrecio()         : null)
                 .idProveedor(l.getProveedor()  != null ? l.getProveedor().getIdProveedor()  : null)
                 .nombreProveedor(l.getProveedor() != null ? l.getProveedor().getNombreRepresentante() : null)
                 .idUbicacion(l.getUbicacion()  != null ? l.getUbicacion().getIdUbicacion()  : null)

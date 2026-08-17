@@ -1,11 +1,13 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { environment } from '../../../../environments/environment';
 
 export interface OrdenPendienteDTO {
   id: number;
+  numeroComprobante: string;
   tecnico: string;
   fechaEstimadaEntrega: string;
   ventanaHoraria: string;
@@ -33,7 +35,7 @@ import { ComprobanteService } from '../../../core/services/comprobante.service';
 @Component({
   selector: 'app-bodega-despachos',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './bodega-despachos.component.html',
   styleUrls: ['./bodega-despachos.component.css']
 })
@@ -45,7 +47,12 @@ export class BodegaDespachosComponent implements OnInit {
   activeTab = signal<'preparar' | 'devoluciones'>('preparar');
   ordenesPendientes = signal<OrdenPendienteDTO[]>([]);
   devolucionesEnTransito = signal<DevolucionTransitoDTO[]>([]);
+  paginaDevoluciones = signal<number>(0);
+  totalPaginasDevoluciones = signal<number>(0);
+  totalDevoluciones = signal<number>(0);
+  tamanoPaginaDevoluciones = 20;
   processingIds = signal<Set<number>>(new Set());
+  textoBusqueda = signal('');
 
   ngOnInit(): void {
     this.cargarOrdenesPendientes();
@@ -70,19 +77,32 @@ export class BodegaDespachosComponent implements OnInit {
   }
 
   cargarOrdenesPendientes() {
-    // Mock for now, replace with actual GET request
-    this.ordenesPendientes.set([
-      { id: 101, tecnico: 'Juan Pérez', fechaEstimadaEntrega: '2026-07-28', ventanaHoraria: '08:00 - 10:00', estado: 'PENDIENTE' },
-      { id: 105, tecnico: 'María Gómez', fechaEstimadaEntrega: '2026-07-28', ventanaHoraria: '14:00 - 16:00', estado: 'PENDIENTE' }
-    ]);
+    const texto = this.textoBusqueda().trim();
+    const params: Record<string, string> = texto ? { busqueda: texto } : {};
+    this.http.get<OrdenPendienteDTO[]>(`${environment.apiUrl}/operaciones/despachos/pendientes`, { params })
+      .subscribe({
+        next: (data) => this.ordenesPendientes.set(data || []),
+        error: () => this.toast.error('Error', 'No se pudieron cargar las órdenes pendientes de preparación')
+      });
   }
 
   cargarDevoluciones() {
-    this.http.get<DevolucionTransitoDTO[]>(`${environment.apiUrl}/operaciones/devoluciones-venta/pendientes-bodega`)
+    const params = { page: this.paginaDevoluciones().toString(), size: this.tamanoPaginaDevoluciones.toString() };
+    this.http.get<{ content: DevolucionTransitoDTO[]; totalElements: number; totalPages: number }>(
+      `${environment.apiUrl}/operaciones/devoluciones-venta/pendientes-bodega`, { params })
       .subscribe({
-        next: (data) => this.devolucionesEnTransito.set(data),
+        next: (pagina) => {
+          this.devolucionesEnTransito.set(pagina.content);
+          this.totalPaginasDevoluciones.set(pagina.totalPages);
+          this.totalDevoluciones.set(pagina.totalElements);
+        },
         error: () => this.toast.error('Error', 'No se pudieron cargar las devoluciones pendientes')
       });
+  }
+
+  irAPaginaDevoluciones(pagina: number) {
+    this.paginaDevoluciones.set(pagina);
+    this.cargarDevoluciones();
   }
 
   prepararPaquete(idVenta: number) {

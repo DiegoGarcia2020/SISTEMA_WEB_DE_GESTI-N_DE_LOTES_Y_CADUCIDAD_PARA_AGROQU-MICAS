@@ -36,7 +36,7 @@ public class DevolucionVentaServiceImpl implements IDevolucionVentaService {
 
     @Override
     @Transactional
-    public DevolucionVenta registrarDevolucionCampo(DevolucionVentaRequestDTO requestDTO) {
+    public org.uteq.sacpa.dto.operaciones.DevolucionVentaResponseDTO registrarDevolucionCampo(DevolucionVentaRequestDTO requestDTO) {
         Venta venta = ventaRepository.findById(requestDTO.getIdVenta())
                 .orElseThrow(() -> new RuntimeException("Venta no encontrada con ID: " + requestDTO.getIdVenta()));
         
@@ -77,12 +77,12 @@ public class DevolucionVentaServiceImpl implements IDevolucionVentaService {
             devolucion.getId(), venta.getId());
         messagingTemplate.convertAndSend("/topic/bodega/devoluciones", mensaje);
 
-        return devolucion;
+        return toResponseDTO(devolucion);
     }
 
     @Override
     @Transactional
-    public DevolucionVenta recibirDevolucionFisica(Integer idDevolucion, String estadoInventario) {
+    public org.uteq.sacpa.dto.operaciones.DevolucionVentaResponseDTO recibirDevolucionFisica(Integer idDevolucion, String estadoInventario) {
         DevolucionVenta devolucion = devolucionVentaRepository.findById(idDevolucion)
                 .orElseThrow(() -> new RuntimeException("Devolución no encontrada con ID: " + idDevolucion));
 
@@ -110,51 +110,39 @@ public class DevolucionVentaServiceImpl implements IDevolucionVentaService {
             devolucion.setLote(loteReintegro);
         }
 
-        return devolucionVentaRepository.save(devolucion);
+        return toResponseDTO(devolucionVentaRepository.save(devolucion));
+    }
+
+    private org.uteq.sacpa.dto.operaciones.DevolucionVentaResponseDTO toResponseDTO(DevolucionVenta d) {
+        return org.uteq.sacpa.dto.operaciones.DevolucionVentaResponseDTO.builder()
+                .id(d.getId())
+                .idVenta(d.getVenta().getId())
+                .numeroComprobante(d.getVenta().getNumeroComprobante())
+                .nombreCliente(d.getVenta().getCliente().getNombreFinca())
+                .nombreTecnico(d.getVenta().getTecnico().getNombres() + " " + d.getVenta().getTecnico().getApellidos())
+                .idProducto(d.getProducto().getIdProducto())
+                .nombreProducto(d.getProducto().getNombre())
+                .cantidadDevuelta(d.getCantidadDevuelta())
+                .motivo(d.getMotivo())
+                .fechaSolicitud(d.getFechaSolicitud())
+                .estadoLogistico(d.getEstadoLogistico())
+                .estadoInventario(d.getEstadoInventario())
+                .fechaRecepcion(d.getFechaRecepcion())
+                .build();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public java.util.List<org.uteq.sacpa.dto.operaciones.DevolucionVentaResponseDTO> listarPendientesBodega() {
-        return devolucionVentaRepository.findByEstadoLogistico(EstadoLogisticoDevolucion.EN_TRANSITO.name())
-                .stream()
-                .map(d -> org.uteq.sacpa.dto.operaciones.DevolucionVentaResponseDTO.builder()
-                        .id(d.getId())
-                        .idVenta(d.getVenta().getId())
-                        .numeroComprobante(d.getVenta().getNumeroComprobante())
-                        .nombreCliente(d.getVenta().getCliente().getNombreFinca())
-                        .nombreTecnico(d.getVenta().getTecnico().getNombres() + " " + d.getVenta().getTecnico().getApellidos())
-                        .idProducto(d.getProducto().getIdProducto())
-                        .nombreProducto(d.getProducto().getNombre())
-                        .cantidadDevuelta(d.getCantidadDevuelta())
-                        .motivo(d.getMotivo())
-                        .fechaSolicitud(d.getFechaSolicitud())
-                        .estadoLogistico(d.getEstadoLogistico())
-                        .estadoInventario(d.getEstadoInventario())
-                        .fechaRecepcion(d.getFechaRecepcion())
-                        .build())
-                .collect(java.util.stream.Collectors.toList());
+    public org.springframework.data.domain.Page<org.uteq.sacpa.dto.operaciones.DevolucionVentaResponseDTO> listarPendientesBodega(org.springframework.data.domain.Pageable pageable) {
+        return devolucionVentaRepository.findByEstadoLogistico(EstadoLogisticoDevolucion.EN_TRANSITO.name(), pageable)
+                .map(this::toResponseDTO);
     }
     @Override
     @Transactional(readOnly = true)
     public java.util.List<org.uteq.sacpa.dto.operaciones.DevolucionVentaResponseDTO> listarPorTecnico(Integer idTecnico) {
         return devolucionVentaRepository.findByTecnico(idTecnico)
                 .stream()
-                .map(d -> org.uteq.sacpa.dto.operaciones.DevolucionVentaResponseDTO.builder()
-                        .id(d.getId())
-                        .idVenta(d.getVenta().getId())
-                        .numeroComprobante(d.getVenta().getNumeroComprobante())
-                        .nombreCliente(d.getVenta().getCliente().getNombreFinca())
-                        .nombreTecnico(d.getVenta().getTecnico().getNombres() + " " + d.getVenta().getTecnico().getApellidos())
-                        .idProducto(d.getProducto().getIdProducto())
-                        .nombreProducto(d.getProducto().getNombre())
-                        .cantidadDevuelta(d.getCantidadDevuelta())
-                        .motivo(d.getMotivo())
-                        .fechaSolicitud(d.getFechaSolicitud())
-                        .estadoLogistico(d.getEstadoLogistico())
-                        .estadoInventario(d.getEstadoInventario())
-                        .fechaRecepcion(d.getFechaRecepcion())
-                        .build())
+                .map(this::toResponseDTO)
                 .collect(java.util.stream.Collectors.toList());
     }
 }

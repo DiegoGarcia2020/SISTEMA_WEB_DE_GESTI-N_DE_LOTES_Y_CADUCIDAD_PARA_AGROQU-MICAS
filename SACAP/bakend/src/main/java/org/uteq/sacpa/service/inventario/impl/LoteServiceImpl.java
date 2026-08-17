@@ -250,7 +250,10 @@ public class LoteServiceImpl implements ILoteService {
     @Override
     @Transactional(readOnly = true)
     public List<LoteResponseDTO> listarLotesDisponibles(String busqueda) {
-        return loteRepository.findLotesDisponibles(busqueda).stream()
+        // Con busqueda=null, Postgres no logra inferir el tipo del parámetro dentro de
+        // LOWER(CONCAT('%', :busqueda, '%')) y falla con "function lower(bytea) does not exist".
+        // Normalizamos a "" antes del JPQL para evitar el bind nulo.
+        return loteRepository.findLotesDisponibles(busqueda == null ? "" : busqueda).stream()
                 .map(LoteResponseDTO::from).toList();
     }
 

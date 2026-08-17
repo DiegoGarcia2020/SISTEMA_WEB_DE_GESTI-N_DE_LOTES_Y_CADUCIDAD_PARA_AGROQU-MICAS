@@ -53,7 +53,7 @@ export class CheckoutComponent implements OnInit {
       numeroLote: lote.numeroLote,
       nombreProducto: lote.nombreProducto,
       cantidad: 1,
-      precioUnitario: lote.precioReferencial || lote.producto?.precioReferencial || 0, // Ajustar segun DTO de LoteResponseDTO
+      precioUnitario: lote.precio || 0,
       esComboIA: false,
       descuentoPct: 0
     });

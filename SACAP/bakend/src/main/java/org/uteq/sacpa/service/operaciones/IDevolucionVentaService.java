@@ -1,11 +1,13 @@
 package org.uteq.sacpa.service.operaciones;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.uteq.sacpa.dto.operaciones.DevolucionVentaRequestDTO;
-import org.uteq.sacpa.entity.operaciones.DevolucionVenta;
+import org.uteq.sacpa.dto.operaciones.DevolucionVentaResponseDTO;
 
 public interface IDevolucionVentaService {
-    DevolucionVenta registrarDevolucionCampo(DevolucionVentaRequestDTO requestDTO);
-    DevolucionVenta recibirDevolucionFisica(Integer idDevolucion, String estadoInventario);
-    java.util.List<org.uteq.sacpa.dto.operaciones.DevolucionVentaResponseDTO> listarPendientesBodega();
+    DevolucionVentaResponseDTO registrarDevolucionCampo(DevolucionVentaRequestDTO requestDTO);
+    DevolucionVentaResponseDTO recibirDevolucionFisica(Integer idDevolucion, String estadoInventario);
+    Page<DevolucionVentaResponseDTO> listarPendientesBodega(Pageable pageable);
     java.util.List<org.uteq.sacpa.dto.operaciones.DevolucionVentaResponseDTO> listarPorTecnico(Integer idTecnico);
 }

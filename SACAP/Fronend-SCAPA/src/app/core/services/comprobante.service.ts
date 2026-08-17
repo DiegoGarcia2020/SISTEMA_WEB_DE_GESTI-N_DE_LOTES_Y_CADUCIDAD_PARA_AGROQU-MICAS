@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import { autoTable } from 'jspdf-autotable';
 import { VentaDTO } from '../models/ventas.model';
 import { OrdenCompra } from '../models/compras.model';
 
@@ -87,7 +87,7 @@ export class ComprobanteService {
       });
     }
     
-    (doc as any).autoTable({
+    autoTable(doc, {
       head: [tableColumn],
       body: tableRows,
       startY: 80,
@@ -157,7 +157,7 @@ export class ComprobanteService {
       });
     }
     
-    (doc as any).autoTable({
+    autoTable(doc, {
       head: [tableColumn],
       body: tableRows,
       startY: 80,
@@ -230,7 +230,7 @@ export class ComprobanteService {
       devolucion.estadoInventario || 'PENDIENTE'
     ]);
     
-    (doc as any).autoTable({
+    autoTable(doc, {
       head: [tableColumn],
       body: tableRows,
       startY: 80,

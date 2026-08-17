@@ -71,7 +71,7 @@
                   <span style="font-size: 0.85rem; color: var(--text-muted)">Lote: {{ lote.numeroLote }}</span>
                   <span style="font-size: 0.85rem; color: var(--text-muted)">Vence: {{ lote.fechaVencimiento }}</span>
                   <span style="font-size: 0.85rem; color: var(--text-muted)">Stock: {{ lote.cantidadActual - (lote.cantidadReservada || 0) }}</span>
-                  <span class="vt-precio" style="font-weight: 600; color: var(--primary-color)">${{ (lote.producto?.precioReferencial || lote.precioReferencial || 0).toFixed(2) }}</span>
+                  <span class="vt-precio" style="font-weight: 600; color: var(--primary-color)">${{ (lote.precio || 0).toFixed(2) }}</span>
                 </div>
                 <button class="vt-btn vt-btn--sm vt-btn--primary" (click)="agregarLoteAlCarrito(lote)">Agregar al carrito</button>
               </div>

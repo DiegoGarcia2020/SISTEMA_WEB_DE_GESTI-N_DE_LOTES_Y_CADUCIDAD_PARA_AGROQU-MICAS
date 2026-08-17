@@ -40,7 +40,7 @@ public class OrdenPedidoController {
 
     @PostMapping
     public ResponseEntity<Map<String, String>> crearOrdenPedido(@Valid @RequestBody OrdenPedidoRequestDTO request) {
-        Integer idEfectivo = resolverIdOwner(request.getIdTecnico(), "TECNICO", "TECNICO_CAMPO");
+        Integer idEfectivo = resolverIdOwner(request.getIdTecnico(), "TECNICO", "TECNICO_CAMPO", "TÉCNICO DE CAMPO");
         request.setIdTecnico(idEfectivo);
         usoCampoService.crearOrdenPedido(request);
         return ResponseEntity.ok(Map.of("mensaje", "Orden de pedido creada exitosamente y stock reservado en bodega"));
@@ -48,7 +48,7 @@ public class OrdenPedidoController {
 
     @GetMapping("/tecnico/{idTecnico}")
     public ResponseEntity<List<PedidoResponseDTO>> listarPedidosPorTecnico(@PathVariable Integer idTecnico) {
-        Integer idEfectivo = resolverIdOwner(idTecnico, "TECNICO", "TECNICO_CAMPO");
+        Integer idEfectivo = resolverIdOwner(idTecnico, "TECNICO", "TECNICO_CAMPO", "TÉCNICO DE CAMPO");
         return ResponseEntity.ok(usoCampoService.listarPedidosPorTecnico(idEfectivo));
     }
 
@@ -63,6 +63,12 @@ public class OrdenPedidoController {
         Integer idEfectivo = resolverIdOwner(idUsuarioBodeguero, "BODEGUERO");
         usoCampoService.despacharPedido(idOrden, idEfectivo);
         return ResponseEntity.ok(Map.of("mensaje", "Pedido despachado exitosamente al cliente. Reserva liberada y stock descontado."));
+    }
+
+    @PutMapping("/{idOrden}/entregar")
+    public ResponseEntity<Map<String, String>> entregarPedido(@PathVariable Integer idOrden) {
+        usoCampoService.confirmarEntregaPedido(idOrden);
+        return ResponseEntity.ok(Map.of("mensaje", "Entrega confirmada. Pedido marcado como ENTREGADO."));
     }
 
     @PostMapping("/devolucion-cliente")

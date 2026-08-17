@@ -18,8 +18,15 @@
     
     <!-- TAB 1: ÓRDENES POR PREPARAR -->
     @if (activeTab() === 'preparar') {
+      <div style="margin-bottom: 1rem;">
+        <input type="text" placeholder="Buscar por N° de comprobante o ID de orden..."
+               [(ngModel)]="textoBusqueda" (ngModelChange)="cargarOrdenesPendientes()"
+               class="busqueda-input" />
+      </div>
       @if (ordenesPendientes().length === 0) {
-        <div class="empty-state">No hay órdenes pendientes de preparación.</div>
+        <div class="empty-state">
+          {{ textoBusqueda().trim() ? 'No se encontraron órdenes con ese N° de comprobante o ID.' : 'No hay órdenes pendientes de preparación.' }}
+        </div>
       } @else {
         <div class="ordenes-grid">
           @for (orden of ordenesPendientes(); track orden.id) {
@@ -27,6 +34,7 @@
               <div class="orden-card__header">
                 <div>
                   <h3 class="orden-card__title">Orden #{{ orden.id }}</h3>
+                  <p class="orden-card__subtitle" style="font-family: monospace;">{{ orden.numeroComprobante }}</p>
                   <p class="orden-card__subtitle">Técnico: {{ orden.tecnico }}</p>
                 </div>
                 <span class="badge badge-pendiente">Pendiente</span>
@@ -55,6 +63,7 @@
       @if (devolucionesEnTransito().length === 0) {
         <div class="empty-state">No hay devoluciones en tránsito desde el campo.</div>
       } @else {
+        <p style="margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--c-sage-text);">{{ totalDevoluciones() }} devoluciones pendientes en total.</p>
         <div class="table-card">
           <table class="data-table">
             <thead>
@@ -107,6 +116,14 @@
             </tbody>
           </table>
         </div>
+
+        @if (totalPaginasDevoluciones() > 1) {
+          <div style="display: flex; justify-content: center; align-items: center; gap: 1rem; padding: 0.75rem;">
+            <button class="btn btn-sm btn-secondary" [disabled]="paginaDevoluciones() === 0" (click)="irAPaginaDevoluciones(paginaDevoluciones() - 1)">← Anterior</button>
+            <span style="font-size: 0.875rem;">Página {{ paginaDevoluciones() + 1 }} de {{ totalPaginasDevoluciones() }}</span>
+            <button class="btn btn-sm btn-secondary" [disabled]="paginaDevoluciones() + 1 >= totalPaginasDevoluciones()" (click)="irAPaginaDevoluciones(paginaDevoluciones() + 1)">Siguiente →</button>
+          </div>
+        }
       }
     }
   </div>

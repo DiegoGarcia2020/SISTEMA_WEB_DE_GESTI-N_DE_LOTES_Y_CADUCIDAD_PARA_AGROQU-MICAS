@@ -68,6 +68,7 @@ export interface DetalleVentaDTO {
   idDetalle: number;
   idLote: number;
   numeroLote: string;
+  idProducto: number;
   nombreProducto: string;
   cantidad: number;
   precioUnitario: number;

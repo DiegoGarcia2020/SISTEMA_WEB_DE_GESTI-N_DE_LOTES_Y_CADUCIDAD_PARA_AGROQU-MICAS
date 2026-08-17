@@ -8,6 +8,8 @@ import { ComprobanteService } from '../../../core/services/comprobante.service';
 
 import { VentasService } from '../../../core/services/ventas.service';
 import { VentaDTO } from '../../../core/models/ventas.model';
+import { OperacionesService } from '../../../core/services/operaciones.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-tecnico-entregas',
@@ -22,18 +24,24 @@ export class TecnicoEntregasComponent implements OnInit {
   private fb = inject(FormBuilder);
   private comprobanteService = inject(ComprobanteService);
   private ventasService = inject(VentasService);
+  private operacionesService = inject(OperacionesService);
+  private authService = inject(AuthService);
 
   entregas = signal<VentaDTO[]>([]);
+  pedidosPorEntregar = signal<any[]>([]);
   processingIds = signal<Set<number>>(new Set());
+  processingPedidoIds = signal<Set<number>>(new Set());
 
   // Modal State
   modalAbierto = signal<boolean>(false);
   isProcessingModal = signal<boolean>(false);
   ventaSeleccionada = signal<number | null>(null);
+  lineasVentaSeleccionada = signal<VentaDTO['lineas']>([]);
   devolucionForm!: FormGroup;
 
   ngOnInit(): void {
     this.cargarEntregas();
+    this.cargarPedidosPorEntregar();
     this.inicializarFormulario();
   }
 
@@ -84,8 +92,48 @@ export class TecnicoEntregasComponent implements OnInit {
       });
   }
 
+  cargarPedidosPorEntregar() {
+    const idTecnico = this.authService.currentUser()?.idUsuario;
+    if (!idTecnico) return;
+    this.operacionesService.listarPedidosPorTecnico(idTecnico).subscribe({
+      next: (pedidos) => {
+        // 2 = DESPACHADO (bodega ya lo sacó, falta que el técnico lo entregue en destino)
+        this.pedidosPorEntregar.set((pedidos || []).filter(p => p.idEstadoPedido === 2));
+      },
+      error: () => this.toast.error('Error', 'No se pudieron cargar los pedidos por entregar')
+    });
+  }
+
+  isProcessingPedido(id: number): boolean {
+    return this.processingPedidoIds().has(id);
+  }
+
+  entregarPedido(idUso: number) {
+    const nuevo = new Set(this.processingPedidoIds());
+    nuevo.add(idUso);
+    this.processingPedidoIds.set(nuevo);
+
+    this.operacionesService.entregarPedido(idUso).subscribe({
+      next: () => {
+        this.toast.success('Entrega Confirmada', `El pedido #${idUso} fue entregado exitosamente.`);
+        this.pedidosPorEntregar.update(ps => ps.filter(p => p.idUso !== idUso));
+        const set = new Set(this.processingPedidoIds());
+        set.delete(idUso);
+        this.processingPedidoIds.set(set);
+      },
+      error: () => {
+        this.toast.error('Error', 'No se pudo confirmar la entrega del pedido.');
+        const set = new Set(this.processingPedidoIds());
+        set.delete(idUso);
+        this.processingPedidoIds.set(set);
+      }
+    });
+  }
+
   abrirModalDevolucion(idVenta: number) {
+    const venta = this.entregas().find(e => e.idVenta === idVenta);
     this.ventaSeleccionada.set(idVenta);
+    this.lineasVentaSeleccionada.set(venta?.lineas ?? []);
     this.devolucionForm.reset({ cantidadDevuelta: 1 });
     this.modalAbierto.set(true);
   }
@@ -93,6 +141,7 @@ export class TecnicoEntregasComponent implements OnInit {
   cerrarModal() {
     this.modalAbierto.set(false);
     this.ventaSeleccionada.set(null);
+    this.lineasVentaSeleccionada.set([]);
   }
 
   confirmarDevolucion() {

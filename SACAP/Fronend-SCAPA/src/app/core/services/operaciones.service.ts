@@ -405,10 +405,11 @@ export class OperacionesService {
     );
   }
 
-  listarDevolucionesPendientesBodega(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/operaciones/devoluciones-venta/pendientes-bodega`).pipe(
+  listarDevolucionesPendientesBodega(page: number = 0, size: number = 20): Observable<PageResponse<any>> {
+    const params = new HttpParams().set('page', page.toString()).set('size', size.toString());
+    return this.http.get<PageResponse<any>>(`${this.apiUrl}/operaciones/devoluciones-venta/pendientes-bodega`, { params }).pipe(
       catchError(err => {
-        if (err.status === 0 || err.status === 404) return of([]);
+        if (err.status === 0 || err.status === 404) return of({ content: [], totalElements: 0, totalPages: 0, size, number: page });
         return throwError(() => err);
       })
     );
@@ -662,6 +663,19 @@ export class OperacionesService {
             }
           }
           return of({ mensaje: 'Pedido despachado offline' });
+        }
+        return throwError(() => err);
+      })
+    );
+  }
+
+  entregarPedido(idOrden: number): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/operaciones/pedidos/${idOrden}/entregar`, {}).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) {
+          const p = this.mockPedidos.find(x => x.idUso === idOrden);
+          if (p) p.idEstadoPedido = 3; // ENTREGADO
+          return of({ mensaje: 'Pedido entregado offline' });
         }
         return throwError(() => err);
       })
