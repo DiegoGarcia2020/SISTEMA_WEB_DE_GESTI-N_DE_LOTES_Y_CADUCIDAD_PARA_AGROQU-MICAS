@@ -34,7 +34,7 @@ import { ToastService } from '../../../shared/components/toast/toast.service';
               <span>Sugeridas IA</span>
             </button>
             <button (click)="filterEstado.set('APROBADA')" [class.bg-blue-600]="filterEstado() === 'APROBADA'" [class.text-white]="filterEstado() === 'APROBADA'" class="px-3 py-1.5 rounded-lg transition-all cursor-pointer">Aprobadas</button>
-            <button (click)="filterEstado.set('ACTIVA')" [class.bg-[#0B4628]]="filterEstado() === 'ACTIVA'" [class.text-white]="filterEstado() === 'ACTIVA'" class="px-3 py-1.5 rounded-lg transition-all cursor-pointer">⚡ Activas</button>
+            <button (click)="filterEstado.set('ACTIVA')" [class.bg-[#0B4628]]="filterEstado() === 'ACTIVA'" [class.text-white]="filterEstado() === 'ACTIVA'" class="px-3 py-1.5 rounded-lg transition-all cursor-pointer">Activas</button>
           </div>
         </div>
 

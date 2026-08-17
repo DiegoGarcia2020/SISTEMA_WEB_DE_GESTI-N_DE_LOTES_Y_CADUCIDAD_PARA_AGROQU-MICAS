@@ -433,7 +433,7 @@ export class GestionRolesComponent implements OnInit {
   confirmDeleteRol(r: RolDTO): void {
     this.rolToDelete.set(r);
     this.confirmTitle.set('Eliminar Rol del Sistema');
-    this.confirmMessage.set(`⚠️ ¿Estás seguro de eliminar el rol "${r.nombre}"? Si hay usuarios asignados a este rol, podrían perder sus permisos de acceso.`);
+    this.confirmMessage.set(`¿Estás seguro de eliminar el rol "${r.nombre}"? Si hay usuarios asignados a este rol, podrían perder sus permisos de acceso.`);
     this.isConfirmOpen.set(true);
   }
 

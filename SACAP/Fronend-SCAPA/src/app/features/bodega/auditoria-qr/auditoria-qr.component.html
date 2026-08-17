@@ -20,7 +20,7 @@
     <div class="aq-alert aq-alert--success">{{ exito() }}</div>
   }
   @if (error()) {
-    <div class="aq-alert aq-alert--error">⚠️ {{ error() }}</div>
+    <div class="aq-alert aq-alert--error">{{ error() }}</div>
   }
 
   <!-- Zona de Escaneo / Búsqueda QR -->
@@ -32,7 +32,7 @@
           <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
           <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
         </svg>
-        <span>📷 Tocar aquí para activar cámara móvil o apunte el lector QR</span>
+        <span>Tocar aquí para activar cámara móvil o apunte el lector QR</span>
       </div>
 
       <!-- Buscador de respaldo manual o scanner de teclado -->
@@ -42,7 +42,7 @@
                placeholder="Ingrese o escanee Código QR (Ej: UBIC-EST1-N1-PA)"
                class="aq-input" />
         <button class="aq-btn-scan" (click)="buscarPorQr()" [disabled]="buscando()">
-          @if (buscando()) { <div class="aq-spin"></div> } @else { 🔍 Buscar }
+          @if (buscando()) { <div class="aq-spin"></div> } @else { Buscar }
         </button>
       </div>
 
@@ -63,13 +63,13 @@
       <!-- Banner Ubicación -->
       <div class="aq-location-banner">
         <div class="aq-loc-header">
-          <span class="aq-loc-badge">📍 ESTANTERÍA / POSICIÓN</span>
-          <span class="aq-qr-chip">📷 QR: <strong>{{ codigoQrMostrado }}</strong></span>
+          <span class="aq-loc-badge">ESTANTERÍA / POSICIÓN</span>
+          <span class="aq-qr-chip">QR: <strong>{{ codigoQrMostrado }}</strong></span>
         </div>
         <h2 class="aq-loc-title">{{ descripcionLimpia }}</h2>
         <div class="aq-loc-sub">
-          <span>🏢 {{ ubicacion()?.nombreAlmacen }}</span> • 
-          <span>📦 {{ ubicacion()?.nombreZona }}</span>
+          <span>{{ ubicacion()?.nombreAlmacen }}</span> •
+          <span>{{ ubicacion()?.nombreZona }}</span>
         </div>
       </div>
 
@@ -91,7 +91,7 @@
 
       <!-- Lotes Físicamente Almacenados en esta Ubicación -->
       <div class="aq-lotes-section">
-        <h3 class="aq-section-subtitle">📋 Lotes registrados en este bloque ({{ ubicacion()?.lotesAlmacenados?.length }})</h3>
+        <h3 class="aq-section-subtitle">Lotes registrados en este bloque ({{ ubicacion()?.lotesAlmacenados?.length }})</h3>
         
         @if (!ubicacion()?.lotesAlmacenados?.length) {
           <div class="aq-empty-lotes">
@@ -117,7 +117,7 @@
 
       <!-- CONTEO FÍSICO REAL & AUDITORÍA -->
       <div class="aq-audit-box">
-        <h3 class="aq-audit-title">📝 Registro de Conteo Físico Real</h3>
+        <h3 class="aq-audit-title">Registro de Conteo Físico Real</h3>
         <p class="aq-audit-desc">Ingrese la cantidad exacta de unidades contadas en la estantería física:</p>
 
         <div class="aq-conteo-input-row">
@@ -146,7 +146,7 @@
           <button class="aq-btn-sec" (click)="limpiar()">Escanear Otra Ubicación</button>
           <button class="aq-btn-main" (click)="guardarAuditoria()" [disabled]="guardandoAudit()">
             @if (guardandoAudit()) { <div class="aq-spin"></div> }
-            @else { 💾 Guardar Auditoría }
+            @else { Guardar Auditoría }
           </button>
         </div>
 

@@ -54,7 +54,7 @@
       @for (s of sugerencias(); track s.titulo) {
         <div class="vt-sug-card" [class.combo]="s.esCombo">
           <div class="vt-sug-header">
-            @if (s.esCombo) { <span class="vt-sug-tag">🎁 COMBO IA</span> }
+            @if (s.esCombo) { <span class="vt-sug-tag">COMBO IA</span> }
             <span class="vt-sug-score" [class]="'score-' + claseUrgencia(s.score)">{{ s.score }}/100</span>
           </div>
           <h3 class="vt-sug-title">{{ s.titulo }}</h3>
@@ -64,7 +64,7 @@
                 <span>{{ l.numeroLote }} — {{ l.nombreProducto }}</span>
                 <span class="vt-sug-lote-meta">{{ l.diasHastaVencimiento }}d · {{ l.cantidadDisponible }} disp. · {{ l.nombreBodega }}</span>
                 @if (l.instruccionesAplicacion) {
-                  <span class="vt-sug-instrucciones">💊 {{ l.instruccionesAplicacion }}</span>
+                  <span class="vt-sug-instrucciones">{{ l.instruccionesAplicacion }}</span>
                 }
               </div>
             }

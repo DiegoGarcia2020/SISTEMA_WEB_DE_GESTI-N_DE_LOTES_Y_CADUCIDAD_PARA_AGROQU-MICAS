@@ -25,7 +25,7 @@ import { LucideAngularModule } from 'lucide-angular';
           @if (requireReason) {
             <div class="mt-4 pt-3 border-t border-gray-100">
               <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                ⚠️ Motivo obligatorio para continuar
+                Motivo obligatorio para continuar
               </label>
               <textarea rows="3" [(ngModel)]="motivo"
                         placeholder="Ej: Acceso no autorizado, solicitud de RRHH, reestructuración..."

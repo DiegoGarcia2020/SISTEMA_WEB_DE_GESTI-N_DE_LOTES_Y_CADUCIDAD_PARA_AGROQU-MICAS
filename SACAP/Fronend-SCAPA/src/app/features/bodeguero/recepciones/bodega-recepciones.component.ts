@@ -44,7 +44,8 @@ export class BodegaRecepcionesComponent implements OnInit {
 
   cargarRecepcionesHoy() {
     this.isLoading.set(true);
-    const hoy = new Date().toISOString().substring(0, 10);
+    const ahora = new Date();
+    const hoy = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}`;
     // Filtrar estado=PENDIENTE y desde=HOY, hasta=HOY
     this.http.get<OrdenCompraListDTO[]>(`${environment.apiUrl}/ordenes-compra/recepciones-esperadas?estado=PENDIENTE&desde=${hoy}&hasta=${hoy}`)
       .subscribe({

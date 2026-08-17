@@ -32,7 +32,7 @@ import { AuthService } from '../../../core/services/auth.service';
           <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Prioridad:</span>
           <div class="flex bg-gray-100 p-1 rounded-xl text-xs font-semibold">
             <button (click)="filterPrioridad.set('TODAS')" [class.bg-white]="filterPrioridad() === 'TODAS'" [class.shadow-2xs]="filterPrioridad() === 'TODAS'" class="px-3 py-1.5 rounded-lg transition-all cursor-pointer">Todas</button>
-            <button (click)="filterPrioridad.set('URGENTE')" [class.bg-red-600]="filterPrioridad() === 'URGENTE'" [class.text-white]="filterPrioridad() === 'URGENTE'" class="px-3 py-1.5 rounded-lg transition-all cursor-pointer">⚡ Urgentes</button>
+            <button (click)="filterPrioridad.set('URGENTE')" [class.bg-red-600]="filterPrioridad() === 'URGENTE'" [class.text-white]="filterPrioridad() === 'URGENTE'" class="px-3 py-1.5 rounded-lg transition-all cursor-pointer">Urgentes</button>
             <button (click)="filterPrioridad.set('ALTA')" [class.bg-amber-600]="filterPrioridad() === 'ALTA'" [class.text-white]="filterPrioridad() === 'ALTA'" class="px-3 py-1.5 rounded-lg transition-all cursor-pointer">Altas</button>
             <button (click)="filterPrioridad.set('MEDIA')" [class.bg-blue-600]="filterPrioridad() === 'MEDIA'" [class.text-white]="filterPrioridad() === 'MEDIA'" class="px-3 py-1.5 rounded-lg transition-all cursor-pointer">Medias</button>
           </div>
@@ -259,7 +259,7 @@ export class AlertasCaducidadComponent implements OnInit {
   solicitarPromo(a: AlertaCaducidadDTO): void {
     this.opService.solicitarPromocionAlerta(a.idAlerta).subscribe({
       next: (promo) => {
-        this.toast.success('⚡ Sugerencia IA Generada', `Se creó el combo "${promo.titulo}" con ${promo.descuentoSugerido}% de descuento sugerido. Revisa la pestaña Combos & IA.`);
+        this.toast.success('Sugerencia IA Generada', `Se creó el combo "${promo.titulo}" con ${promo.descuentoSugerido}% de descuento sugerido. Revisa la pestaña Combos & IA.`);
         this.loadData();
       }
     });

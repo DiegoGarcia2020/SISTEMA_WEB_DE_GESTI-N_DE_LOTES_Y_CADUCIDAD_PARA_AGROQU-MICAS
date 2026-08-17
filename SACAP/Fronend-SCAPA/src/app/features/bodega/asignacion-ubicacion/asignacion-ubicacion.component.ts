@@ -144,11 +144,11 @@ export class AsignacionUbicacionComponent implements OnInit {
     // Validar contra la cantidad que quedó registrada al recepcionar el lote
     const cantidadRegistrada = this.cantidadRegistrada() ?? 0;
     if (this.cantidadAUbicar > cantidadRegistrada) {
-      this.error.set(`⚠️ No puede ubicar más unidades (${this.cantidadAUbicar}) que las registradas en el lote (${cantidadRegistrada}).`);
+      this.error.set(`No puede ubicar más unidades (${this.cantidadAUbicar}) que las registradas en el lote (${cantidadRegistrada}).`);
       return;
     }
     if (this.cantidadAUbicar !== cantidadRegistrada && !this.observaciones.trim()) {
-      this.error.set(`⚠️ Contó ${this.cantidadAUbicar} de ${cantidadRegistrada} unidades registradas. Explique la diferencia en Observaciones antes de confirmar.`);
+      this.error.set(`Contó ${this.cantidadAUbicar} de ${cantidadRegistrada} unidades registradas. Explique la diferencia en Observaciones antes de confirmar.`);
       return;
     }
 
@@ -158,7 +158,7 @@ export class AsignacionUbicacionComponent implements OnInit {
     const capDisp = Math.max(0, capMax - capAct);
 
     if (this.cantidadAUbicar > capDisp) {
-      this.error.set(`⚠️ Capacidad física excedida. La ubicación solo tiene espacio para ${capDisp} unidades.`);
+      this.error.set(`Capacidad física excedida. La ubicación solo tiene espacio para ${capDisp} unidades.`);
       return;
     }
 
@@ -172,7 +172,7 @@ export class AsignacionUbicacionComponent implements OnInit {
       observaciones: this.observaciones
     }).subscribe({
       next: () => {
-        this.exito.set(`✅ Lote ${lote.numeroLote} asignado exitosamente a la ubicación ${ubic.descripcionCompleta}. Pasa a estado DISPONIBLE.`);
+        this.exito.set(`Lote ${lote.numeroLote} asignado exitosamente a la ubicación ${ubic.descripcionCompleta}. Pasa a estado DISPONIBLE.`);
         this.guardando.set(false);
         this.loteSeleccionado.set(null);
         this.observaciones = '';

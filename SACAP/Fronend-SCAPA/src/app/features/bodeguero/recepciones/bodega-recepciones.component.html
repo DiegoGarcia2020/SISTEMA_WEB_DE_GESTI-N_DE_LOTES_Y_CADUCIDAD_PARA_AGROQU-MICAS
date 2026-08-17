@@ -40,11 +40,11 @@
               @if (isProcessing(orden.id)) {
                 Procesando...
               } @else {
-                ✅ Llegó a Tiempo
+                Llegó a Tiempo
               }
             </button>
             <button class="btn btn--danger" (click)="abrirModalRetraso(orden.id)" [disabled]="isProcessing(orden.id)">
-              ❌ Reportar Retraso
+              Reportar Retraso
             </button>
           </div>
         </div>

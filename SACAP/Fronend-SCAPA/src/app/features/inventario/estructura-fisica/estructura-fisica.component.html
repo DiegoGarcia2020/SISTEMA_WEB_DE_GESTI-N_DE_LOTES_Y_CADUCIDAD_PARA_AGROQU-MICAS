@@ -10,7 +10,7 @@
   </div>
 
   @if (error()) {
-    <div class="ef-error">⚠️ {{ error() }}</div>
+    <div class="ef-error">{{ error() }}</div>
   }
 
   <!-- Grid en cascada -->
@@ -30,7 +30,7 @@
             [class.ef-item--active]="almacenSel()?.idAlmacen === alm.idAlmacen"
             (click)="seleccionarAlmacen(alm)">
             <span class="ef-item-name">{{ alm.nombre }}</span>
-            <span class="ef-item-sub">📍 {{ alm.ciudad }}</span>
+            <span class="ef-item-sub">{{ alm.ciudad }}</span>
           </button>
         } @empty {
           <p class="ef-empty">Sin almacenes registrados</p>
@@ -57,7 +57,7 @@
               [class.ef-item--active]="zonaSel()?.idZona === zona.idZona"
               (click)="seleccionarZona(zona)">
               <span class="ef-item-name">{{ zona.nombre }}</span>
-              <span class="ef-item-sub">🌡️ {{ zona.condicionClimatica }}</span>
+              <span class="ef-item-sub">{{ zona.condicionClimatica }}</span>
             </button>
           } @empty {
             <p class="ef-empty">Sin zonas en este almacén</p>

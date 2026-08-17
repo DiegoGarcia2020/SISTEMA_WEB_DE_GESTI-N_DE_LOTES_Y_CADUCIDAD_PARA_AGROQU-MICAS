@@ -21,10 +21,10 @@
 
   <!-- Alertas -->
   @if (exito()) {
-    <div class="au-alert au-alert--success">✅ {{ exito() }}</div>
+    <div class="au-alert au-alert--success">{{ exito() }}</div>
   }
   @if (error()) {
-    <div class="au-alert au-alert--error">⚠️ {{ error() }}</div>
+    <div class="au-alert au-alert--error">{{ error() }}</div>
   }
 
   <!-- Layout Dividido 2 Columnas -->
@@ -34,7 +34,7 @@
     <div class="au-col-left">
       <div class="au-card">
         <div class="au-card-header">
-          <h2>📦 Lotes Flotantes / Pendientes ({{ lotesFlotantes().length }})</h2>
+          <h2>Lotes Flotantes / Pendientes ({{ lotesFlotantes().length }})</h2>
           <span class="au-badge-flotante">POR UBICAR</span>
         </div>
 
@@ -61,7 +61,7 @@
                 </div>
                 <div class="au-lote-card-prod">{{ lote.nombreProducto }}</div>
                 <div class="au-lote-card-bot">
-                  <span class="au-lote-prov">🏪 {{ lote.nombreProveedor || 'Proveedor' }}</span>
+                  <span class="au-lote-prov">{{ lote.nombreProveedor || 'Proveedor' }}</span>
                   <span class="au-lote-venc">Vence: {{ lote.fechaVencimiento }}</span>
                 </div>
               </div>
@@ -75,7 +75,7 @@
     <div class="au-col-right">
       <div class="au-card">
         <div class="au-card-header">
-          <h2>📍 Asignar a Ubicación Física</h2>
+          <h2>Asignar a Ubicación Física</h2>
         </div>
 
         @if (loteSeleccionado()) {
@@ -89,7 +89,7 @@
           </div>
         } @else {
           <div class="au-notice-box">
-            👉 Seleccione un lote de la columna izquierda para comenzar la asignación física.
+            Seleccione un lote de la columna izquierda para comenzar la asignación física.
           </div>
         }
 
@@ -161,7 +161,7 @@
               <span class="au-cap-free" style="margin-top:0.35rem;">
                 Cantidad registrada en el lote: <strong>{{ cantidadRegistrada() }} un.</strong>
                 @if (cantidadAUbicar !== cantidadRegistrada()) {
-                  — ⚠️ no coincide, debe explicar la diferencia en Observaciones
+                  — no coincide, debe explicar la diferencia en Observaciones
                 }
               </span>
             }

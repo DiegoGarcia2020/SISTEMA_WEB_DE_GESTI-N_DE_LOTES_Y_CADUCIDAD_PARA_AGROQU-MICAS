@@ -68,9 +68,9 @@ import { DiffModalComponent } from '../../../shared/components/diff-modal/diff-m
             <span class="text-xs font-bold text-gray-500 uppercase">Estado Conexión:</span>
             <select [(ngModel)]="filterEstadoSesion" class="px-3 py-1.5 border border-gray-300 rounded-xl text-xs font-bold bg-white outline-none focus:border-blue-600">
               <option value="TODAS">Ver Todos</option>
-              <option value="ACTIVA">⚡ Activas</option>
+              <option value="ACTIVA">Activas</option>
               <option value="CERRADA">Cerradas</option>
-              <option value="INTENTO_FALLIDO">❌ Intento Fallido</option>
+              <option value="INTENTO_FALLIDO">Intento Fallido</option>
               <option value="EXPIRADA">Expiradas</option>
             </select>
           </div>
@@ -181,7 +181,7 @@ import { DiffModalComponent } from '../../../shared/components/diff-modal/diff-m
                         </span>
                       } @else if (s.estadoConexion === 'INTENTO_FALLIDO') {
                         <span class="bg-red-100 text-red-800 text-xs font-extrabold px-3 py-1 rounded-full">
-                          ❌ Fallo
+                          Fallo
                         </span>
                       } @else {
                         <span class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full">

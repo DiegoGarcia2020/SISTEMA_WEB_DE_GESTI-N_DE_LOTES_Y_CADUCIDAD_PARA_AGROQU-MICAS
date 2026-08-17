@@ -28,7 +28,7 @@
               <strong>{{ l.nombreProducto }}</strong>
               <span>{{ l.numeroLote }} · {{ l.cantidad }} un. @if (l.esComboIA) { · <span class="vt-tag-combo">Combo IA</span> } </span>
               @if (l.instruccionesAplicacion) {
-                <p class="vt-linea-instrucciones">💊 {{ l.instruccionesAplicacion }}</p>
+                <p class="vt-linea-instrucciones">{{ l.instruccionesAplicacion }}</p>
               }
             </div>
             <span class="vt-linea-precio">${{ l.subtotalLinea.toFixed(2) }}</span>

@@ -29,7 +29,7 @@
           </div>
 
           <button class="btn btn-success" (click)="entregarPedido(pedido.idUso)" [disabled]="isProcessingPedido(pedido.idUso)">
-            ✅ Confirmar Entrega al Cliente
+            Confirmar Entrega al Cliente
           </button>
         </div>
       }
@@ -72,22 +72,22 @@
                paquete primero); CONFIRMADA es un paso previo aún en manos de Bodega. -->
           @if (entrega.estado === 'PREPARADA') {
             <button class="btn btn-success" (click)="confirmarEntrega(entrega.idVenta)" [disabled]="isProcessing(entrega.idVenta)">
-              ✅ Confirmar Entrega al Cliente
+              Confirmar Entrega al Cliente
             </button>
           }
 
           @if (entrega.estado === 'ENTREGADA') {
             <button class="btn btn-warning" (click)="abrirModalDevolucion(entrega.idVenta)">
-              ⚠️ Registrar Novedad / Devolución
+              Registrar Novedad / Devolución
             </button>
             <button class="btn btn-secondary mt-2" (click)="imprimirComprobante(entrega)">
-              🖨️ Imprimir Comprobante
+              Imprimir Comprobante
             </button>
           }
 
           @if (entrega.estado === 'DEVUELTA_PARCIALMENTE' || entrega.estado === 'DEVUELTA_TOTAL') {
             <button class="btn mt-2" style="background-color: var(--c-cacao-accent); color: white;" (click)="descargarNotaDevolucion(entrega)">
-              📄 Descargar Nota de Devolución
+              Descargar Nota de Devolución
             </button>
           }
         </div>

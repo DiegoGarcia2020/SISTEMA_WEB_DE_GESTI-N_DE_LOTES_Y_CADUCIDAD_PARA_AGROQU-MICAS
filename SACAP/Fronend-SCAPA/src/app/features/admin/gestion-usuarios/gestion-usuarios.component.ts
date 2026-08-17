@@ -562,7 +562,7 @@ export class GestionUsuariosComponent implements OnInit {
     this.userTarget.set(u);
     this.confirmActionType.set('DELETE');
     this.confirmTitle.set('Eliminar Usuario Definitivamente');
-    this.confirmMessage.set(`⚠️ ¿Estás completamente seguro de ELIMINAR a ${u.correo}? Esta acción es irreversible y borrará la cuenta del sistema.`);
+    this.confirmMessage.set(`¿Estás completamente seguro de ELIMINAR a ${u.correo}? Esta acción es irreversible y borrará la cuenta del sistema.`);
     this.confirmText.set('Eliminar definitivamente');
     this.isConfirmDanger.set(true);
     this.isConfirmReasonRequired.set(false);

@@ -50,7 +50,7 @@
                 </div>
               </div>
               <button class="btn btn-success" (click)="prepararPaquete(orden.id)" [disabled]="isProcessing(orden.id)">
-                📦 {{ isProcessing(orden.id) ? 'Procesando...' : 'Preparar Paquete' }}
+                {{ isProcessing(orden.id) ? 'Procesando...' : 'Preparar Paquete' }}
               </button>
             </div>
           }
@@ -106,7 +106,7 @@
                         </button>
                       } @else {
                         <button class="btn btn-sm" style="background-color: var(--c-cacao-accent); color: white; border: none; padding: 0.25rem 0.5rem; border-radius: 0; font-size: 0.75rem;" (click)="descargarNotaDevolucion(dev)">
-                          📄 Descargar Nota de Devolución
+                          Descargar Nota de Devolución
                         </button>
                       }
                     </div>

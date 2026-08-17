@@ -29,7 +29,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       if (err.status === 401 || err.status === 403) {
         // Evitar desloguear si estamos en modo mock y el backend devuelve 401 por no reconocer el token mock
         if (token && token.includes('mock')) {
-          console.warn('⚠️ Backend rechazó el token mock con 401/403. Delegando al servicio para fallback.');
+          console.warn('Backend rechazó el token mock con 401/403. Delegando al servicio para fallback.');
         } else {
           authService.logout();
           router.navigate(['/login']);

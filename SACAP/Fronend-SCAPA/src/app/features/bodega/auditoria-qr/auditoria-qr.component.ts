@@ -129,7 +129,7 @@ export class AuditoriaQrComponent implements OnInit {
           detectLoop();
         } else {
           // Fallback notificación de escáner
-          this.exito.set('📷 Cámara iniciada. Apunte al código QR o use la lectura por teclado del colector industrial.');
+          this.exito.set('Cámara iniciada. Apunte al código QR o use la lectura por teclado del colector industrial.');
         }
       }
     } catch (err) {
@@ -157,9 +157,9 @@ export class AuditoriaQrComponent implements OnInit {
         this.ubicacion.set(res);
         this.guardandoAudit.set(false);
         if (this.descuadre !== 0) {
-          this.exito.set(`⚠️ Auditoría registrada con descuadre de ${this.descuadre > 0 ? '+' : ''}${this.descuadre} unidades. Se generó reporte de ajuste.`);
+          this.exito.set(`Auditoría registrada con descuadre de ${this.descuadre > 0 ? '+' : ''}${this.descuadre} unidades. Se generó reporte de ajuste.`);
         } else {
-          this.exito.set('✅ Conteo físico conforme. Sistema y stock físico coinciden perfectamente.');
+          this.exito.set('Conteo físico conforme. Sistema y stock físico coinciden perfectamente.');
         }
       },
       error: err => {

@@ -37,10 +37,10 @@
 
   <!-- Alertas -->
   @if (exito()) {
-    <div class="gt-alert gt-alert--success">✅ {{ exito() }}</div>
+    <div class="gt-alert gt-alert--success">{{ exito() }}</div>
   }
   @if (error()) {
-    <div class="gt-alert gt-alert--error">⚠️ {{ error() }}</div>
+    <div class="gt-alert gt-alert--error">{{ error() }}</div>
   }
 
   <!-- Contenido principal: Árbol -->
@@ -78,7 +78,7 @@
               </div>
               @if (esAdmin) {
                 <button class="gt-add-btn gt-add-btn--outline" (click)="$event.stopPropagation(); abrirModalEditarBodega(alm.idReal)" title="Asignar / cambiar Supervisor">
-                  ✎ Supervisor
+                  Supervisor
                 </button>
               }
               @if (esBodeguero) {
@@ -214,7 +214,7 @@
         <div class="gt-modal-actions">
           <button class="gt-btn gt-btn--ghost" (click)="cerrarQrModal()">Cerrar</button>
           <button class="gt-btn gt-btn--primary" (click)="imprimirQr()">
-            🖨️ Imprimir Etiqueta PDF
+            Imprimir Etiqueta PDF
           </button>
         </div>
       </div>

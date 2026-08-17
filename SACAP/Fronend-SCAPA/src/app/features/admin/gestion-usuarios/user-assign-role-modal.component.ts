@@ -66,7 +66,7 @@ import { ToastService } from '../../../shared/components/toast/toast.service';
                   </div>
                   <div class="flex-1">
                     <h4 [class]="usuario.tieneDocumentoPdf ? 'text-green-950 font-bold text-sm' : 'text-amber-950 font-bold text-sm'">
-                      {{ usuario.tieneDocumentoPdf ? '✓ Licencia de Campo Verificada' : 'Documento PDF Obligatorio' }}
+                      {{ usuario.tieneDocumentoPdf ? 'Licencia de Campo Verificada' : 'Documento PDF Obligatorio' }}
                     </h4>
                     
                     @if (usuario.tieneDocumentoPdf) {
