@@ -97,7 +97,7 @@ export class AuthService {
     this.currentRole.set(rol);
     this.isAuthenticated.set(true);
 
-    this.router.navigate(['/admin/dashboard']);
+    this.router.navigate(['/admin/ia/resumen']);
   }
 
   logout(): void {

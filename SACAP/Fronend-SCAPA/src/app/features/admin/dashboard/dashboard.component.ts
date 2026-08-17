@@ -29,6 +29,21 @@ import { OperacionesService } from '../../../core/services/operaciones.service';
         <app-stat-card title="Combos & Promociones" value="3" subtitle="Descuentos de IA activos" iconName="gift" colorClass="bg-purple-600/10 text-purple-600"></app-stat-card>
       </div>
 
+      <!-- Acceso al módulo IA: Productos más vendidos -->
+      <a routerLink="/admin/ia/ventas/mas-vendidos"
+         class="flex items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-[#0B4628] to-[#146C43] text-white shadow-md hover:shadow-lg transition-all group">
+        <div class="flex items-center gap-4">
+          <div class="w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <lucide-icon name="bar-chart-3" class="w-5 h-5"></lucide-icon>
+          </div>
+          <div>
+            <p class="font-bold text-sm">Productos más vendidos</p>
+            <p class="text-xs text-green-100/80 mt-0.5">Ranking, variación y análisis IA de ventas</p>
+          </div>
+        </div>
+        <lucide-icon name="arrow-right" class="w-5 h-5 text-green-100/80 group-hover:translate-x-1 transition-transform"></lucide-icon>
+      </a>
+
       <!-- Grid Principal del Dashboard -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         

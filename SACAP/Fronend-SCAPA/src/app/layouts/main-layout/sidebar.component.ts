@@ -28,7 +28,7 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
         <!-- Categoría: PRINCIPAL -->
         <div class="px-3 pb-1.5 text-[10px] font-bold text-green-200/60 uppercase tracking-wider">Principal</div>
         
-        <a routerLink="/admin/dashboard" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
+        <a routerLink="/admin/ia/resumen" routerLinkActive="!bg-white !text-[#0B4628] font-bold shadow-md [&_span]:!text-[#0B4628] [&_lucide-icon]:!text-[#0B4628]"
            class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-green-100 hover:bg-white/10 transition-all duration-150 cursor-pointer group">
           <lucide-icon name="layout-dashboard" class="w-4 h-4 flex-shrink-0"></lucide-icon>
           <span>Dashboard IA</span>
