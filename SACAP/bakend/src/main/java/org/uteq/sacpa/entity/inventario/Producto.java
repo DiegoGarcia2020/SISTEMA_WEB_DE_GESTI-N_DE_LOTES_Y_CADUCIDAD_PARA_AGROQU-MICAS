@@ -31,6 +31,9 @@ public class Producto {
     /** Cantidad mínima aceptable en inventario. Genera alerta de reabastecimiento si el stock cae por debajo */
     @Column(name = "stock_minimo") private Integer stockMinimo;
 
+    @Column(name = "aplica_iva") private Boolean aplicaIva;
+    @Column(name = "porcentaje_iva", precision = 5, scale = 2) private BigDecimal porcentajeIva;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_categoria") private Categoria categoria;
 

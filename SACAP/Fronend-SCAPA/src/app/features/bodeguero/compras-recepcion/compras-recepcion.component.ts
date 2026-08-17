@@ -78,53 +78,93 @@ import { OrdenCompra } from '../../../core/models/compras.model';
             </div>
 
             <form [formGroup]="recepcionForm" (ngSubmit)="confirmarRecepcion()">
-              <div formArrayName="lotes" style="display: flex; flex-direction: column; gap: 1rem;">
+              <div formArrayName="productos" style="display: flex; flex-direction: column; gap: 1rem;">
                 
-                @for (item of lotesFormArray.controls; track item; let i = $index) {
+                @for (prod of productosFormArray.controls; track prod; let i = $index) {
                   <div class="lote-card" [formGroupName]="i" [class.lote-card--bonificacion]="esBonificacion(i)">
                     
                     <div class="lote-card__header">
                       <div class="product-info">
-                        <div class="product-info__quantity">{{ getCantidad(i) }}x</div>
+                        <div class="product-info__quantity">{{ getCantidadTotal(i) }}x</div>
                         <div>
                           <p class="product-info__name">{{ getNombreProducto(i) }}</p>
                           <span class="product-info__unit">{{ getUnidadMedida(i) }}</span>
                         </div>
                       </div>
-                      @if (esBonificacion(i)) {
-                        <span class="badge-regalo">
-                          <lucide-icon name="gift" class="w-3.5 h-3.5 inline-block mr-1"></lucide-icon> Bonificación
+                      <div style="display: flex; align-items: center; gap: 1rem;">
+                        @if (esBonificacion(i)) {
+                          <span class="badge-regalo">
+                            <lucide-icon name="gift" class="w-3.5 h-3.5 inline-block mr-1"></lucide-icon> Bonificación
+                          </span>
+                        }
+                        <span class="restantes-badge" 
+                              [class.restantes-badge--ok]="calcularRestantes(i) === 0"
+                              [class.restantes-badge--error]="calcularRestantes(i) !== 0">
+                          Restantes: {{ calcularRestantes(i) }}
                         </span>
-                      }
+                      </div>
                     </div>
 
                     <div class="lote-card__body">
-                      <div class="lote-grid">
-                        <div class="form-group">
-                          <label class="form-group__label">N° de Lote *</label>
-                          <input type="text" class="form-group__input" formControlName="numeroLote" 
-                                 placeholder="Impreso en caja"
-                                 [class.form-group__input--error]="campoInvalido(i, 'numeroLote')">
-                        </div>
-                        <div class="form-group">
-                          <label class="form-group__label">Fecha Fabricación</label>
-                          <input type="date" class="form-group__input" formControlName="fechaFabricacion">
-                        </div>
-                        <div class="form-group">
-                          <label class="form-group__label">Fecha Caducidad *</label>
-                          <input type="date" class="form-group__input" formControlName="fechaVencimiento"
-                                 [class.form-group__input--error]="campoInvalido(i, 'fechaVencimiento')"
-                                 (change)="validarCaducidad(i)">
-                        </div>
+                      <div style="overflow-x: auto;">
+                        <table class="lotes-table">
+                          <thead>
+                            <tr>
+                              <th>N° de Lote *</th>
+                              <th style="width: 100px;">Cantidad *</th>
+                              <th>Fabricación</th>
+                              <th>Caducidad *</th>
+                              <th style="width: 40px; text-align: center;"></th>
+                            </tr>
+                          </thead>
+                          <tbody formArrayName="lotes">
+                            @for (lote of getLotesDeProducto(i).controls; track lote; let j = $index) {
+                              <tr [formGroupName]="j">
+                                <td>
+                                  <input type="text" class="form-group__input" formControlName="numeroLote" 
+                                         placeholder="Impreso en caja"
+                                         [class.form-group__input--error]="campoInvalido(i, j, 'numeroLote')">
+                                </td>
+                                <td>
+                                  <input type="number" class="form-group__input" formControlName="cantidad" min="1"
+                                         [class.form-group__input--error]="campoInvalido(i, j, 'cantidad')">
+                                </td>
+                                <td>
+                                  <input type="date" class="form-group__input" formControlName="fechaFabricacion">
+                                </td>
+                                <td>
+                                  <input type="date" class="form-group__input" formControlName="fechaVencimiento"
+                                         [class.form-group__input--error]="campoInvalido(i, j, 'fechaVencimiento')"
+                                         (change)="validarCaducidad(i, j)">
+                                </td>
+                                <td style="text-align: center; vertical-align: middle;">
+                                  <button type="button" class="btn--remove-lote" (click)="eliminarLote(i, j)" 
+                                          [disabled]="getLotesDeProducto(i).length <= 1" title="Eliminar fila">
+                                    <lucide-icon name="x" class="w-4 h-4"></lucide-icon>
+                                  </button>
+                                </td>
+                              </tr>
+                              @if (advertenciasCaducidad[i + '_' + j]) {
+                                <tr>
+                                  <td colspan="5" style="padding: 0; border-bottom: none;">
+                                    <div class="caducidad-warning" style="margin-top: 0; margin-bottom: 0.5rem; border-top: none;">
+                                      <lucide-icon name="alert-triangle" class="caducidad-warning__icon w-5 h-5"></lucide-icon>
+                                      <span><strong>Atención:</strong> Este lote caduca en menos de 30 días. Verifique si es correcto.</span>
+                                    </div>
+                                  </td>
+                                </tr>
+                              }
+                            }
+                          </tbody>
+                        </table>
                       </div>
-
-                      <!-- Warning no bloqueante de caducidad corta -->
-                      @if (advertenciasCaducidad[i]) {
-                        <div class="caducidad-warning">
-                          <lucide-icon name="alert-triangle" class="caducidad-warning__icon w-5 h-5"></lucide-icon>
-                          <span><strong>Atención:</strong> Este lote caduca en menos de 30 días. Verifique si es correcto antes de confirmar.</span>
-                        </div>
-                      }
+                      
+                      <div style="margin-top: 1rem; text-align: right;">
+                        <button type="button" class="btn--add-lote" (click)="agregarLote(i)" 
+                                [disabled]="calcularRestantes(i) <= 0">
+                          <lucide-icon name="plus" class="w-4 h-4"></lucide-icon> Añadir lote
+                        </button>
+                      </div>
                     </div>
 
                   </div>
@@ -135,7 +175,7 @@ import { OrdenCompra } from '../../../core/models/compras.model';
               <!-- Action Bar pegajosa -->
               <div class="action-bar">
                 <button type="button" class="btn btn--back" (click)="volver()">Cancelar</button>
-                <button type="submit" class="btn btn--primary" [disabled]="recepcionForm.invalid || procesando()">
+                <button type="submit" class="btn btn--primary" [disabled]="recepcionForm.invalid || procesando() || !todosProductosCuadran()">
                   @if (procesando()) {
                     <lucide-icon name="loader" class="w-4 h-4 spinner"></lucide-icon> Procesando...
                   } @else {
@@ -165,7 +205,7 @@ export class ComprasRecepcionComponent implements OnInit {
   totalUnidades = signal(0);
 
   recepcionForm!: FormGroup;
-  advertenciasCaducidad: { [key: number]: boolean } = {};
+  advertenciasCaducidad: { [key: string]: boolean } = {};
 
   ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('idOrden');
@@ -200,50 +240,104 @@ export class ComprasRecepcionComponent implements OnInit {
   }
 
   private construirFormulario(orden: OrdenCompra): void {
-    const lotesGroups = orden.detalles.map(detalle => {
+    const productosGroups = orden.detalles.map(detalle => {
+      // Creamos el FormGroup del producto
       return this.fb.group({
         idDetalleCompra: [detalle.id],
-        numeroLote: ['', Validators.required],
-        fechaFabricacion: [null],
-        fechaVencimiento: [null, Validators.required],
-        // Metadatos ocultos para la vista
+        // Metadatos
         _nombreProducto: [detalle.nombreProducto],
         _unidadMedida: [detalle.unidadMedida],
-        _cantidad: [detalle.cantidad],
-        _esBonificacion: [detalle.esBonificacion]
+        _cantidadTotal: [detalle.cantidad],
+        _esBonificacion: [detalle.esBonificacion],
+        // Lotes
+        lotes: this.fb.array([
+          this.fb.group({
+            numeroLote: ['', Validators.required],
+            cantidad: [detalle.cantidad, [Validators.required, Validators.min(1)]],
+            fechaFabricacion: [null],
+            fechaVencimiento: [null, Validators.required]
+          })
+        ])
       });
     });
 
     this.recepcionForm = this.fb.group({
-      lotes: this.fb.array(lotesGroups)
+      productos: this.fb.array(productosGroups)
     });
 
     const total = orden.detalles.reduce((acc, curr) => acc + curr.cantidad, 0);
     this.totalUnidades.set(total);
   }
 
-  get lotesFormArray(): FormArray {
-    return this.recepcionForm.get('lotes') as FormArray;
+  get productosFormArray(): FormArray {
+    return this.recepcionForm.get('productos') as FormArray;
+  }
+
+  getLotesDeProducto(productoIndex: number): FormArray {
+    return this.productosFormArray.at(productoIndex).get('lotes') as FormArray;
   }
 
   // Helpers para la vista
-  getNombreProducto(index: number): string { return this.lotesFormArray.at(index).get('_nombreProducto')?.value; }
-  getUnidadMedida(index: number): string { return this.lotesFormArray.at(index).get('_unidadMedida')?.value; }
-  getCantidad(index: number): number { return this.lotesFormArray.at(index).get('_cantidad')?.value; }
-  esBonificacion(index: number): boolean { return this.lotesFormArray.at(index).get('_esBonificacion')?.value; }
+  getNombreProducto(index: number): string { return this.productosFormArray.at(index).get('_nombreProducto')?.value; }
+  getUnidadMedida(index: number): string { return this.productosFormArray.at(index).get('_unidadMedida')?.value; }
+  getCantidadTotal(index: number): number { return this.productosFormArray.at(index).get('_cantidadTotal')?.value; }
+  esBonificacion(index: number): boolean { return this.productosFormArray.at(index).get('_esBonificacion')?.value; }
 
-  campoInvalido(index: number, campo: string): boolean {
-    const control = this.lotesFormArray.at(index).get(campo);
+  calcularRestantes(productoIndex: number): number {
+    const cantidadTotal = this.getCantidadTotal(productoIndex);
+    const lotes = this.getLotesDeProducto(productoIndex).value;
+    const sumaLotes = lotes.reduce((acc: number, lote: any) => acc + (Number(lote.cantidad) || 0), 0);
+    return cantidadTotal - sumaLotes;
+  }
+
+  todosProductosCuadran(): boolean {
+    if (!this.recepcionForm) return false;
+    const len = this.productosFormArray.length;
+    for (let i = 0; i < len; i++) {
+      if (this.calcularRestantes(i) !== 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  agregarLote(productoIndex: number): void {
+    const restantes = this.calcularRestantes(productoIndex);
+    if (restantes <= 0) return;
+
+    const lotesArray = this.getLotesDeProducto(productoIndex);
+    lotesArray.push(this.fb.group({
+      numeroLote: ['', Validators.required],
+      cantidad: [restantes, [Validators.required, Validators.min(1)]],
+      fechaFabricacion: [null],
+      fechaVencimiento: [null, Validators.required]
+    }));
+  }
+
+  eliminarLote(productoIndex: number, loteIndex: number): void {
+    const lotesArray = this.getLotesDeProducto(productoIndex);
+    if (lotesArray.length > 1) {
+      lotesArray.removeAt(loteIndex);
+      // Limpiar posibles advertencias para esta fila
+      delete this.advertenciasCaducidad[`${productoIndex}_${loteIndex}`];
+    }
+  }
+
+  campoInvalido(productoIndex: number, loteIndex: number, campo: string): boolean {
+    const control = this.getLotesDeProducto(productoIndex).at(loteIndex).get(campo);
     return !!(control && control.invalid && (control.dirty || control.touched));
   }
 
   /**
    * REQUISITO DEL USUARIO: Warning no bloqueante si caduca en < 30 días.
+   * Ahora aplica por fila de lote (p_l).
    */
-  validarCaducidad(index: number): void {
-    const fechaControl = this.lotesFormArray.at(index).get('fechaVencimiento');
+  validarCaducidad(productoIndex: number, loteIndex: number): void {
+    const fechaControl = this.getLotesDeProducto(productoIndex).at(loteIndex).get('fechaVencimiento');
+    const key = `${productoIndex}_${loteIndex}`;
+    
     if (!fechaControl?.value) {
-      this.advertenciasCaducidad[index] = false;
+      this.advertenciasCaducidad[key] = false;
       return;
     }
 
@@ -252,28 +346,47 @@ export class ComprasRecepcionComponent implements OnInit {
     const diffTime = fechaVencimiento.getTime() - hoy.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    this.advertenciasCaducidad[index] = diffDays <= 30;
+    this.advertenciasCaducidad[key] = diffDays <= 30;
   }
 
   confirmarRecepcion(): void {
     if (this.recepcionForm.invalid) {
       this.recepcionForm.markAllAsTouched();
-      this.toast.error('Formulario incompleto', 'Debe ingresar el N° de Lote y Fecha de Caducidad para todos los productos.');
+      this.toast.error('Formulario incompleto', 'Complete todos los campos obligatorios (*).');
       return;
     }
 
+    // Doble validación de cuadre por seguridad
+    const productos = this.productosFormArray.value;
+    for (let i = 0; i < productos.length; i++) {
+      const restantes = this.calcularRestantes(i);
+      if (restantes !== 0) {
+        const diffMsg = restantes > 0 ? `faltan ${restantes}` : `sobran ${Math.abs(restantes)}`;
+        this.toast.error('Cantidades no cuadran', `El producto ${this.getNombreProducto(i)} no cuadra: ${diffMsg} unidades.`);
+        return;
+      }
+    }
+
     this.procesando.set(true);
-    const formValue = this.recepcionForm.value;
     const idOrden = this.orden()!.id;
+    const payloadLotes: any[] = [];
+
+    // Aplanar la estructura de productos -> lotes a un solo array de lotes
+    productos.forEach((producto: any) => {
+      producto.lotes.forEach((lote: any) => {
+        payloadLotes.push({
+          idDetalleCompra: producto.idDetalleCompra,
+          numeroLote: lote.numeroLote,
+          cantidad: lote.cantidad,
+          fechaFabricacion: lote.fechaFabricacion || null,
+          fechaVencimiento: lote.fechaVencimiento
+        });
+      });
+    });
 
     const payload = {
       idOrdenCompra: idOrden,
-      lotes: formValue.lotes.map((l: any) => ({
-        idDetalleCompra: l.idDetalleCompra,
-        numeroLote: l.numeroLote,
-        fechaFabricacion: l.fechaFabricacion || null,
-        fechaVencimiento: l.fechaVencimiento
-      }))
+      lotes: payloadLotes
     };
 
     this.operacionesService.recepcionarOrden(idOrden, payload).subscribe({

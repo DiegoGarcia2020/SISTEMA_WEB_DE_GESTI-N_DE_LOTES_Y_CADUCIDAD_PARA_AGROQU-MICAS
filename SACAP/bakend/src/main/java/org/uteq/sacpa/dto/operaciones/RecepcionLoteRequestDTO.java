@@ -1,6 +1,7 @@
 package org.uteq.sacpa.dto.operaciones;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -52,5 +53,9 @@ public class RecepcionLoteRequestDTO {
 
         /** Fecha de fabricación (opcional, viene impresa en la caja) */
         private LocalDate fechaFabricacion;
+
+        @NotNull(message = "La cantidad del lote es obligatoria")
+        @Min(value = 1, message = "La cantidad debe ser mayor a 0")
+        private Integer cantidad;
     }
 }

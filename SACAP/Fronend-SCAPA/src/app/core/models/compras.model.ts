@@ -63,6 +63,7 @@ export interface RecepcionLoteRequest {
 export interface LoteRecepcionItem {
   idDetalleCompra: number;
   numeroLote: string;
+  cantidad: number;
   fechaVencimiento: string;
   fechaFabricacion?: string;
 }

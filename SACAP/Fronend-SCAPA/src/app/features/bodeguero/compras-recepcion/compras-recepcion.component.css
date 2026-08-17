@@ -237,17 +237,7 @@
   padding: 1.25rem;
 }
 
-.lote-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-}
-
-@media (min-width: 768px) {
-  .lote-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
+/* Eliminado: .lote-grid ya no se usa */
 
 .form-group {
   display: flex;
@@ -352,4 +342,101 @@
   position: sticky;
   bottom: 1.5rem;
   z-index: 10;
+}
+
+/* ── Estilos Nuevos: Tabla de Lotes ── */
+.lotes-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.lotes-table th {
+  background: var(--c-dark-green);
+  color: var(--c-bone-bg);
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  border: 1px solid var(--c-dark-green);
+}
+
+.lotes-table td {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--c-sage-border);
+  background: var(--c-bone-bg);
+  vertical-align: top;
+}
+
+.lotes-table input.form-group__input {
+  width: 100%;
+  padding: 0.5rem 0.25rem;
+  margin: 0;
+}
+
+.restantes-badge {
+  font-family: monospace;
+  font-weight: 800;
+  font-size: 0.875rem;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid currentColor;
+}
+
+.restantes-badge--ok {
+  color: var(--c-success);
+}
+
+.restantes-badge--error {
+  color: var(--c-error);
+}
+
+.btn--add-lote {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: var(--c-warm-black);
+  border: 1px dashed var(--c-sage-border);
+  border-radius: 0;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn--add-lote:hover:not(:disabled) {
+  border-color: var(--c-dark-green);
+  color: var(--c-dark-green);
+}
+
+.btn--add-lote:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn--remove-lote {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  background: transparent;
+  color: var(--c-error);
+  border: 1px solid transparent;
+  cursor: pointer;
+  border-radius: 0;
+  transition: all 0.15s;
+}
+
+.btn--remove-lote:hover:not(:disabled) {
+  border-color: var(--c-error);
+}
+
+.btn--remove-lote:disabled {
+  color: var(--c-sage-border);
+  cursor: not-allowed;
 }

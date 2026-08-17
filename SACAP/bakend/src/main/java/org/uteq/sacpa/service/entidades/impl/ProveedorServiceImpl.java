@@ -144,6 +144,8 @@ public class ProveedorServiceImpl implements IProveedorService {
             .idEstado(pp.getIdEstado())
             .nombreProducto(pp.getProducto().getNombre())
             .unidadMedida(pp.getProducto().getUnidadMedida())
+            .aplicaIva(pp.getProducto().getAplicaIva())
+            .porcentajeIva(pp.getProducto().getPorcentajeIva())
             .build()).toList();
     }
 

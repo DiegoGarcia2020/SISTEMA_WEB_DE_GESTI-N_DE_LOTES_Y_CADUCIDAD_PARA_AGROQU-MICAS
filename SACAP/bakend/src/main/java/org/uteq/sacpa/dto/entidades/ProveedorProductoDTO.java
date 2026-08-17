@@ -31,4 +31,8 @@ public class ProveedorProductoDTO {
     // Nombres para mostrar en el listado
     private String nombreProducto;
     private String unidadMedida;
+
+    // Campos IVA por producto
+    private Boolean aplicaIva;
+    private BigDecimal porcentajeIva;
 }

@@ -88,7 +88,6 @@ public class OrdenCompraServiceImpl implements IOrdenCompraService {
                 .numeroFactura(dto.getNumeroFactura())
                 .fechaEmision(dto.getFechaEmision())
                 .costoTransporte(dto.getCostoTransporte() != null ? dto.getCostoTransporte() : BigDecimal.ZERO)
-                .impuestos(dto.getImpuestos() != null ? dto.getImpuestos() : BigDecimal.ZERO)
                 .estado("PENDIENTE")
                 .estadoCumplimiento("PENDIENTE")
                 .fechaLlegadaEstimada(dto.getFechaLlegadaEstimada())
@@ -101,6 +100,7 @@ public class OrdenCompraServiceImpl implements IOrdenCompraService {
         // 3. Acumuladores financieros
         BigDecimal subtotalBruto = BigDecimal.ZERO;
         BigDecimal totalDescuentos = BigDecimal.ZERO;
+        BigDecimal ivaTotal = BigDecimal.ZERO;
 
         // 4. Procesar cada detalle
         for (DetalleCompraRequestDTO detalleDTO : dto.getDetalles()) {
@@ -140,18 +140,30 @@ public class OrdenCompraServiceImpl implements IOrdenCompraService {
             if (!esBonificacion) {
                 subtotalBruto = subtotalBruto.add(montoSinDescuento);
                 totalDescuentos = totalDescuentos.add(valorDescuento);
+
+                // IVA por producto: solo si aplica_iva es true (null = true por defecto)
+                boolean productoAplicaIva = producto.getAplicaIva() == null || producto.getAplicaIva();
+                if (productoAplicaIva) {
+                    BigDecimal porcentajeIva = producto.getPorcentajeIva() != null
+                            ? producto.getPorcentajeIva()
+                            : new BigDecimal("15.00");
+                    BigDecimal ivaLinea = subtotalItem.multiply(porcentajeIva)
+                            .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+                    ivaTotal = ivaTotal.add(ivaLinea);
+                }
             }
         }
 
         // 5. Calcular totales de cabecera
         orden.setSubtotalBruto(subtotalBruto);
         orden.setTotalDescuentos(totalDescuentos);
+        orden.setImpuestos(ivaTotal);
 
         // Total neto = Subtotal bruto - Descuentos + Transporte + Impuestos
         BigDecimal totalNeto = subtotalBruto
                 .subtract(totalDescuentos)
                 .add(orden.getCostoTransporte())
-                .add(orden.getImpuestos());
+                .add(ivaTotal);
         orden.setTotalNeto(totalNeto);
 
         // 6. Guardar en cascada (cabecera + detalles)
@@ -239,6 +251,49 @@ public class OrdenCompraServiceImpl implements IOrdenCompraService {
         Map<Integer, DetalleCompra> detalleMap = detalles.stream()
                 .collect(Collectors.toMap(DetalleCompra::getId, d -> d));
 
+        // ── Validación de cuadre: la suma de lotes debe coincidir con cada detalle ──
+        Map<Integer, List<RecepcionLoteRequestDTO.LoteRecepcionItemDTO>> lotesPorDetalle =
+                dto.getLotes().stream()
+                   .collect(Collectors.groupingBy(
+                       RecepcionLoteRequestDTO.LoteRecepcionItemDTO::getIdDetalleCompra));
+
+        // Verificar que TODOS los detalles tengan al menos un lote
+        for (DetalleCompra detalle : detalles) {
+            if (!lotesPorDetalle.containsKey(detalle.getId())) {
+                String nombreProducto = detalle.getProducto() != null
+                        ? detalle.getProducto().getNombre() : "ID " + detalle.getId();
+                throw new RuntimeException(
+                    "El producto " + nombreProducto + " no tiene ningún lote asignado en la recepción.");
+            }
+        }
+
+        // Verificar que las cantidades cuadren exactamente
+        for (Map.Entry<Integer, List<RecepcionLoteRequestDTO.LoteRecepcionItemDTO>> entry
+                : lotesPorDetalle.entrySet()) {
+
+            DetalleCompra detalle = detalleMap.get(entry.getKey());
+            if (detalle == null) {
+                throw new RuntimeException("Detalle de compra no encontrado con ID: " + entry.getKey());
+            }
+
+            int sumaLotes = entry.getValue().stream()
+                    .mapToInt(RecepcionLoteRequestDTO.LoteRecepcionItemDTO::getCantidad)
+                    .sum();
+
+            if (sumaLotes != detalle.getCantidad()) {
+                String nombreProducto = detalle.getProducto() != null
+                        ? detalle.getProducto().getNombre() : "ID " + detalle.getId();
+                int diferencia = detalle.getCantidad() - sumaLotes;
+                String mensajeDiferencia = diferencia > 0
+                        ? "Faltan " + diferencia + " unidades."
+                        : "Sobran " + Math.abs(diferencia) + " unidades.";
+                throw new RuntimeException(
+                    "El producto " + nombreProducto + " espera " + detalle.getCantidad() +
+                    " unidades repartidas en lotes, pero se recibieron " + sumaLotes +
+                    ". " + mensajeDiferencia);
+            }
+        }
+
         // 5. Por cada lote recibido, crear la entidad Lote en estado FLOTANTE
         for (RecepcionLoteRequestDTO.LoteRecepcionItemDTO loteDTO : dto.getLotes()) {
 
@@ -251,8 +306,8 @@ public class OrdenCompraServiceImpl implements IOrdenCompraService {
                     .numeroLote(loteDTO.getNumeroLote())
                     .fechaFabricacion(loteDTO.getFechaFabricacion())
                     .fechaVencimiento(loteDTO.getFechaVencimiento())
-                    .cantidadInicial(detalle.getCantidad())
-                    .cantidadActual(detalle.getCantidad())
+                    .cantidadInicial(loteDTO.getCantidad())
+                    .cantidadActual(loteDTO.getCantidad())
                     .cantidadReservada(0)
                     .fechaIngreso(LocalDateTime.now())
                     .idEstadoLote(ESTADO_LOTE_FLOTANTE)
