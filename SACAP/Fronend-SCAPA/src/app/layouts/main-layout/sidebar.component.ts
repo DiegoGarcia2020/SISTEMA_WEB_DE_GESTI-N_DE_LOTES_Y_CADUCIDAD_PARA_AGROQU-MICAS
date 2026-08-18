@@ -58,6 +58,10 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
             <lucide-icon name="network" class="nav-item__icon"></lucide-icon>
             <span>Topología de Bodega</span>
           </a>
+          <a routerLink="/admin/inventario/localizar" routerLinkActive="active" class="nav-item">
+            <lucide-icon name="map-pin" class="nav-item__icon"></lucide-icon>
+            <span>Localizar Producto</span>
+          </a>
           <a routerLink="/admin/bodega/asignacion" routerLinkActive="active" class="nav-item">
             <lucide-icon name="arrow-right-left" class="nav-item__icon"></lucide-icon>
             <span>Asignar a Ubicación</span>
@@ -144,6 +148,11 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
             <lucide-icon name="alert-triangle" class="nav-item__icon"></lucide-icon>
             <span>Alertas de Caducidad</span>
           </a>
+          
+          <a routerLink="/admin/inventario/localizar" routerLinkActive="active" class="nav-item">
+            <lucide-icon name="map-pin" class="nav-item__icon"></lucide-icon>
+            <span>Localizar Producto</span>
+          </a>
         }
 
         <!-- ADMINISTRADOR / GENERAL -->
@@ -163,6 +172,11 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
           <a routerLink="/admin/bodega/topologia" routerLinkActive="active" class="nav-item">
             <lucide-icon name="network" class="nav-item__icon"></lucide-icon>
             <span>Bodegas y Supervisores</span>
+          </a>
+
+          <a routerLink="/admin/inventario/localizar" routerLinkActive="active" class="nav-item">
+            <lucide-icon name="map-pin" class="nav-item__icon"></lucide-icon>
+            <span>Localizar Producto</span>
           </a>
 
           <!-- Acordeón Operaciones & IA -->

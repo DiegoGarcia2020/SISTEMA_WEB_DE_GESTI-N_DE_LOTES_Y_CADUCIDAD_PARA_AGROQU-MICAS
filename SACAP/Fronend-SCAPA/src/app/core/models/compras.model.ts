@@ -90,8 +90,13 @@ export interface ProductoSimple {
 }
 
 export interface ProductoDeProveedor {
+  idProveedorProducto: number;
+  idProveedor: number;
   idProducto: number;
+  precioReferencial: number | null;
+  codigoProductoProveedor: string | null;
   nombreProducto: string;
-  unidadMedida?: string;
-  precioReferencial?: number;
+  unidadMedida: string;
+  aplicaIva: boolean;
+  porcentajeIva: number;
 }

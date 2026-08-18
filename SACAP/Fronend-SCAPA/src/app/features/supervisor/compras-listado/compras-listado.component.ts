@@ -371,7 +371,7 @@ export class ComprasListadoComponent implements OnInit, OnDestroy {
 
   // Paginación
   currentPage = signal<number>(0);
-  pageSize = 100;
+  pageSize = 50;
   totalElements = signal<number>(0);
   totalPages = signal<number>(0);
 

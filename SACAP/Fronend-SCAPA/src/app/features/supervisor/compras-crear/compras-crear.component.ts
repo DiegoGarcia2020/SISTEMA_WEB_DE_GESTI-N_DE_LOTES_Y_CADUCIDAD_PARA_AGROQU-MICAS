@@ -10,10 +10,12 @@ import { ToastService } from '../../../shared/components/toast/toast.service';
 import { ProductoSimple, ProveedorSimple, ProductoDeProveedor } from '../../../core/models/compras.model';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
+import { ProveedorProductosModalComponent } from '../proveedores/proveedor-productos-modal/proveedor-productos-modal.component';
+
 @Component({
   selector: 'app-compras-crear',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
+  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule, ProveedorProductosModalComponent],
   styleUrl: './compras-crear.component.css',
   template: `
     <div class="crear-container">
@@ -45,7 +47,12 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
           <div class="section-card__body">
             <div class="form-grid form-grid--3">
               <div class="form-group">
-                <label class="form-group__label">Proveedor *</label>
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0.5rem;">
+                  <label class="form-group__label" style="margin-bottom: 0;">Proveedor *</label>
+                  <button type="button" class="btn--action" style="font-size: 0.75rem; padding: 0.1rem 0.25rem; color: var(--c-dark-green);" (click)="abrirModalProductos()" [disabled]="!ordenForm.get('idProveedor')?.value" title="Añadir producto al catálogo del proveedor">
+                    <lucide-icon name="plus-circle" class="w-3.5 h-3.5"></lucide-icon> Añadir producto
+                  </button>
+                </div>
                 <select class="form-group__select" formControlName="idProveedor" 
                         [class.form-group__input--error]="campoInvalido('idProveedor')">
                   <option [ngValue]="null" disabled>Seleccione un proveedor</option>
@@ -98,10 +105,10 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
               }
             </div>
             <div class="detalles-actions">
-               <button type="button" class="btn btn--gift btn--sm" (click)="agregarRegalo()" [disabled]="!ordenForm.get('idProveedor')?.value">
+               <button type="button" class="btn btn--gift btn--sm" (click)="agregarRegalo()" [disabled]="!ordenForm.get('idProveedor')?.value" title="Seleccione un proveedor primero">
                 <lucide-icon name="gift" class="w-3.5 h-3.5"></lucide-icon> Añadir Regalo
               </button>
-              <button type="button" class="btn btn--outline btn--sm" (click)="agregarDetalle()" [disabled]="!ordenForm.get('idProveedor')?.value">
+              <button type="button" class="btn btn--outline btn--sm" (click)="agregarDetalle()" [disabled]="!ordenForm.get('idProveedor')?.value" title="Seleccione un proveedor primero">
                 <lucide-icon name="plus" class="w-3.5 h-3.5"></lucide-icon> Añadir Producto
               </button>
             </div>
@@ -129,11 +136,22 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
                           <option [ngValue]="prod.idProducto">{{ prod.nombreProducto }}</option>
                         }
                       </select>
-                      @if (detalle.get('esBonificacion')?.value) {
-                        <div style="margin-top: 0.25rem;">
+                      <div style="margin-top: 0.25rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        @if (detalle.get('idProducto')?.value) {
+                          @if (detalle.get('_aplicaIva')?.value) {
+                            <span style="font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 9999px; background-color: var(--c-cacao-accent); color: white;">
+                              IVA {{ detalle.get('_porcentajeIva')?.value }}%
+                            </span>
+                          } @else {
+                            <span style="font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 9999px; border: 1px solid var(--c-sage-border); color: var(--gray-600);">
+                              Exento
+                            </span>
+                          }
+                        }
+                        @if (detalle.get('esBonificacion')?.value) {
                            <span class="badge-regalo">BONIFICACIÓN</span>
-                        </div>
-                      }
+                        }
+                      </div>
                     </td>
                     <td>
                       <input type="number" class="detalles-table__input detalles-table__input--number" 
@@ -208,7 +226,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
                 <span class="total-row__value">\${{ totalesCalculados.baseImponible | number:'1.2-2' }}</span>
               </div>
               <div class="total-row">
-                <span class="total-row__label">IVA (15%)</span>
+                <span class="total-row__label">IVA Aplicado</span>
                 <span class="total-row__value">\${{ totalesCalculados.iva | number:'1.2-2' }}</span>
               </div>
               <div class="total-row">
@@ -234,13 +252,20 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
             Guardar Orden de Compra
           </button>
         </div>
+        </div>
       </form>
     </div>
+
+    @if (isModalProductosOpen()) {
+      <app-proveedor-productos-modal
+        [idProveedor]="ordenForm.get('idProveedor')?.value"
+        [nombreProveedor]="nombreProveedorSeleccionado()"
+        (close)="cerrarModalProductos($event)">
+      </app-proveedor-productos-modal>
+    }
   `
 })
 export class ComprasCrearComponent implements OnInit {
-  
-  readonly IVA_RATE = 0.15;
 
   private fb = inject(FormBuilder);
   private operacionesService = inject(OperacionesService);
@@ -260,6 +285,8 @@ export class ComprasCrearComponent implements OnInit {
     iva: 0,
     granTotal: 0
   };
+
+  isModalProductosOpen = signal<boolean>(false);
 
   ngOnInit(): void {
     this.inicializarFormulario();
@@ -291,7 +318,9 @@ export class ComprasCrearComponent implements OnInit {
       cantidad: [1, [Validators.required, Validators.min(1)]],
       precioUnitario: [{ value: 0, disabled: esBonificacion }, [Validators.required, Validators.min(0)]],
       porcentajeDescuento: [{ value: 0, disabled: esBonificacion }, [Validators.required, Validators.min(0), Validators.max(100)]],
-      esBonificacion: [esBonificacion]
+      esBonificacion: [esBonificacion],
+      _aplicaIva: [false],
+      _porcentajeIva: [0]
     });
 
     this.detallesFormArray.push(detalleGroup);
@@ -307,7 +336,7 @@ export class ComprasCrearComponent implements OnInit {
 
   private cargarDatosMaestros(): void {
     // Proveedores
-    this.proveedorService.listarProveedores().subscribe({
+    this.proveedorService.listarTodos().subscribe({
       next: (data) => this.proveedores = data as unknown as ProveedorSimple[],
       error: () => this.toast.error('Error', 'No se pudieron cargar los proveedores')
     });
@@ -320,6 +349,29 @@ export class ComprasCrearComponent implements OnInit {
     });
   }
 
+  nombreProveedorSeleccionado(): string {
+    const id = this.ordenForm.get('idProveedor')?.value;
+    if (!id) return '';
+    const prov = this.proveedores.find(p => p.idProveedor === id);
+    return prov ? (prov.nombre || prov.nombreRepresentante) : '';
+  }
+
+  abrirModalProductos(): void {
+    if (this.ordenForm.get('idProveedor')?.value) {
+      this.isModalProductosOpen.set(true);
+    }
+  }
+
+  cerrarModalProductos(huboCambios: boolean): void {
+    this.isModalProductosOpen.set(false);
+    if (huboCambios) {
+      const id = this.ordenForm.get('idProveedor')?.value;
+      if (id) {
+        this.cargarProductosDelProveedor(id);
+      }
+    }
+  }
+
   /**
    * MEMORIA DE PRECIOS
    * Al seleccionar un producto, busca su último precio pagado.
@@ -328,6 +380,16 @@ export class ComprasCrearComponent implements OnInit {
     const detalleControl = this.detallesFormArray.at(index);
     const idProducto = detalleControl.get('idProducto')?.value;
     const esBonificacion = detalleControl.get('esBonificacion')?.value;
+
+    if (idProducto) {
+      const productoCatalogo = this.productosProveedor.find(p => p.idProducto === idProducto);
+      if (productoCatalogo) {
+        detalleControl.patchValue({
+          _aplicaIva: productoCatalogo.aplicaIva,
+          _porcentajeIva: productoCatalogo.porcentajeIva
+        }, { emitEvent: false });
+      }
+    }
 
     if (idProducto && !esBonificacion) {
       this.operacionesService.obtenerUltimoPrecioProducto(idProducto).subscribe({
@@ -365,7 +427,7 @@ export class ComprasCrearComponent implements OnInit {
 
     // Escuchar cambios profundos en el FormArray para recalcular
     this.detallesFormArray.valueChanges.pipe(
-      debounceTime(300)
+      debounceTime(150)
     ).subscribe(() => {
       this.recalcularTotales();
     });
@@ -394,6 +456,7 @@ export class ComprasCrearComponent implements OnInit {
   private recalcularTotales(): void {
     let subtotal = 0;
     let descuentos = 0;
+    let ivaTotal = 0;
 
     const detalles = this.detallesFormArray.getRawValue();
     detalles.forEach((d: any) => {
@@ -407,19 +470,21 @@ export class ComprasCrearComponent implements OnInit {
         
         subtotal += brutoFila;
         descuentos += descFila;
+        
+        const baseLinea = brutoFila - descFila;
+        ivaTotal += d._aplicaIva ? (baseLinea * (d._porcentajeIva || 0) / 100) : 0;
       }
     });
 
     const baseImponible = subtotal - descuentos;
-    const iva = baseImponible * this.IVA_RATE;
     const costoTransporte = this.ordenForm.get('costoTransporte')?.value || 0;
-    const granTotal = baseImponible + iva + costoTransporte;
+    const granTotal = baseImponible + ivaTotal + costoTransporte;
 
     this.totalesCalculados = {
       subtotalBruto: subtotal,
       totalDescuentos: descuentos,
       baseImponible,
-      iva,
+      iva: ivaTotal,
       granTotal
     };
   }

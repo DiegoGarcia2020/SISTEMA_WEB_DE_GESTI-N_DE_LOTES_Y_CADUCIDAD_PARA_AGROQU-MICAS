@@ -17,8 +17,8 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class DetalleVentaIARequestDTO {
 
-    @NotNull(message = "El ID del lote es obligatorio")
-    private Integer idLote;
+    @NotNull(message = "El ID del producto es obligatorio")
+    private Integer idProducto;
 
     @NotNull(message = "La cantidad es obligatoria")
     @Min(value = 1, message = "La cantidad debe ser mayor a 0")

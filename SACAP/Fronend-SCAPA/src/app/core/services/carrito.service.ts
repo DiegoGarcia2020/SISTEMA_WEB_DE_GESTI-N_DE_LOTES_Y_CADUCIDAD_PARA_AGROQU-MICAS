@@ -15,7 +15,7 @@ export class CarritoService {
 
   agregar(item: CarritoItem) {
     this.items.update(list => {
-      const idx = list.findIndex(i => i.idLote === item.idLote);
+      const idx = list.findIndex(i => i.idProducto === item.idProducto);
       if (idx >= 0) {
         const copia = [...list];
         copia[idx] = { ...copia[idx], cantidad: Math.min(copia[idx].cantidad + item.cantidad, 999999) };
@@ -25,12 +25,12 @@ export class CarritoService {
     });
   }
 
-  actualizarCantidad(idLote: number, cantidad: number) {
-    this.items.update(list => list.map(i => i.idLote === idLote ? { ...i, cantidad } : i));
+  actualizarCantidad(idProducto: number, cantidad: number) {
+    this.items.update(list => list.map(i => i.idProducto === idProducto ? { ...i, cantidad } : i));
   }
 
-  quitar(idLote: number) {
-    this.items.update(list => list.filter(i => i.idLote !== idLote));
+  quitar(idProducto: number) {
+    this.items.update(list => list.filter(i => i.idProducto !== idProducto));
   }
 
   vaciar() {

@@ -1,0 +1,122 @@
+<div class="page-container">
+  <app-section-header
+    title="Localizar Producto"
+    subtitle="Consulte en qué ubicaciones físicas se encuentra un producto y sus lotes."
+    icon="map-pin">
+  </app-section-header>
+
+  <div class="search-card">
+    <div class="search-wrapper">
+      <lucide-icon name="search" class="search-icon"></lucide-icon>
+      <input type="text" class="search-input" 
+             [ngModel]="busqueda()" 
+             (ngModelChange)="onSearchChange($event)"
+             placeholder="Buscar producto por nombre..."
+             (focus)="isDropdownOpen.set(true)"
+             (blur)="isDropdownOpen.set(false)">
+      @if (busqueda()) {
+        <button class="btn-clear" (click)="limpiarSeleccion()">
+          <lucide-icon name="x" class="w-4 h-4"></lucide-icon>
+        </button>
+      }
+
+      <!-- Autocomplete Dropdown -->
+      @if (isDropdownOpen() && productosFiltrados().length > 0) {
+        <div class="autocomplete-dropdown">
+          @for (prod of productosFiltrados(); track prod.idProducto) {
+            <div class="autocomplete-item" (mousedown)="seleccionarProducto(prod)">
+              <div class="prod-nombre">{{ prod.nombre }}</div>
+              <div class="prod-cat">{{ prod.categoria?.nombre || 'General' }}</div>
+            </div>
+          }
+        </div>
+      }
+      @if (isDropdownOpen() && busqueda() && productosFiltrados().length === 0) {
+        <div class="autocomplete-dropdown">
+          <div class="autocomplete-empty">No se encontraron productos</div>
+        </div>
+      }
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <lucide-icon name="loader" class="spinner"></lucide-icon>
+      <p>Buscando ubicaciones...</p>
+    </div>
+  } @else if (productoSeleccionado() && ubicaciones().length > 0) {
+    <div class="results-card">
+      <div class="results-header">
+        <h3 class="results-title">Ubicaciones de {{ productoSeleccionado().nombre }}</h3>
+        <span class="results-badge">{{ totalLotes() }} lotes encontrados</span>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Almacén</th>
+              <th>Zona</th>
+              <th>Estantería</th>
+              <th>Ubicación</th>
+              <th>N° Lote</th>
+              <th class="text-right">Cantidad</th>
+              <th class="text-right">Disponible</th>
+              <th>Caducidad</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (ub of ubicaciones(); track ub.idLote) {
+              <tr [class.row-flotante]="ub.codigoUbicacion === 'Sin ubicar'"
+                  [class.row-peligro]="ub.diasParaVencer !== null && ub.diasParaVencer <= 30 && ub.diasParaVencer >= 0"
+                  [class.row-vencido]="ub.diasParaVencer !== null && ub.diasParaVencer < 0">
+                <td>{{ ub.nombreAlmacen }}</td>
+                <td>{{ ub.nombreZona }}</td>
+                <td>{{ ub.codigoEstanteria }}</td>
+                <td>
+                  <span class="ubicacion-badge" [class.badge-sin-ubicar]="ub.codigoUbicacion === 'Sin ubicar'">
+                    {{ ub.codigoUbicacion }}
+                  </span>
+                </td>
+                <td class="font-mono">{{ ub.numeroLote }}</td>
+                <td class="text-right font-medium">{{ ub.cantidadActual }}</td>
+                <td class="text-right text-cacao-accent font-medium">{{ ub.cantidadDisponible }}</td>
+                <td>
+                  <div class="caducidad-col">
+                    <span>{{ ub.fechaVencimiento | date:'dd/MM/yyyy' }}</span>
+                    @if (ub.diasParaVencer !== null) {
+                      <span class="dias-vencer">
+                        ({{ ub.diasParaVencer }} días)
+                      </span>
+                    }
+                  </div>
+                </td>
+                <td>
+                  <span class="estado-badge" [class]="'estado-' + ub.estadoLote.toLowerCase()">
+                    {{ ub.estadoLote }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="5" class="text-right font-bold py-3">Total en bodega:</td>
+              <td class="text-right font-bold text-lg py-3">{{ totalUnidades() }}</td>
+              <td colspan="3"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  } @else if (productoSeleccionado() && ubicaciones().length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon-wrapper">
+        <lucide-icon name="package-x" class="empty-icon"></lucide-icon>
+      </div>
+      <h3 class="empty-title">Sin stock físico</h3>
+      <p class="empty-desc">No hay lotes activos ni ubicaciones registradas para el producto <strong>{{ productoSeleccionado().nombre }}</strong>.</p>
+    </div>
+  }
+</div>

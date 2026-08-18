@@ -14,6 +14,8 @@ export interface Proveedor {
   idEstado: number;
   empresa?: any;
   ciudad?: any;
+  nombreEmpresa?: string;
+  nombreCiudad?: string;
 }
 
 export interface ProveedorRequest {
@@ -45,8 +47,18 @@ export class ProveedorService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/proveedores`;
 
-  listarProveedores(): Observable<Proveedor[]> {
-    return this.http.get<Proveedor[]>(this.apiUrl);
+  listarProveedores(page: number = 0, size: number = 25, q: string = ''): Observable<any> {
+    let params = new import('@angular/common/http').HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    if (q) {
+      params = params.set('q', q);
+    }
+    return this.http.get<any>(this.apiUrl, { params });
+  }
+
+  listarTodos(): Observable<Proveedor[]> {
+    return this.http.get<Proveedor[]>(`${this.apiUrl}/todos`);
   }
 
   obtenerPorId(id: number): Observable<Proveedor> {

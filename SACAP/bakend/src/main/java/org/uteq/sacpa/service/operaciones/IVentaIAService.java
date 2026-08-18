@@ -1,6 +1,7 @@
 package org.uteq.sacpa.service.operaciones;
 
 import org.uteq.sacpa.dto.ia_alertas.SugerenciaComboDTO;
+import org.uteq.sacpa.dto.operaciones.ProductoCatalogoDTO;
 import org.uteq.sacpa.dto.operaciones.VentaCreateRequestDTO;
 import org.uteq.sacpa.dto.operaciones.VentaDashboardResponseDTO;
 import org.uteq.sacpa.dto.operaciones.VentaIAResponseDTO;
@@ -24,6 +25,8 @@ public interface IVentaIAService {
 
     /** Plagas/enfermedades activas, para el selector del diagnóstico */
     List<CatPlaga> obtenerPlagas();
+
+    List<ProductoCatalogoDTO> obtenerCatalogo(String q, Integer limit);
 
     /** Sugerencias por diagnóstico: filtra productos etiquetados con esa plaga (idCultivo opcional) */
     List<SugerenciaComboDTO> obtenerSugerenciasPorPlaga(Integer idPlaga, Integer idCultivo);

@@ -15,6 +15,7 @@ public interface IProveedorService {
 
     List<Proveedor> listarTodos();
 
+    org.springframework.data.domain.Page<org.uteq.sacpa.dto.entidades.ProveedorResponseDTO> listarPaginado(String q, org.springframework.data.domain.Pageable pageable);
 
     void eliminarProveedor(Integer idProveedor);
 

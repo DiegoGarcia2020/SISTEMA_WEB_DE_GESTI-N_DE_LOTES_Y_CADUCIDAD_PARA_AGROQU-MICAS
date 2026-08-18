@@ -1,0 +1,107 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(18, 38, 29, 0.5); /* --c-dark-green con opacidad */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-container {
+  background: white;
+  border-radius: 0; /* Bordes rectos */
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--c-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-family: 'Fraunces', serif;
+  color: var(--c-dark-green);
+}
+
+.modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-control {
+  padding: 0.75rem;
+  border: 1px solid var(--c-border);
+  border-radius: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--c-cacao-accent);
+  box-shadow: 0 0 0 1px var(--c-cacao-accent);
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-secondary {
+  background-color: var(--c-dark-green);
+  color: white;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--c-text-muted);
+}
+
+.btn-icon-danger {
+  color: var(--c-error);
+}
+
+.association-form {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.flex-1 { flex: 1; }
+.w-32 { width: 8rem; }
+.mt-4 { margin-top: 1rem; }
+
+.table-container {
+  border: 1px solid var(--c-border);
+}
+.table { width: 100%; border-collapse: collapse; }
+.table th, .table td { padding: 0.75rem; border-bottom: 1px solid var(--c-border); text-align: left; }
+.table th { background: var(--c-surface); }
+.text-stamped { font-family: monospace; }
+.text-center { text-align: center; }
+.text-muted { color: var(--c-text-muted); }

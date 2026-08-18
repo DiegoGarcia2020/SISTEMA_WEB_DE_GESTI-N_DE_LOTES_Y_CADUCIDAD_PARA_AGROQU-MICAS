@@ -97,6 +97,13 @@ public class LoteController {
         return ResponseEntity.ok(loteService.listarLotesDisponibles(busqueda));
     }
 
+    @GetMapping("/ubicaciones")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ADMINISTRADOR', 'SUPERVISOR', 'BODEGUERO')")
+    public ResponseEntity<List<UbicacionProductoDTO>> obtenerUbicacionesPorProducto(
+            @RequestParam("idProducto") Integer idProducto) {
+        return ResponseEntity.ok(loteService.obtenerUbicacionesPorProducto(idProducto));
+    }
+
     @GetMapping("/{numeroLote}")
     public ResponseEntity<LoteResponseDTO> buscarPorNumeroLote(@PathVariable String numeroLote) {
         return ResponseEntity.ok(loteService.buscarPorNumeroLote(numeroLote));

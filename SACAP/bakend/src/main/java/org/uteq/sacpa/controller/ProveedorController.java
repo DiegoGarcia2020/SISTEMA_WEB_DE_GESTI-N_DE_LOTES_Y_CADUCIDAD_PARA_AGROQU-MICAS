@@ -28,9 +28,16 @@ public class ProveedorController {
         return ResponseEntity.ok(Map.of("mensaje", "Proveedor registrado exitosamente"));
     }
 
-    @GetMapping
-    public ResponseEntity<List<Proveedor>> listarProveedores() {
+    @GetMapping("/todos")
+    public ResponseEntity<List<Proveedor>> listarTodos() {
         return ResponseEntity.ok(proveedorService.listarTodos());
+    }
+
+    @GetMapping
+    public ResponseEntity<org.springframework.data.domain.Page<org.uteq.sacpa.dto.entidades.ProveedorResponseDTO>> listarProveedores(
+            @RequestParam(required = false) String q,
+            org.springframework.data.domain.Pageable pageable) {
+        return ResponseEntity.ok(proveedorService.listarPaginado(q, pageable));
     }
 
     @GetMapping("/{id}")

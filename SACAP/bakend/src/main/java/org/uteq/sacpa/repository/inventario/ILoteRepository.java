@@ -131,6 +131,14 @@ public interface ILoteRepository extends JpaRepository<Lote, Integer> {
            "ORDER BY l.fechaVencimiento ASC")
     List<Lote> findDisponiblesParaVentaPorPlaga(@Param("idPlaga") Integer idPlaga, @Param("idCultivo") Integer idCultivo, @Param("idEstadoActivo") Integer idEstadoActivo);
 
+    @Query("SELECT l FROM Lote l " +
+           "LEFT JOIN FETCH l.ubicacion u LEFT JOIN FETCH u.estanteria e " +
+           "LEFT JOIN FETCH e.zona z LEFT JOIN FETCH z.almacen a " +
+           "LEFT JOIN FETCH l.almacen a2 " +
+           "WHERE l.producto.idProducto = :idProducto " +
+           "AND l.cantidadActual > 0 " +
+           "ORDER BY l.fechaVencimiento ASC")
+    List<Lote> findUbicacionesPorProducto(@Param("idProducto") Integer idProducto);
 
     // ============================================================
     // Llamadas a funciones PL/pgSQL del esquema inventario

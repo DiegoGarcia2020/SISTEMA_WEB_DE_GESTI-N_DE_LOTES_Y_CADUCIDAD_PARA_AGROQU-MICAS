@@ -56,24 +56,23 @@
       <div class="vt-section">
         <h2 class="vt-section-title">Catálogo General</h2>
         <div class="vt-buscador">
-          <input type="text" placeholder="Buscar por nombre o número de lote..." [(ngModel)]="textoBusquedaProducto"
-                 (ngModelChange)="buscarProductos()" class="vt-input" />
+          <input type="text" placeholder="Buscar producto..." [(ngModel)]="textoBusquedaProducto"
+                 (ngModelChange)="onBuscarProductosChange($event)" class="vt-input" />
         </div>
         
         @if (buscandoProductos()) {
           <p class="vt-empty-text">Buscando productos...</p>
-        } @else if (lotesDisponibles().length > 0) {
+        } @else if (catalogo().length > 0) {
           <div class="vt-catalogo-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
-            @for (lote of lotesDisponibles(); track lote.idLote) {
+            @for (producto of catalogo(); track producto.idProducto) {
               <div class="vt-producto-card" style="border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; display: flex; flex-direction: column; justify-content: space-between;">
                 <div class="vt-producto-info" style="display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 1rem;">
-                  <strong>{{ lote.nombreProducto }}</strong>
-                  <span style="font-size: 0.85rem; color: var(--text-muted)">Lote: {{ lote.numeroLote }}</span>
-                  <span style="font-size: 0.85rem; color: var(--text-muted)">Vence: {{ lote.fechaVencimiento }}</span>
-                  <span style="font-size: 0.85rem; color: var(--text-muted)">Stock: {{ lote.cantidadActual - (lote.cantidadReservada || 0) }}</span>
-                  <span class="vt-precio" style="font-weight: 600; color: var(--primary-color)">${{ (lote.precio || 0).toFixed(2) }}</span>
+                  <strong>{{ producto.nombre }}</strong>
+                  <span style="font-size: 0.85rem; color: var(--text-muted)">{{ producto.unidadMedida }}</span>
+                  <span style="font-size: 0.85rem; color: var(--text-muted)">Stock disp: {{ producto.stockDisponible }}</span>
+                  <span class="vt-precio" style="font-weight: 600; color: var(--primary-color)">${{ (producto.precio || 0).toFixed(2) }}</span>
                 </div>
-                <button class="vt-btn vt-btn--sm vt-btn--primary" (click)="agregarLoteAlCarrito(lote)">Agregar al carrito</button>
+                <button class="vt-btn vt-btn--sm vt-btn--primary" (click)="agregarProductoAlCarrito(producto)">Agregar al carrito</button>
               </div>
             }
           </div>
@@ -91,17 +90,17 @@
           <p class="vt-empty-text">Aún no has agregado productos. Ve al Motor de Sugerencias para empezar.</p>
         } @else {
           <div class="vt-cart-list">
-            @for (item of carrito.items(); track item.idLote) {
+            @for (item of carrito.items(); track item.idProducto) {
               <div class="vt-cart-item">
                 <div class="vt-cart-item-info">
                   <strong>{{ item.nombreProducto }}</strong>
-                  <span>{{ item.numeroLote }} @if (item.esComboIA) { · <span class="vt-tag-combo">Combo IA</span> }</span>
+                  <span>@if (item.esComboIA) { <span class="vt-tag-combo">Combo IA</span> }</span>
                 </div>
                 <input type="number" min="1" class="vt-qty-input" [value]="item.cantidad"
-                       (change)="actualizarCantidad(item.idLote, $any($event.target).value)" />
+                       (change)="actualizarCantidad(item.idProducto, $any($event.target).value)" />
                 <span class="vt-cart-precio">${{ (item.precioUnitario * item.cantidad).toFixed(2) }}</span>
                 @if (item.descuentoPct) { <span class="vt-badge vt-badge--descuento">-{{ item.descuentoPct }}%</span> }
-                <button class="vt-remove-btn" (click)="quitarItem(item.idLote)">✕</button>
+                <button class="vt-remove-btn" (click)="quitarItem(item.idProducto)">✕</button>
               </div>
             }
           </div>

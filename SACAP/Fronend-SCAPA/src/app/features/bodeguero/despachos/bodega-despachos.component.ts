@@ -14,6 +14,17 @@ export interface OrdenPendienteDTO {
   estado: string;
 }
 
+export interface DesgloseLoteDespachoDTO {
+  nombreProducto: string;
+  numeroLote: string;
+  fechaVencimiento: string;
+  cantidad: number;
+  nombreAlmacen: string;
+  nombreZona: string;
+  codigoEstanteria: string;
+  codigoUbicacion: string;
+}
+
 export interface DevolucionTransitoDTO {
   id: number;
   idVenta: number;
@@ -53,6 +64,12 @@ export class BodegaDespachosComponent implements OnInit {
   tamanoPaginaDevoluciones = 20;
   processingIds = signal<Set<number>>(new Set());
   textoBusqueda = signal('');
+
+  // Modal de Preparación FEFO
+  modalAbierto = signal(false);
+  lotesADespachar = signal<DesgloseLoteDespachoDTO[]>([]);
+  cargandoLotes = signal(false);
+  idVentaSeleccionada = signal<number | null>(null);
 
   ngOnInit(): void {
     this.cargarOrdenesPendientes();
@@ -105,8 +122,38 @@ export class BodegaDespachosComponent implements OnInit {
     this.cargarDevoluciones();
   }
 
-  prepararPaquete(idVenta: number) {
+  abrirModalPreparacion(idVenta: number) {
+    this.idVentaSeleccionada.set(idVenta);
+    this.lotesADespachar.set([]);
+    this.cargandoLotes.set(true);
+    this.modalAbierto.set(true);
+
+    this.http.get<DesgloseLoteDespachoDTO[]>(`${environment.apiUrl}/operaciones/despachos/${idVenta}/lotes-a-despachar`)
+      .subscribe({
+        next: (lotes) => {
+          this.lotesADespachar.set(lotes || []);
+          this.cargandoLotes.set(false);
+        },
+        error: () => {
+          this.toast.error('Error', 'No se pudieron cargar los lotes de la orden.');
+          this.cerrarModalPreparacion();
+        }
+      });
+  }
+
+  cerrarModalPreparacion() {
+    this.modalAbierto.set(false);
+    this.idVentaSeleccionada.set(null);
+    this.lotesADespachar.set([]);
+  }
+
+  confirmarPreparacion() {
+    const idVenta = this.idVentaSeleccionada();
+    if (!idVenta) return;
+
     this.setProcessing(idVenta, true);
+    this.cerrarModalPreparacion();
+
     this.http.put(`${environment.apiUrl}/operaciones/despachos/${idVenta}/preparar`, {})
       .subscribe({
         next: () => {
@@ -140,5 +187,16 @@ export class BodegaDespachosComponent implements OnInit {
 
   descargarNotaDevolucion(dev: DevolucionTransitoDTO) {
     this.comprobanteService.generarNotaDevolucion(dev as any);
+  }
+
+  calcularDiasRestantes(fechaVencimiento: string): number | null {
+    if (!fechaVencimiento) return null;
+    const fv = new Date(fechaVencimiento);
+    const hoy = new Date();
+    // Normalizar a medianoche para evitar diferencias por hora
+    fv.setHours(0, 0, 0, 0);
+    hoy.setHours(0, 0, 0, 0);
+    const diffTime = fv.getTime() - hoy.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
 }

@@ -7,6 +7,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.uteq.sacpa.dto.ia_alertas.SugerenciaComboDTO;
+import org.uteq.sacpa.dto.operaciones.ProductoCatalogoDTO;
 import org.uteq.sacpa.dto.operaciones.VentaCreateRequestDTO;
 import org.uteq.sacpa.dto.operaciones.VentaDashboardResponseDTO;
 import org.uteq.sacpa.dto.operaciones.VentaIAResponseDTO;
@@ -42,6 +43,13 @@ public class VentaIAController {
     @GetMapping("/categorias")
     public ResponseEntity<List<Categoria>> categorias() {
         return ResponseEntity.ok(ventaService.obtenerCategorias());
+    }
+
+    @GetMapping("/catalogo")
+    public ResponseEntity<List<ProductoCatalogoDTO>> catalogo(
+            @RequestParam(value = "q", required = false) String q,
+            @RequestParam(value = "limit", defaultValue = "24") Integer limit) {
+        return ResponseEntity.ok(ventaService.obtenerCatalogo(q, limit));
     }
 
     @GetMapping("/sugerencias")

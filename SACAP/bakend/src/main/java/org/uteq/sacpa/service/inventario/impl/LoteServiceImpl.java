@@ -258,6 +258,14 @@ public class LoteServiceImpl implements ILoteService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<org.uteq.sacpa.dto.inventario.UbicacionProductoDTO> obtenerUbicacionesPorProducto(Integer idProducto) {
+        return loteRepository.findUbicacionesPorProducto(idProducto).stream()
+                .map(org.uteq.sacpa.dto.inventario.UbicacionProductoDTO::fromEntity)
+                .toList();
+    }
+
+    @Override
     public void anularLote(Integer idLote) {
         loteRepository.anularLote(idLote);
     }

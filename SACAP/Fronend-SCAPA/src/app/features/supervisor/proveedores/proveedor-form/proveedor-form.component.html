@@ -65,58 +65,20 @@
         <hr class="divider">
         <div class="association-section">
           <h3>Productos Asociados</h3>
-          
-          <form [formGroup]="asociarForm" class="association-form" (ngSubmit)="asociarProducto()">
-            <div class="form-group flex-1">
-              <select formControlName="idProducto" class="form-control">
-                <option [ngValue]="null" disabled>Seleccionar Producto...</option>
-                @for (prod of productosMaestros(); track prod.idProducto) {
-                  <option [ngValue]="prod.idProducto">{{ prod.nombre }}</option>
-                }
-              </select>
-            </div>
-            <div class="form-group w-32">
-              <input type="number" formControlName="precioReferencial" class="form-control" placeholder="Precio Ref." step="0.01">
-            </div>
-            <div class="form-group flex-1">
-              <input type="text" formControlName="codigoProductoProveedor" class="form-control" placeholder="Código Prov. (Opcional)">
-            </div>
-            <button type="submit" class="btn btn-secondary" [disabled]="asociarForm.invalid">
-              Asociar
-            </button>
-          </form>
-
-          <div class="table-container mt-4">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Producto</th>
-                  <th>Precio Ref.</th>
-                  <th>Código Prov.</th>
-                  <th>Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (pp of productosAsociados(); track pp.idProducto) {
-                  <tr>
-                    <td>{{ pp.nombreProducto }}</td>
-                    <td>\${{ pp.precioReferencial }}</td>
-                    <td class="text-stamped">{{ pp.codigoProductoProveedor || 'N/A' }}</td>
-                    <td>
-                      <button class="btn-icon btn-icon-danger" (click)="desasociarProducto(pp.idProducto)">
-                        <lucide-icon name="trash-2" size="18"></lucide-icon>
-                      </button>
-                    </td>
-                  </tr>
-                } @empty {
-                  <tr><td colspan="4" class="text-center text-muted">No hay productos asociados.</td></tr>
-                }
-              </tbody>
-            </table>
-          </div>
+          <button type="button" class="btn btn-secondary" (click)="abrirModalProductos()">
+            Gestionar Productos
+          </button>
         </div>
       }
     </div>
+
+    @if (isModalProductosOpen()) {
+      <app-proveedor-productos-modal
+        [idProveedor]="proveedorId!"
+        [nombreProveedor]="nombreProveedorActual()"
+        (close)="cerrarModalProductos($event)">
+      </app-proveedor-productos-modal>
+    }
 
     <div class="modal-footer">
       <button class="btn btn-outline" (click)="cerrar()" [disabled]="isLoading()">Cancelar</button>

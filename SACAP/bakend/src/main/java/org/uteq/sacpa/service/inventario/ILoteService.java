@@ -44,6 +44,9 @@ public interface ILoteService {
     /** Lista lotes con stock disponible y vigentes para el catálogo general */
     List<LoteResponseDTO> listarLotesDisponibles(String busqueda);
 
+    /** Lista las ubicaciones físicas de los lotes de un producto */
+    List<org.uteq.sacpa.dto.inventario.UbicacionProductoDTO> obtenerUbicacionesPorProducto(Integer idProducto);
+
     /** Anula un lote (funcion inventario.fn_anular_lote) */
     void anularLote(Integer idLote);
 }

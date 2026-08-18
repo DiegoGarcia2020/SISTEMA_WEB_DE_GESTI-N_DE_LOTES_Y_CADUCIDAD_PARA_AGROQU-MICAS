@@ -5,8 +5,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.uteq.sacpa.dto.operaciones.DesgloseLoteDespachoDTO;
 import org.uteq.sacpa.dto.operaciones.OrdenPendienteDespachoDTO;
 import org.uteq.sacpa.dto.operaciones.VentaResponseDTO;
+import org.uteq.sacpa.entity.operaciones.DetalleVenta;
 import org.uteq.sacpa.entity.operaciones.Venta;
 import org.uteq.sacpa.repository.operaciones.VentaRepository;
 import org.uteq.sacpa.service.operaciones.IDespachoService;
@@ -31,6 +33,38 @@ public class DespachoServiceImpl implements IDespachoService {
 
         return ventas.stream()
                 .map(OrdenPendienteDespachoDTO::from)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<DesgloseLoteDespachoDTO> obtenerLotesADespachar(Integer idVenta) {
+        Venta venta = ventaRepository.findById(idVenta)
+                .orElseThrow(() -> new RuntimeException("Venta no encontrada con ID: " + idVenta));
+
+        return venta.getDetalles().stream()
+                .filter(d -> d.getLote() != null)
+                .map(d -> {
+                    org.uteq.sacpa.entity.inventario.Lote lote = d.getLote();
+                    org.uteq.sacpa.entity.inventario.UbicacionInterna ubi = lote.getUbicacion();
+                    
+                    return DesgloseLoteDespachoDTO.builder()
+                            .nombreProducto(d.getProducto() != null ? d.getProducto().getNombre() : "Desconocido")
+                            .numeroLote(lote.getNumeroLote())
+                            .fechaVencimiento(lote.getFechaVencimiento())
+                            .cantidad(d.getCantidad())
+                            .nombreAlmacen(ubi != null && ubi.getEstanteria() != null && ubi.getEstanteria().getZona() != null && ubi.getEstanteria().getZona().getAlmacen() != null ? ubi.getEstanteria().getZona().getAlmacen().getNombre() : "N/A")
+                            .nombreZona(ubi != null && ubi.getEstanteria() != null && ubi.getEstanteria().getZona() != null ? ubi.getEstanteria().getZona().getNombre() : "N/A")
+                            .codigoEstanteria(ubi != null && ubi.getEstanteria() != null ? ubi.getEstanteria().getCodigo() : "N/A")
+                            .codigoUbicacion(ubi != null ? ubi.getCodigoNivel() : "N/A")
+                            .build();
+                })
+                .sorted((a, b) -> {
+                    if (a.getFechaVencimiento() == null && b.getFechaVencimiento() == null) return 0;
+                    if (a.getFechaVencimiento() == null) return 1;
+                    if (b.getFechaVencimiento() == null) return -1;
+                    return a.getFechaVencimiento().compareTo(b.getFechaVencimiento());
+                })
                 .collect(Collectors.toList());
     }
 

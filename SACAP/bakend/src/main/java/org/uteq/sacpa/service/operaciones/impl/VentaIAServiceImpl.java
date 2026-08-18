@@ -9,6 +9,7 @@ import org.uteq.sacpa.dto.ia_modelos.PromocionResponseDTO;
 import org.uteq.sacpa.dto.ia_modelos.TemporadaResponseDTO;
 import org.uteq.sacpa.dto.operaciones.DetalleVentaIARequestDTO;
 import org.uteq.sacpa.dto.operaciones.DetalleVentaResponseDTO;
+import org.uteq.sacpa.dto.operaciones.ProductoCatalogoDTO;
 import org.uteq.sacpa.dto.operaciones.VentaCreateRequestDTO;
 import org.uteq.sacpa.dto.operaciones.VentaDashboardResponseDTO;
 import org.uteq.sacpa.dto.operaciones.VentaIAResponseDTO;
@@ -130,6 +131,60 @@ public class VentaIAServiceImpl implements IVentaIAService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<ProductoCatalogoDTO> obtenerCatalogo(String q, Integer limit) {
+        // En un caso real, esto se haría con un Custom Repository Method o JdbcTemplate.
+        // Simulando la agrupación de lotes por producto en orden FEFO
+        List<Lote> lotesVendibles;
+        if (q != null && !q.trim().isEmpty()) {
+            lotesVendibles = loteRepository.findLotesDisponibles(q.trim());
+        } else {
+            lotesVendibles = loteRepository.findLotesDisponiblesFefo();
+        }
+
+        // Agrupar por producto
+        java.util.Map<Integer, ProductoCatalogoDTO> catalogoMap = new java.util.LinkedHashMap<>();
+        for (Lote lote : lotesVendibles) {
+            Integer idProd = lote.getProducto().getIdProducto();
+            int disponible = (lote.getCantidadActual() != null ? lote.getCantidadActual() : 0)
+                    - (lote.getCantidadReservada() != null ? lote.getCantidadReservada() : 0);
+            
+            if (disponible <= 0) continue;
+
+            if (!catalogoMap.containsKey(idProd)) {
+                catalogoMap.put(idProd, ProductoCatalogoDTO.builder()
+                        .idProducto(idProd)
+                        .nombre(lote.getProducto().getNombre())
+                        .descripcion(lote.getProducto().getDescripcion())
+                        .unidadMedida(lote.getProducto().getUnidadMedida())
+                        .precio(lote.getProducto().getPrecio())
+                        .stockDisponible(disponible)
+                        .proximaCaducidad(lote.getFechaVencimiento()) // El primero en orden FEFO
+                        .build());
+            } else {
+                ProductoCatalogoDTO dto = catalogoMap.get(idProd);
+                dto.setStockDisponible(dto.getStockDisponible() + disponible);
+            }
+        }
+
+        List<ProductoCatalogoDTO> result = new ArrayList<>(catalogoMap.values());
+        
+        // Si no hay 'q', y la base soporta order by mas vendidos, aquí podríamos 
+        // ordenar la lista 'result' basándonos en historial, 
+        // pero por ahora, respetaremos el límite por default y el orden que haya caído (stock).
+        
+        // Ordenar por stockDisponible DESC como fallback si no hay historial
+        if (q == null || q.trim().isEmpty()) {
+            result.sort((a, b) -> b.getStockDisponible().compareTo(a.getStockDisponible()));
+        }
+
+        if (limit != null && result.size() > limit) {
+            return result.subList(0, limit);
+        }
+        return result;
+    }
+
+    @Override
     @Transactional
     public VentaIAResponseDTO crearVenta(Integer idUsuarioAutenticado, VentaCreateRequestDTO dto) {
         TecnicoCampo tecnico = tecnicoCampoRepository.findByUsuario_IdUsuario(idUsuarioAutenticado)
@@ -143,44 +198,77 @@ public class VentaIAServiceImpl implements IVentaIAService {
         List<LineaCalculada> lineasCalculadas = new ArrayList<>();
 
         for (DetalleVentaIARequestDTO linea : dto.getLineas()) {
-            // Bloqueo pesimista: evita que dos ventas concurrentes sobrevendan el mismo lote
-            Lote lote = loteRepository.findByIdForUpdate(linea.getIdLote())
-                    .orElseThrow(() -> new EntityNotFoundException("Lote no encontrado: " + linea.getIdLote()));
-            if (lote.getProducto() == null || lote.getProducto().getPrecio() == null) {
-                throw new IllegalStateException("El lote " + lote.getNumeroLote() + " no tiene precio configurado");
+            // Obtener todos los lotes vendibles del producto en orden FEFO con bloqueo pesimista
+            List<Lote> lotesProducto = loteRepository.findByProductoForUpdate(linea.getIdProducto());
+            
+            int cantidadSolicitada = linea.getCantidad();
+            int cantidadPorCubrir = cantidadSolicitada;
+            
+            // Filtrar lotes válidos
+            List<Lote> lotesValidos = new ArrayList<>();
+            for (Lote l : lotesProducto) {
+                if (l.getUbicacion() == null) continue; // No vender flotantes
+                if (l.getFechaVencimiento() != null && !l.getFechaVencimiento().isAfter(LocalDate.now())) continue;
+                if (l.getIdEstadoLote() != ID_ESTADO_ACTIVO) continue;
+                
+                int disp = (l.getCantidadActual() != null ? l.getCantidadActual() : 0)
+                        - (l.getCantidadReservada() != null ? l.getCantidadReservada() : 0);
+                if (disp > 0) {
+                    lotesValidos.add(l);
+                }
+            }
+            
+            int stockTotalDisponible = lotesValidos.stream().mapToInt(l -> (l.getCantidadActual() != null ? l.getCantidadActual() : 0) - (l.getCantidadReservada() != null ? l.getCantidadReservada() : 0)).sum();
+
+            if (stockTotalDisponible < cantidadSolicitada) {
+                String nombreProd = lotesProducto.isEmpty() ? "Producto ID " + linea.getIdProducto() : lotesProducto.get(0).getProducto().getNombre();
+                throw new IllegalStateException("Stock insuficiente para " + nombreProd
+                    + ". Disponible: " + stockTotalDisponible + ", solicitado: " + cantidadSolicitada);
             }
 
-            if (lote.getFechaVencimiento() != null && !lote.getFechaVencimiento().isAfter(LocalDate.now())) {
-                throw new IllegalStateException("El lote " + lote.getNumeroLote() + " de " + lote.getProducto().getNombre()
-                    + " está vencido (venció el " + lote.getFechaVencimiento() + ") y no puede venderse.");
+            for (Lote lote : lotesValidos) {
+                if (cantidadPorCubrir <= 0) break;
+                
+                int disponibleEnLote = (lote.getCantidadActual() != null ? lote.getCantidadActual() : 0)
+                        - (lote.getCantidadReservada() != null ? lote.getCantidadReservada() : 0);
+                
+                int cantidadATomar = Math.min(disponibleEnLote, cantidadPorCubrir);
+                
+                BigDecimal precioUnitario = lote.getProducto().getPrecio();
+                if (precioUnitario == null) {
+                    throw new IllegalStateException("El lote " + lote.getNumeroLote() + " no tiene precio configurado");
+                }
+                
+                BigDecimal descuentoPct = BigDecimal.ZERO;
+                if (linea.getIdPromocion() != null) {
+                    Promocion promo = promocionRepository.findById(linea.getIdPromocion())
+                            .orElseThrow(() -> new EntityNotFoundException("Promoción no encontrada: " + linea.getIdPromocion()));
+                    if (promo.getDescuentoGlobal() != null) descuentoPct = promo.getDescuentoGlobal();
+                } else if (linea.getDescuentoPct() != null) {
+                    descuentoPct = linea.getDescuentoPct();
+                }
+                
+                BigDecimal precioLinea = precioUnitario.multiply(BigDecimal.valueOf(cantidadATomar));
+                BigDecimal descuentoLinea = precioLinea.multiply(descuentoPct)
+                        .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+                BigDecimal subtotalLinea = precioLinea.subtract(descuentoLinea);
+    
+                subtotal = subtotal.add(precioLinea);
+                descuentoTotal = descuentoTotal.add(descuentoLinea);
+                
+                // Generar sub-línea para este lote específico
+                DetalleVentaIARequestDTO subLineaDto = DetalleVentaIARequestDTO.builder()
+                        .idProducto(linea.getIdProducto())
+                        .cantidad(cantidadATomar)
+                        .esComboIA(linea.getEsComboIA())
+                        .idPromocion(linea.getIdPromocion())
+                        .descuentoPct(linea.getDescuentoPct())
+                        .build();
+                        
+                lineasCalculadas.add(new LineaCalculada(subLineaDto, lote, precioUnitario, subtotalLinea));
+                
+                cantidadPorCubrir -= cantidadATomar;
             }
-
-            int disponible = (lote.getCantidadActual() != null ? lote.getCantidadActual() : 0)
-                    - (lote.getCantidadReservada() != null ? lote.getCantidadReservada() : 0);
-            if (disponible < linea.getCantidad()) {
-                throw new IllegalStateException("Stock insuficiente para " + lote.getProducto().getNombre()
-                    + " (lote " + lote.getNumeroLote() + "). Disponible: " + disponible + ", solicitado: " + linea.getCantidad());
-            }
-
-            BigDecimal precioUnitario = lote.getProducto().getPrecio();
-            BigDecimal descuentoPct = BigDecimal.ZERO;
-            if (linea.getIdPromocion() != null) {
-                Promocion promo = promocionRepository.findById(linea.getIdPromocion())
-                        .orElseThrow(() -> new EntityNotFoundException("Promoción no encontrada: " + linea.getIdPromocion()));
-                if (promo.getDescuentoGlobal() != null) descuentoPct = promo.getDescuentoGlobal();
-            } else if (linea.getDescuentoPct() != null) {
-                // Sin Promoción formal: se honra el descuento sugerido por el Motor de Sugerencias IA
-                descuentoPct = linea.getDescuentoPct();
-            }
-
-            BigDecimal precioLinea = precioUnitario.multiply(BigDecimal.valueOf(linea.getCantidad()));
-            BigDecimal descuentoLinea = precioLinea.multiply(descuentoPct)
-                    .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
-            BigDecimal subtotalLinea = precioLinea.subtract(descuentoLinea);
-
-            subtotal = subtotal.add(precioLinea);
-            descuentoTotal = descuentoTotal.add(descuentoLinea);
-            lineasCalculadas.add(new LineaCalculada(linea, lote, precioUnitario, subtotalLinea));
         }
         BigDecimal total = subtotal.subtract(descuentoTotal);
 

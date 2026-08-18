@@ -80,8 +80,7 @@ export class MotorSugerenciasComponent implements OnInit {
   agregarAlCarrito(s: SugerenciaComboDTO) {
     for (const lote of s.lotes) {
       this.carrito.agregar({
-        idLote: lote.idLote,
-        numeroLote: lote.numeroLote,
+        idProducto: lote.idProducto,
         nombreProducto: lote.nombreProducto,
         cantidad: 1,
         precioUnitario: lote.precioUnitario,

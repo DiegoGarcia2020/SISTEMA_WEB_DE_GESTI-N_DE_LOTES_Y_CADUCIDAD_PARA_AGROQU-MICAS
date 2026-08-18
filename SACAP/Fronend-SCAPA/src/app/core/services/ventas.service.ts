@@ -5,7 +5,7 @@ import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import {
   ClienteDTO, ClienteCreateRequest, SugerenciaComboDTO,
-  VentaCreateRequest, VentaDTO, VentaDashboardDTO, CultivoDTO, PlagaDTO
+  VentaCreateRequest, VentaDTO, VentaDashboardDTO, CultivoDTO, PlagaDTO, ProductoCatalogo
 } from '../models/ventas.model';
 
 export interface CategoriaDTO {
@@ -28,6 +28,16 @@ export class VentasService {
   getLotesDisponibles(busqueda?: string): Observable<any[]> {
     const params = busqueda ? `?busqueda=${encodeURIComponent(busqueda)}` : '';
     return this.http.get<any[]>(`${this.apiUrl}/lotes/disponibles${params}`).pipe(
+      catchError(e => e.status === 0 || e.status === 404 ? of([]) : throwError(() => e))
+    );
+  }
+
+  getCatalogo(q?: string, limit: number = 24): Observable<ProductoCatalogo[]> {
+    let url = `${this.apiUrl}/ventas/catalogo?limit=${limit}`;
+    if (q) {
+      url += `&q=${encodeURIComponent(q)}`;
+    }
+    return this.http.get<ProductoCatalogo[]>(url).pipe(
       catchError(e => e.status === 0 || e.status === 404 ? of([]) : throwError(() => e))
     );
   }

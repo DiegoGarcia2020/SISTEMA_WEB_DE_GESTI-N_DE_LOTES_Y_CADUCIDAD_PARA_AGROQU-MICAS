@@ -49,7 +49,7 @@
                   <span>{{ orden.ventanaHoraria }}</span>
                 </div>
               </div>
-              <button class="btn btn-success" (click)="prepararPaquete(orden.id)" [disabled]="isProcessing(orden.id)">
+              <button class="btn btn-success" (click)="abrirModalPreparacion(orden.id)" [disabled]="isProcessing(orden.id)">
                 {{ isProcessing(orden.id) ? 'Procesando...' : 'Preparar Paquete' }}
               </button>
             </div>
@@ -127,4 +127,64 @@
       }
     }
   </div>
+
+  <!-- Modal Confirmación FEFO -->
+  @if (modalAbierto()) {
+    <div class="vt-modal-overlay" (click)="cerrarModalPreparacion()">
+      <div class="vt-modal" style="width: 800px; max-width: 95vw;" (click)="$event.stopPropagation()">
+        <div class="vt-modal-header">
+          <h3>Lotes a despachar — Orden #{{ idVentaSeleccionada() }}</h3>
+          <button class="vt-modal-close" (click)="cerrarModalPreparacion()">×</button>
+        </div>
+        <div class="vt-modal-body">
+          <p style="margin-bottom: 1rem; color: var(--text-muted);">Retire primero los lotes más próximos a caducar (FEFO).</p>
+          
+          @if (cargandoLotes()) {
+            <div style="display: flex; justify-content: center; padding: 2rem;">
+              <div class="vt-spin"></div>
+            </div>
+          } @else {
+            <div class="table-card" style="margin-top: 0; box-shadow: none; border: 1px solid var(--border-color);">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Producto</th>
+                    <th>Lote</th>
+                    <th>Vence</th>
+                    <th>Cant.</th>
+                    <th>Ubicación</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (lote of lotesADespachar(); track lote.numeroLote; let first = $first) {
+                    <tr [style.background-color]="first ? 'rgba(239, 68, 68, 0.05)' : 'transparent'">
+                      <td><strong>{{ lote.nombreProducto }}</strong></td>
+                      <td>{{ lote.numeroLote }}</td>
+                      <td [style.color]="first ? 'var(--c-error)' : 'inherit'">
+                        {{ lote.fechaVencimiento }}
+                        @if (calcularDiasRestantes(lote.fechaVencimiento) !== null) {
+                          <span style="font-size: 0.8em; opacity: 0.8; margin-left: 0.25rem;">({{ calcularDiasRestantes(lote.fechaVencimiento) }}d)</span>
+                        }
+                      </td>
+                      <td><strong>{{ lote.cantidad }}</strong></td>
+                      <td>
+                        <div style="display: flex; flex-direction: column; font-size: 0.85em;">
+                          <span>{{ lote.nombreAlmacen }} - {{ lote.nombreZona }}</span>
+                          <span style="color: var(--text-muted);">Estantería: {{ lote.codigoEstanteria }} | Nivel: {{ lote.codigoUbicacion }}</span>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+        <div class="vt-modal-footer">
+          <button class="btn btn-secondary" (click)="cerrarModalPreparacion()">Cancelar</button>
+          <button class="btn btn-success" [disabled]="cargandoLotes()" (click)="confirmarPreparacion()">Confirmar preparación</button>
+        </div>
+      </div>
+    </div>
+  }
 </div>

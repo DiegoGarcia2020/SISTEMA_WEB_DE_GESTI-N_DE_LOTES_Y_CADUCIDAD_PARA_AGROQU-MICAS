@@ -10,6 +10,12 @@
     </button>
   </div>
 
+  <div style="margin-bottom: 1rem;">
+    <input type="text" placeholder="Buscar por RUC, representante o empresa..."
+           [formControl]="textoBusqueda"
+           style="width: 100%; padding: 0.75rem; border: 1px solid var(--c-sage-border); border-radius: 4px; outline: none; font-size: 0.875rem;" />
+  </div>
+
   <div class="table-container">
     <table class="table">
       <thead>
@@ -28,9 +34,9 @@
           <tr>
             <td class="text-stamped">{{ prov.ruc }}</td>
             <td>{{ prov.nombreRepresentante }}</td>
-            <td>{{ prov.empresa?.nombre || 'N/A' }}</td>
+            <td>{{ prov.nombreEmpresa || 'N/A' }}</td>
             <td>{{ prov.telefonoEmpresa || prov.telefono }}</td>
-            <td>{{ prov.ciudad?.nombre || 'N/A' }}</td>
+            <td>{{ prov.nombreCiudad || 'N/A' }}</td>
             <td>
               <span class="badge" [class.badge-active]="prov.idEstado === 1" [class.badge-inactive]="prov.idEstado !== 1">
                 {{ prov.idEstado === 1 ? 'Activo' : 'Inactivo' }}
@@ -54,6 +60,17 @@
         }
       </tbody>
     </table>
+  </div>
+
+  <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0;">
+    <span style="font-size: 0.875rem; color: var(--c-sage-text);">{{ totalElementos() }} proveedores en total.</span>
+    @if (totalPaginas() > 1) {
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <button class="btn btn-sm btn-secondary" [disabled]="pagina() === 0" (click)="cambiarPagina(pagina() - 1)">← Anterior</button>
+        <span style="font-size: 0.875rem;">Página {{ pagina() + 1 }} de {{ totalPaginas() }}</span>
+        <button class="btn btn-sm btn-secondary" [disabled]="pagina() + 1 >= totalPaginas()" (click)="cambiarPagina(pagina() + 1)">Siguiente →</button>
+      </div>
+    }
   </div>
 </div>
 

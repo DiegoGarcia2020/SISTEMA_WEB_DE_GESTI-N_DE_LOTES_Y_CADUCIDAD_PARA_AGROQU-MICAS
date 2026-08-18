@@ -92,6 +92,12 @@ public class ProveedorServiceImpl implements IProveedorService {
     }
 
     @Override
+    public org.springframework.data.domain.Page<org.uteq.sacpa.dto.entidades.ProveedorResponseDTO> listarPaginado(String q, org.springframework.data.domain.Pageable pageable) {
+        return proveedorRepository.findByFiltro(q, pageable)
+                .map(org.uteq.sacpa.dto.entidades.ProveedorResponseDTO::fromEntity);
+    }
+
+    @Override
     @Transactional
     public void eliminarProveedor(Integer idProveedor) {
         jdbcTemplate.execute((Connection conn) -> {

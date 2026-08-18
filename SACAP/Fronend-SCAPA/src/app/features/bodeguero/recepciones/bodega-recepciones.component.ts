@@ -29,7 +29,9 @@ export class BodegaRecepcionesComponent implements OnInit {
   private router = inject(Router);
 
   ordenesHoy = signal<OrdenCompraListDTO[]>([]);
+  proximasRecepciones = signal<OrdenCompraListDTO[]>([]);
   isLoading = signal<boolean>(false);
+  isLoadingProximas = signal<boolean>(false);
   processingIds = signal<Set<number>>(new Set());
   
   // Modal State
@@ -40,6 +42,7 @@ export class BodegaRecepcionesComponent implements OnInit {
 
   ngOnInit() {
     this.cargarRecepcionesHoy();
+    this.cargarProximasRecepciones();
   }
 
   cargarRecepcionesHoy() {
@@ -58,6 +61,39 @@ export class BodegaRecepcionesComponent implements OnInit {
           this.isLoading.set(false);
         }
       });
+  }
+
+  cargarProximasRecepciones() {
+    this.isLoadingProximas.set(true);
+    const manana = new Date();
+    manana.setDate(manana.getDate() + 1);
+    const hastaDate = new Date();
+    hastaDate.setDate(hastaDate.getDate() + 7);
+
+    const desdeStr = `${manana.getFullYear()}-${String(manana.getMonth() + 1).padStart(2, '0')}-${String(manana.getDate()).padStart(2, '0')}`;
+    const hastaStr = `${hastaDate.getFullYear()}-${String(hastaDate.getMonth() + 1).padStart(2, '0')}-${String(hastaDate.getDate()).padStart(2, '0')}`;
+
+    this.http.get<OrdenCompraListDTO[]>(`${environment.apiUrl}/ordenes-compra/recepciones-esperadas?estado=PENDIENTE&desde=${desdeStr}&hasta=${hastaStr}`)
+      .subscribe({
+        next: (data) => {
+          // Asegurar ordenamiento por fecha (asumiendo que viene en ventanaHoraria o fechaEmision. Mejor confiamos en backend si está ordenado, o lo ordenamos aquí si hay una fecha estimada, pero asumo que el backend ya ordena).
+          this.proximasRecepciones.set(data);
+          this.isLoadingProximas.set(false);
+        },
+        error: (err) => {
+          this.isLoadingProximas.set(false);
+        }
+      });
+  }
+
+  calcularDiasFaltantes(fecha: string): number | null {
+    if (!fecha) return null;
+    const fv = new Date(fecha);
+    const hoy = new Date();
+    fv.setHours(0, 0, 0, 0);
+    hoy.setHours(0, 0, 0, 0);
+    const diffTime = fv.getTime() - hoy.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
 
   isProcessing(id: number): boolean {

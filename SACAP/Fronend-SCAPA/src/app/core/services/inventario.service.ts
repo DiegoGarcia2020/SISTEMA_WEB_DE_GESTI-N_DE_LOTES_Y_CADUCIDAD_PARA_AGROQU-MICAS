@@ -236,6 +236,12 @@ export class InventarioService {
     );
   }
 
+  getUbicacionesPorProducto(idProducto: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/lotes/ubicaciones?idProducto=${idProducto}`).pipe(
+      catchError(e => e.status === 0 || e.status === 404 ? of([]) : throwError(() => e))
+    );
+  }
+
   preRegistrarLote(data: LotePreRegistroRequest): Observable<LoteDTO> {
     return this.http.post<LoteDTO>(`${this.apiUrl}/lotes/pre-registro`, data);
   }

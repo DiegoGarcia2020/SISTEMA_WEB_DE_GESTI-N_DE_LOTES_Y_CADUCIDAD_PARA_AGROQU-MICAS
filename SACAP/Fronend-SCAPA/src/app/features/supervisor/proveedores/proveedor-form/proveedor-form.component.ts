@@ -7,10 +7,12 @@ import { ToastService } from '../../../../shared/components/toast/toast.service'
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
 
+import { ProveedorProductosModalComponent } from '../proveedor-productos-modal/proveedor-productos-modal.component';
+
 @Component({
   selector: 'app-proveedor-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
+  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule, ProveedorProductosModalComponent],
   templateUrl: './proveedor-form.component.html',
   styleUrls: ['./proveedor-form.component.css']
 })
@@ -29,8 +31,9 @@ export class ProveedorFormComponent implements OnInit {
   
   empresas = signal<any[]>([]);
   ciudades = signal<any[]>([]);
-  productosMaestros = signal<any[]>([]);
-  productosAsociados = signal<ProveedorProductoDTO[]>([]);
+  
+  isModalProductosOpen = signal<boolean>(false);
+  nombreProveedorActual = signal<string>('');
   
   ngOnInit() {
     this.initForm();
@@ -38,7 +41,6 @@ export class ProveedorFormComponent implements OnInit {
     
     if (this.proveedorId) {
       this.cargarProveedor();
-      this.cargarProductosAsociados();
     }
   }
 
@@ -54,10 +56,6 @@ export class ProveedorFormComponent implements OnInit {
       idEstado: [1, Validators.required]
     });
 
-    this.asociarForm = this.fb.group({
-      idProducto: [null, Validators.required],
-      precioReferencial: [0, [Validators.min(0)]],
-      codigoProductoProveedor: ['']
     });
   }
 
@@ -68,17 +66,8 @@ export class ProveedorFormComponent implements OnInit {
       error: () => this.empresas.set([{ idEmpresa: 1, nombre: 'Empresa Matriz' }]) // Mock fallback
     });
     
-    this.http.get<any[]>(`${environment.apiUrl}/catalogos/ciudades`).subscribe({
       next: (res) => this.ciudades.set(res),
       error: () => this.ciudades.set([{ idCiudad: 1, nombre: 'Quevedo' }]) // Mock fallback
-    });
-
-    this.http.get<any[]>(`${environment.apiUrl}/productos`).subscribe({
-      next: (res) => this.productosMaestros.set(res),
-      error: () => this.productosMaestros.set([
-        { idProducto: 1, nombre: 'Urea 46%' },
-        { idProducto: 2, nombre: 'Glifosato' }
-      ])
     });
   }
 
@@ -95,7 +84,7 @@ export class ProveedorFormComponent implements OnInit {
           idEmpresa: data.empresa?.idEmpresa,
           idCiudad: data.ciudad?.idCiudad,
           idEstado: data.idEstado
-        });
+        this.nombreProveedorActual.set(data.nombreRepresentante); // Or empresa.nombre
         this.isLoading.set(false);
       },
       error: () => {
@@ -103,13 +92,6 @@ export class ProveedorFormComponent implements OnInit {
         this.isLoading.set(false);
         this.cerrar();
       }
-    });
-  }
-  
-  cargarProductosAsociados() {
-    if (!this.proveedorId) return;
-    this.proveedorService.listarProductos(this.proveedorId).subscribe({
-      next: (res: any) => this.productosAsociados.set(res)
     });
   }
 
@@ -139,35 +121,15 @@ export class ProveedorFormComponent implements OnInit {
     });
   }
 
-  asociarProducto() {
-    if (this.asociarForm.invalid || !this.proveedorId) return;
-    
-    const data: ProveedorProductoDTO = {
-      idProveedor: this.proveedorId,
-      ...this.asociarForm.value
-    };
-
-    this.proveedorService.asociarProducto(this.proveedorId, data).subscribe({
-      next: () => {
-        this.toast.success('Éxito', 'Producto asociado');
-        this.cargarProductosAsociados();
-        this.asociarForm.reset({ precioReferencial: 0 });
-      },
-      error: (err: any) => this.toast.error('Error', err.error?.message || 'Error al asociar')
     });
   }
 
-  desasociarProducto(idProducto: number) {
-    if (!this.proveedorId) return;
-    if (confirm('¿Desasociar este producto?')) {
-      this.proveedorService.desasociarProducto(this.proveedorId, idProducto).subscribe({
-        next: () => {
-          this.toast.success('Éxito', 'Producto desasociado');
-          this.cargarProductosAsociados();
-        },
-        error: () => this.toast.error('Error', 'No se pudo desasociar')
-      });
-    }
+  abrirModalProductos() {
+    this.isModalProductosOpen.set(true);
+  }
+
+  cerrarModalProductos(huboCambios: boolean) {
+    this.isModalProductosOpen.set(false);
   }
 
   cerrar() {

@@ -52,7 +52,7 @@ export interface SugerenciaComboDTO {
 }
 
 export interface DetalleVentaRequest {
-  idLote: number;
+  idProducto: number;
   cantidad: number;
   esComboIA?: boolean;
   idPromocion?: number | null;
@@ -100,8 +100,7 @@ export interface VentaDashboardDTO {
 
 // Item de carrito en el frontend (antes de confirmar la venta)
 export interface CarritoItem {
-  idLote: number;
-  numeroLote: string;
+  idProducto: number;
   nombreProducto: string;
   cantidad: number;
   precioUnitario: number;
@@ -109,3 +108,14 @@ export interface CarritoItem {
   idPromocion?: number | null;
   descuentoPct?: number;
 }
+
+export interface ProductoCatalogo {
+  idProducto: number;
+  nombre: string;
+  descripcion: string;
+  unidadMedida: string;
+  precio: number;
+  stockDisponible: number;
+  proximaCaducidad: string;
+}
+

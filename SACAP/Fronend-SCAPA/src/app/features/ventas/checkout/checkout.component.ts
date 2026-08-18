@@ -5,7 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { VentasService } from '../../../core/services/ventas.service';
 import { CarritoService } from '../../../core/services/carrito.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { ClienteDTO } from '../../../core/models/ventas.model';
+import { ClienteDTO, ProductoCatalogo } from '../../../core/models/ventas.model';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { MotorSugerenciasComponent } from '../motor-sugerencias/motor-sugerencias.component';
 
@@ -25,9 +25,10 @@ export class CheckoutComponent implements OnInit {
 
   // Catálogo general
   textoBusquedaProducto = signal('');
-  lotesDisponibles = signal<any[]>([]);
+  catalogo = signal<ProductoCatalogo[]>([]);
   buscandoProductos = signal(false);
   mostrarSugerenciasIA = signal(false);
+  private searchTimeout: any;
 
   ngOnInit() {
     this.buscarProductos();
@@ -35,29 +36,38 @@ export class CheckoutComponent implements OnInit {
 
   buscarProductos() {
     this.buscandoProductos.set(true);
-    this.ventasService.getLotesDisponibles(this.textoBusquedaProducto()).subscribe({
-      next: (lotes) => {
-        this.lotesDisponibles.set(lotes || []);
+    this.ventasService.getCatalogo(this.textoBusquedaProducto(), 24).subscribe({
+      next: (productos) => {
+        this.catalogo.set(productos || []);
         this.buscandoProductos.set(false);
       },
       error: () => {
-        this.lotesDisponibles.set([]);
+        this.catalogo.set([]);
         this.buscandoProductos.set(false);
       }
     });
   }
 
-  agregarLoteAlCarrito(lote: any) {
+  onBuscarProductosChange(texto: string) {
+    this.textoBusquedaProducto.set(texto);
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+    }
+    this.searchTimeout = setTimeout(() => {
+      this.buscarProductos();
+    }, 300);
+  }
+
+  agregarProductoAlCarrito(producto: ProductoCatalogo) {
     this.carrito.agregar({
-      idLote: lote.idLote,
-      numeroLote: lote.numeroLote,
-      nombreProducto: lote.nombreProducto,
+      idProducto: producto.idProducto,
+      nombreProducto: producto.nombre,
       cantidad: 1,
-      precioUnitario: lote.precio || 0,
+      precioUnitario: producto.precio || 0,
       esComboIA: false,
       descuentoPct: 0
     });
-    this.toast.success('Agregado', `${lote.nombreProducto} agregado al carrito`);
+    this.toast.success('Agregado', `${producto.nombre} agregado al carrito`);
   }
 
   toggleSugerenciasIA() {
@@ -136,13 +146,13 @@ export class CheckoutComponent implements OnInit {
     });
   }
 
-  actualizarCantidad(idLote: number, valor: string) {
+  actualizarCantidad(idProducto: number, valor: string) {
     const cantidad = Math.max(1, parseInt(valor, 10) || 1);
-    this.carrito.actualizarCantidad(idLote, cantidad);
+    this.carrito.actualizarCantidad(idProducto, cantidad);
   }
 
-  quitarItem(idLote: number) {
-    this.carrito.quitar(idLote);
+  quitarItem(idProducto: number) {
+    this.carrito.quitar(idProducto);
   }
 
 
@@ -157,7 +167,7 @@ export class CheckoutComponent implements OnInit {
     const payload = {
       idCliente: cliente.idCliente,
       lineas: this.carrito.items().map(i => ({
-        idLote: i.idLote,
+        idProducto: i.idProducto,
         cantidad: i.cantidad,
         esComboIA: i.esComboIA,
         idPromocion: i.idPromocion ?? null,
