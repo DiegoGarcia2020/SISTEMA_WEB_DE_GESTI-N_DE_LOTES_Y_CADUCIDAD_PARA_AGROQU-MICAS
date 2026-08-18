@@ -47,7 +47,8 @@ public class DespachoServiceImpl implements IDespachoService {
                 .map(d -> {
                     org.uteq.sacpa.entity.inventario.Lote lote = d.getLote();
                     org.uteq.sacpa.entity.inventario.UbicacionInterna ubi = lote.getUbicacion();
-                    
+
+
                     return DesgloseLoteDespachoDTO.builder()
                             .nombreProducto(d.getProducto() != null ? d.getProducto().getNombre() : "Desconocido")
                             .numeroLote(lote.getNumeroLote())
