@@ -9,7 +9,7 @@ import org.uteq.sacpa.dto.operaciones.DocumentoOrdenCompraResponseDTO;
 import org.uteq.sacpa.entity.operaciones.DocumentoOrdenCompra;
 import org.uteq.sacpa.entity.operaciones.OrdenCompra;
 import org.uteq.sacpa.repository.operaciones.DocumentoOrdenCompraRepository;
-import org.uteq.sacpa.repository.operaciones.OrdenCompraRepository;
+import org.uteq.sacpa.repository.operaciones.IOrdenCompraRepository;
 import org.uteq.sacpa.service.operaciones.IDocumentoOrdenCompraService;
 
 import java.time.LocalDateTime;
@@ -23,7 +23,7 @@ public class DocumentoOrdenCompraServiceImpl implements IDocumentoOrdenCompraSer
 
     private final Cloudinary cloudinary;
     private final DocumentoOrdenCompraRepository documentoRepo;
-    private final OrdenCompraRepository ordenCompraRepo;
+    private final IOrdenCompraRepository ordenCompraRepo;
     private final org.uteq.sacpa.security.SecurityContextService securityContextService;
 
     private static final String PLACEHOLDER_PREFIX = "PENDIENTE_CLOUDINARY://";

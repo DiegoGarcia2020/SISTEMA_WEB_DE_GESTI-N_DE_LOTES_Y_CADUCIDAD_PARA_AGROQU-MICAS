@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 :host {
 /* Color no estandarizado en paleta */
   --c-local-custom-0f172a: #0f172a;
@@ -44,8 +46,6 @@
 /* ═══════════════════════════════════════════════════════
    AUDITORÍA RÁPIDA POR QR — Mobile-First Design
    ═══════════════════════════════════════════════════════ */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
 .aq-page {
   font-family: 'Inter', system-ui, sans-serif;
   padding: 1.5rem;

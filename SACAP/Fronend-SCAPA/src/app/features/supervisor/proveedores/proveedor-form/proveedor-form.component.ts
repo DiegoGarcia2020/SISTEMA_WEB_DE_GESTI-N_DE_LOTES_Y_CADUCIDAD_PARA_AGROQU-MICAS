@@ -55,8 +55,6 @@ export class ProveedorFormComponent implements OnInit {
       idCiudad: [null, Validators.required],
       idEstado: [1, Validators.required]
     });
-
-    });
   }
 
   cargarCatalogos() {
@@ -65,7 +63,7 @@ export class ProveedorFormComponent implements OnInit {
       next: (res) => this.empresas.set(res),
       error: () => this.empresas.set([{ idEmpresa: 1, nombre: 'Empresa Matriz' }]) // Mock fallback
     });
-    
+    this.http.get<any[]>(`${environment.apiUrl}/catalogos/ciudades`).subscribe({
       next: (res) => this.ciudades.set(res),
       error: () => this.ciudades.set([{ idCiudad: 1, nombre: 'Quevedo' }]) // Mock fallback
     });
@@ -84,6 +82,7 @@ export class ProveedorFormComponent implements OnInit {
           idEmpresa: data.empresa?.idEmpresa,
           idCiudad: data.ciudad?.idCiudad,
           idEstado: data.idEstado
+        });
         this.nombreProveedorActual.set(data.nombreRepresentante); // Or empresa.nombre
         this.isLoading.set(false);
       },
@@ -118,9 +117,6 @@ export class ProveedorFormComponent implements OnInit {
         this.toast.error('Error', err.error?.message || 'Error al guardar');
         this.isLoading.set(false);
       }
-    });
-  }
-
     });
   }
 

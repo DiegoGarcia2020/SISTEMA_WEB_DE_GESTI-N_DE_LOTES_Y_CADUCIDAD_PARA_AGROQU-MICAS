@@ -56,7 +56,7 @@ public class DespachoServiceImpl implements IDespachoService {
                             .nombreAlmacen(ubi != null && ubi.getEstanteria() != null && ubi.getEstanteria().getZona() != null && ubi.getEstanteria().getZona().getAlmacen() != null ? ubi.getEstanteria().getZona().getAlmacen().getNombre() : "N/A")
                             .nombreZona(ubi != null && ubi.getEstanteria() != null && ubi.getEstanteria().getZona() != null ? ubi.getEstanteria().getZona().getNombre() : "N/A")
                             .codigoEstanteria(ubi != null && ubi.getEstanteria() != null ? ubi.getEstanteria().getCodigo() : "N/A")
-                            .codigoUbicacion(ubi != null ? ubi.getCodigoNivel() : "N/A")
+                            .codigoUbicacion(ubi != null ? ubi.getNivel() : "N/A")
                             .build();
                 })
                 .sorted((a, b) -> {

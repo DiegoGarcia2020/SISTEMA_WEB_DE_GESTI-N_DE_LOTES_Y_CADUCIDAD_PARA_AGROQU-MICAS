@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 :host {
 /* Color no estandarizado en paleta */
   --c-local-custom-0f172a: #0f172a;
@@ -64,8 +66,6 @@
 /* ═══════════════════════════════════════════════════════
    PRE-REGISTRO DE LOTE — Diseño Premium 2025
    ═══════════════════════════════════════════════════════ */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
 .pr-bg {
   font-family: 'Inter', system-ui, sans-serif;
   min-height: 100vh;

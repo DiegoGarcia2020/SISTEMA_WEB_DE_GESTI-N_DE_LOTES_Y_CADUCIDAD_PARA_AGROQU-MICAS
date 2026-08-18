@@ -107,6 +107,8 @@ export interface CarritoItem {
   esComboIA: boolean;
   idPromocion?: number | null;
   descuentoPct?: number;
+  idLote?: number;
+  numeroLote?: string;
 }
 
 export interface ProductoCatalogo {

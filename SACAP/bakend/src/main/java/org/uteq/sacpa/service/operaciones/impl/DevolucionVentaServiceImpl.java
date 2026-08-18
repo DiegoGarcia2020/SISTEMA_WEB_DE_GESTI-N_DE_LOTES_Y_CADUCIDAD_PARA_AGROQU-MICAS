@@ -131,7 +131,7 @@ public class DevolucionVentaServiceImpl implements IDevolucionVentaService {
                 int disponible = Math.max(0, capacidadMaxima - capacidadOcupada);
                 
                 if (devolucion.getCantidadDevuelta() > disponible) {
-                    throw new RuntimeException("La ubicación " + nuevaUbicacion.getCodigoNivel() + 
+                    throw new RuntimeException("La ubicación " + nuevaUbicacion.getNivel() + 
                         " no tiene capacidad suficiente. Disponible: " + disponible + 
                         ", requerido: " + devolucion.getCantidadDevuelta() + ".");
                 }

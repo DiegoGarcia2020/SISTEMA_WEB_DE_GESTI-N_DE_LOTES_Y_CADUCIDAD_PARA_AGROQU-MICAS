@@ -268,6 +268,7 @@ export class CampoDashboardComponent implements OnInit {
     }
 
     this.carrito.agregar({
+      idProducto: loteEncontrado.idProducto || combo.idProducto,
       idLote: loteEncontrado.idLote,
       numeroLote: loteEncontrado.numeroLote,
       nombreProducto: combo.nombreProducto || loteEncontrado.nombreProducto,

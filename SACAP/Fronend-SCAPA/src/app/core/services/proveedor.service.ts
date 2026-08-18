@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
@@ -48,7 +48,7 @@ export class ProveedorService {
   private apiUrl = `${environment.apiUrl}/proveedores`;
 
   listarProveedores(page: number = 0, size: number = 25, q: string = ''): Observable<any> {
-    let params = new import('@angular/common/http').HttpParams()
+    let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
     if (q) {

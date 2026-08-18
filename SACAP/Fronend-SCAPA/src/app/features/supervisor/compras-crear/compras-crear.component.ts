@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -263,7 +263,6 @@ import { ProveedorProductosModalComponent } from '../proveedores/proveedor-produ
             <lucide-icon name="save" class="w-4 h-4"></lucide-icon>
             Guardar Orden de Compra
           </button>
-        </div>
         </div>
       </form>
     </div>

@@ -24,6 +24,8 @@ export interface EstanteriaDTO {
   idEstanteria: number;
   codigo:       string;
   idZona:       number;
+  codigoAlfa?:  string;
+  tipoMaterial?: string;
 }
 
 export interface UbicacionDTO {
@@ -37,6 +39,7 @@ export interface UbicacionDTO {
   capacidadDisponible?: number;
   porcentajeOcupacion?: number;
   codigoQr?:           string;
+  codigoNivel?:        string;
 }
 
 export interface NodoTopologiaDTO {
