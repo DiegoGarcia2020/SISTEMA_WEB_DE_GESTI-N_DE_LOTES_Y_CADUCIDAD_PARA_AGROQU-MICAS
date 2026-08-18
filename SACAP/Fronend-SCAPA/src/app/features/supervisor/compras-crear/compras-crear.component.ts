@@ -391,16 +391,20 @@ export class ComprasCrearComponent implements OnInit {
   }
 
   onFocusProveedor(): void {
-    this.mostrarDropdownProveedor = true;
-    this.proveedoresFiltrados = [...this.proveedores];
+    if (this.textoBusquedaProveedor.length > 0) {
+      this.mostrarDropdownProveedor = true;
+      this.proveedoresFiltrados = [...this.proveedores];
+    }
   }
 
   filtrarProveedores(event: Event): void {
     const texto = (event.target as HTMLInputElement).value.toLowerCase();
-    this.textoBusquedaProveedor = (event.target as HTMLInputElement).value;
+    this.textoBusquedaProveedor = texto;
     if (!texto) {
-      this.proveedoresFiltrados = [...this.proveedores];
+      this.mostrarDropdownProveedor = false;
+      this.proveedoresFiltrados = [];
     } else {
+      this.mostrarDropdownProveedor = true;
       this.proveedoresFiltrados = this.proveedores.filter(p => 
         (p.nombre || p.nombreRepresentante).toLowerCase().includes(texto) ||
         p.ruc.includes(texto)

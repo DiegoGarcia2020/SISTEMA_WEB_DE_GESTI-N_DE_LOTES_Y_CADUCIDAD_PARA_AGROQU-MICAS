@@ -34,6 +34,7 @@ import { CentroAprobacionesComponent } from './features/supervisor/centro-aproba
 import { ComprasListadoComponent } from './features/supervisor/compras-listado/compras-listado.component';
 import { ComprasCrearComponent } from './features/supervisor/compras-crear/compras-crear.component';
 import { ProveedorListComponent } from './features/supervisor/proveedores/proveedor-list.component';
+import { ProductoListComponent } from './features/supervisor/productos/producto-list.component';
 
 // Módulo 2: Bodega / Topología / Proveedor
 import { GestorTopologiaComponent } from './features/bodega/gestor-topologia/gestor-topologia.component';
@@ -94,6 +95,7 @@ export const routes: Routes = [
       { path: 'compras', component: ComprasListadoComponent },
       { path: 'compras/nueva', component: ComprasCrearComponent },
       { path: 'proveedores', component: ProveedorListComponent },
+      { path: 'productos', component: ProductoListComponent },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

@@ -1,0 +1,152 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Gestión de Productos</h1>
+      <p class="page-subtitle">Administra el catálogo de agroquímicos asociados a un proveedor</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="abrirModalNuevo()" [disabled]="!idProveedorSeleccionado">
+        <lucide-icon name="plus-circle" class="btn-icon"></lucide-icon>
+        Añadir Producto
+      </button>
+    </div>
+  </div>
+
+  <div class="page-content">
+    
+    <!-- Filtro de Proveedor (Obligatorio) -->
+    <div class="provider-filter-card" style="background: var(--c-surface); padding: 1.5rem; border-radius: 0.75rem; border: 1px solid var(--c-sage-border); margin-bottom: 1.5rem;">
+      <h3 style="font-family: 'Fraunces', serif; color: var(--c-dark-green); margin-top: 0; margin-bottom: 0.5rem; font-size: 1.1rem;">1. Seleccione el Proveedor</h3>
+      <p style="color: var(--c-text-muted); font-size: 0.875rem; margin-bottom: 1rem;">Para ver o gestionar productos, primero debe seleccionar a qué proveedor pertenecen.</p>
+      
+      <div style="position: relative; max-width: 500px;">
+        <div class="search-bar" style="margin-bottom: 0;">
+          <lucide-icon name="building" class="search-icon"></lucide-icon>
+          <input type="text" 
+                 class="search-input" 
+                 placeholder="Escriba para buscar proveedor..."
+                 [value]="textoBusquedaProveedor"
+                 (input)="filtrarProveedoresList($event)"
+                 (focus)="onFocusProveedor()"
+                 (blur)="onBlurProveedor()">
+        </div>
+        
+        @if (mostrarDropdownProveedor) {
+          <ul style="position: absolute; top: 100%; left: 0; right: 0; max-height: 200px; overflow-y: auto; background: white; border: 1px solid var(--c-sage-border); border-radius: 0.5rem; z-index: 50; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-top: 0.25rem; padding: 0.25rem 0;" class="custom-scrollbar">
+            @for (prov of proveedoresFiltrados; track prov.idProveedor) {
+              <li style="padding: 0.5rem 1rem; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='transparent'" (mousedown)="seleccionarProveedor(prov)">
+                {{ prov.nombre || prov.nombreRepresentante }} <span style="font-size: 0.8em; color: gray;">({{ prov.ruc }})</span>
+              </li>
+            }
+            @if (proveedoresFiltrados.length === 0) {
+              <li style="padding: 0.5rem 1rem; color: gray; cursor: default;">No se encontraron resultados</li>
+            }
+          </ul>
+        }
+      </div>
+    </div>
+
+    @if (idProveedorSeleccionado) {
+      <!-- Barra de Búsqueda Interna -->
+      <div class="search-bar">
+        <lucide-icon name="search" class="search-icon"></lucide-icon>
+        <input type="text" 
+               class="search-input" 
+               placeholder="Buscar producto por nombre, categoría o formulación..."
+               [(ngModel)]="textoBusqueda"
+               (input)="filtrarProductosInput()">
+      </div>
+
+      <!-- Tabla de Productos -->
+      <div class="table-container custom-scrollbar">
+        @if (cargando()) {
+          <div class="loading-state">
+            <lucide-icon name="loader" class="spinner"></lucide-icon>
+            <p>Cargando productos...</p>
+          </div>
+        } @else {
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Categoría</th>
+                <th>Formulación</th>
+                <th>Toxicidad</th>
+                <th>Precio Sugerido</th>
+                <th class="text-center">Estado</th>
+                <th class="text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (prod of productosFiltradosVista(); track prod.idProducto) {
+                <tr>
+                  <td class="text-stamped">#{{ prod.idProducto }}</td>
+                  <td class="font-medium">{{ prod.nombre }}</td>
+                  <td>
+                    <span class="badge badge-outline">
+                      {{ prod.categoria?.nombre || 'General' }}
+                    </span>
+                  </td>
+                  <td>{{ prod.formulacion?.sigla || 'N/A' }}</td>
+                  <td>
+                    @if (prod.toxicidad) {
+                      <span class="tox-indicator" [style.backgroundColor]="prod.toxicidad.colorEtiqueta"></span>
+                      {{ prod.toxicidad.nombre }}
+                    } @else {
+                      N/A
+                    }
+                  </td>
+                  <td>${{ prod.precio }}</td>
+                  <td class="text-center">
+                    @if (prod.idEstado === 1) {
+                      <span class="badge badge-success">Activo</span>
+                    } @else {
+                      <span class="badge badge-error">Inactivo</span>
+                    }
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="btn-icon btn-edit" title="Editar Producto" (click)="abrirModalEdicion(prod)">
+                        <lucide-icon name="edit-2" size="18"></lucide-icon>
+                      </button>
+                      <button class="btn-icon btn-delete" title="Desvincular del Proveedor" (click)="desasociarProducto(prod)">
+                        <lucide-icon name="trash-2" size="18"></lucide-icon>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="8">
+                    <div class="empty-state">
+                      <lucide-icon name="box" class="empty-icon"></lucide-icon>
+                      <p class="empty-text">El proveedor seleccionado no tiene productos asociados, o no coinciden con la búsqueda.</p>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    } @else {
+      <!-- Estado vacío cuando no hay proveedor -->
+      <div class="empty-state" style="padding: 4rem 2rem; background: var(--c-surface); border-radius: 0.75rem; border: 1px dashed var(--c-sage-border);">
+        <lucide-icon name="building" class="empty-icon" style="width: 48px; height: 48px; margin-bottom: 1rem; color: var(--c-sage-border);"></lucide-icon>
+        <p class="empty-text" style="font-size: 1.1rem; color: var(--c-text-muted);">Aún no has seleccionado un proveedor.</p>
+        <p style="color: var(--c-text-muted); max-width: 400px; margin: 0.5rem auto 0; font-size: 0.9rem;">
+          Usa el buscador de arriba para encontrar un proveedor y cargar su catálogo de productos.
+        </p>
+      </div>
+    }
+  </div>
+</div>
+
+@if (mostrarModal) {
+  <app-producto-form-modal
+    [producto]="productoEnEdicion"
+    [idProveedor]="idProveedorSeleccionado"
+    (close)="cerrarModal($event)">
+  </app-producto-form-modal>
+}

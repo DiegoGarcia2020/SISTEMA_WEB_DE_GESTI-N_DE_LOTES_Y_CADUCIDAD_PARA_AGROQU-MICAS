@@ -128,6 +128,11 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
             <lucide-icon name="truck" class="nav-item__icon"></lucide-icon>
             <span>Gestión de Proveedores</span>
           </a>
+
+          <a routerLink="/supervisor/productos" routerLinkActive="active" class="nav-item">
+            <lucide-icon name="box" class="nav-item__icon"></lucide-icon>
+            <span>Gestión de Productos</span>
+          </a>
           
           <a routerLink="/supervisor/compras" routerLinkActive="active" class="nav-item">
             <lucide-icon name="receipt" class="nav-item__icon"></lucide-icon>

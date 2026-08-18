@@ -1,0 +1,119 @@
+<div class="modal-overlay" (click)="cerrar()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ isEditing ? 'Editar Producto' : 'Crear Nuevo Producto' }}</h2>
+      <button class="btn-icon" (click)="cerrar()">
+        <lucide-icon name="x"></lucide-icon>
+      </button>
+    </div>
+
+    <div class="modal-body custom-scrollbar">
+      <form [formGroup]="form" (ngSubmit)="guardar()">
+        
+        <div class="form-section">
+          <h3 class="section-title">Información Básica</h3>
+          <div class="grid-2">
+            <div class="form-group">
+              <label>Nombre del Producto *</label>
+              <input type="text" formControlName="nombre" class="form-control" placeholder="Ej. Urea Granulada 46%">
+            </div>
+            
+            <div class="form-group">
+              <label>Categoría *</label>
+              <select formControlName="idCategoria" class="form-control">
+                <option [ngValue]="null" disabled>Seleccionar categoría...</option>
+                @for (cat of categorias(); track cat.idCategoria) {
+                  <option [ngValue]="cat.idCategoria">{{ cat.nombre }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group mt-3">
+            <label>Descripción General</label>
+            <textarea formControlName="descripcion" class="form-control" rows="2" placeholder="Descripción breve del producto..."></textarea>
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <div class="form-section">
+          <h3 class="section-title">Detalles Técnicos (Opcionales)</h3>
+          <div class="grid-2">
+            <div class="form-group">
+              <label>Formulación</label>
+              <select formControlName="idFormulacion" class="form-control">
+                <option [ngValue]="null">No aplica / Ninguna</option>
+                @for (form of formulaciones(); track form.idFormulacion) {
+                  <option [ngValue]="form.idFormulacion">{{ form.sigla }} - {{ form.nombre }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Toxicidad</label>
+              <select formControlName="idToxicidad" class="form-control">
+                <option [ngValue]="null">No aplica / Ninguna</option>
+                @for (tox of toxicidades(); track tox.idToxicidad) {
+                  <option [ngValue]="tox.idToxicidad">{{ tox.nombre }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Ingrediente Activo</label>
+              <input type="text" formControlName="ingredienteActivo" class="form-control" placeholder="Ej. Glifosato 48%">
+            </div>
+
+            <div class="form-group">
+              <label>Período de Carencia (Días)</label>
+              <input type="number" formControlName="periodoCarenciaDias" class="form-control" min="0" placeholder="0">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <div class="form-section">
+          <h3 class="section-title">Comercialización</h3>
+          <div class="grid-3">
+            <div class="form-group">
+              <label>Precio Sugerido ($) *</label>
+              <input type="number" formControlName="precio" class="form-control" step="0.01" min="0">
+            </div>
+
+            <div class="form-group">
+              <label>U. Medida *</label>
+              <select formControlName="unidadMedida" class="form-control">
+                <option value="UND-LIT">Litro</option>
+                <option value="UND-KG">Kilogramo</option>
+                <option value="SACO-50">Saco 50KG</option>
+                <option value="UND">Unidad Genérica</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Estado</label>
+              <select formControlName="idEstado" class="form-control">
+                @for (est of estados(); track est.idEstado) {
+                  <option [ngValue]="est.idEstado">{{ est.nombre }}</option>
+                }
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" (click)="cerrar()">Cancelar</button>
+          <button type="submit" class="btn btn-primary" [disabled]="form.invalid || guardando">
+            @if (guardando) {
+              <lucide-icon name="loader" class="spinner"></lucide-icon> Guardando...
+            } @else {
+              {{ isEditing ? 'Actualizar Producto' : 'Guardar Producto' }}
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

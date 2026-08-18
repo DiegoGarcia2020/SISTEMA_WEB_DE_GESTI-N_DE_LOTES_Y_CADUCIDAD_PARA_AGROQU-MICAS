@@ -46,4 +46,12 @@ export class ProductoService {
   crearProducto(datos: any): Observable<ProductoDTO> {
     return this.http.post<ProductoDTO>(this.apiUrl, datos);
   }
+
+  actualizarProducto(id: number, datos: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}`, datos);
+  }
+
+  desactivarProducto(idProducto: number, idEstadoInactivo: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${idProducto}/desactivar?idEstadoInactivo=${idEstadoInactivo}`, {});
+  }
 }

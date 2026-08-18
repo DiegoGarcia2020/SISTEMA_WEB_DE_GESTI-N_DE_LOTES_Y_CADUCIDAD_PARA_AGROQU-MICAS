@@ -5,7 +5,6 @@ import { LucideAngularModule } from 'lucide-angular';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
 import { ProveedorService, ProveedorProductoDTO } from '../../../../core/services/proveedor.service';
-import { ProductoService } from '../../../../core/services/producto.service';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 
 @Component({
@@ -22,19 +21,16 @@ export class ProveedorProductosModalComponent implements OnInit {
 
   private fb = inject(FormBuilder);
   private proveedorService = inject(ProveedorService);
-  private productoService = inject(ProductoService);
   private toast = inject(ToastService);
   private http = inject(HttpClient);
 
   asociarForm!: FormGroup;
-  nuevoProductoForm!: FormGroup;
 
   productosMaestros = signal<any[]>([]);
   productosFiltrados = signal<any[]>([]);
   productosAsociados = signal<ProveedorProductoDTO[]>([]);
   
   huboCambios = false;
-  mostrarCrearProducto = false;
   mostrarDropdownProducto = false;
   textoBusquedaProducto = '';
 
@@ -48,13 +44,6 @@ export class ProveedorProductosModalComponent implements OnInit {
       codigoProductoProveedor: ['']
     });
 
-    this.nuevoProductoForm = this.fb.group({
-      nombre: ['', Validators.required],
-      unidadMedida: ['UND-LIT', Validators.required],
-      precioSugerido: [0, [Validators.required, Validators.min(0.01)]],
-      idCategoria: [10, Validators.required],
-      idEstado: [1, Validators.required]
-    });
 
     this.formEdicion = this.fb.group({
       precioReferencial: [0, [Validators.min(0)]],
@@ -89,16 +78,19 @@ export class ProveedorProductosModalComponent implements OnInit {
   }
 
   onFocusProducto() {
-    this.mostrarDropdownProducto = true;
-    this.productosFiltrados.set(this.productosMaestros());
+    if (this.textoBusquedaProducto.length > 0) {
+      this.mostrarDropdownProducto = true;
+    }
   }
 
   filtrarProductos(event: Event) {
     const texto = (event.target as HTMLInputElement).value.toLowerCase();
-    this.textoBusquedaProducto = (event.target as HTMLInputElement).value;
+    this.textoBusquedaProducto = texto;
     if (!texto) {
-      this.productosFiltrados.set(this.productosMaestros());
+      this.mostrarDropdownProducto = false;
+      this.productosFiltrados.set([]);
     } else {
+      this.mostrarDropdownProducto = true;
       const filtrados = this.productosMaestros().filter(p => p.nombre.toLowerCase().includes(texto));
       this.productosFiltrados.set(filtrados);
     }
@@ -186,28 +178,6 @@ export class ProveedorProductosModalComponent implements OnInit {
 
   cancelarEdicion() {
     this.idEdicionActiva = null;
-  }
-
-  toggleCrearProducto() {
-    this.mostrarCrearProducto = !this.mostrarCrearProducto;
-  }
-
-  crearNuevoProductoSistema() {
-    if (this.nuevoProductoForm.invalid) {
-      this.nuevoProductoForm.markAllAsTouched();
-      return;
-    }
-
-    this.productoService.crearProducto(this.nuevoProductoForm.value).subscribe({
-      next: (res) => {
-        this.toast.success('Éxito', 'Producto creado en el sistema');
-        this.cargarProductosMaestros();
-        this.seleccionarProducto(res);
-        this.mostrarCrearProducto = false;
-        this.nuevoProductoForm.reset({ unidadMedida: 'UND-LIT', idCategoria: 10, idEstado: 1 });
-      },
-      error: () => this.toast.error('Error', 'No se pudo crear el producto')
-    });
   }
 
   cerrar() {
