@@ -9,10 +9,14 @@ import org.springframework.web.bind.annotation.*;
 import org.uteq.sacpa.dto.operaciones.OrdenCompraRequestDTO;
 import org.uteq.sacpa.dto.operaciones.OrdenCompraResponseDTO;
 import org.uteq.sacpa.dto.operaciones.RecepcionLoteRequestDTO;
+import org.uteq.sacpa.dto.operaciones.DocumentoOrdenCompraResponseDTO;
 import org.uteq.sacpa.entity.operaciones.OrdenCompra;
 import org.uteq.sacpa.service.operaciones.IOrdenCompraService;
+import org.uteq.sacpa.service.operaciones.IDocumentoOrdenCompraService;
 import org.uteq.sacpa.security.SecurityContextService;
 import org.uteq.sacpa.security.UsuarioPrincipal;
+import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
 
 import org.springframework.data.domain.Page;
 
@@ -42,6 +46,9 @@ public class OrdenCompraController {
 
     @Autowired
     private IOrdenCompraService ordenCompraService;
+
+    @Autowired
+    private IDocumentoOrdenCompraService documentoOrdenCompraService;
 
     @Autowired
     private SecurityContextService securityContextService;
@@ -184,5 +191,29 @@ public class OrdenCompraController {
     public ResponseEntity<Map<String, String>> cancelarOrdenSLA(@PathVariable Integer id) {
         ordenCompraService.cancelarOrdenCompra(id);
         return ResponseEntity.ok(Map.of("mensaje", "Orden cancelada por incumplimiento de entrega"));
+    }
+
+    // ========================================================================
+    // DOCUMENTOS ADJUNTOS (FACTURAS FÍSICAS)
+    // ========================================================================
+
+    @PostMapping(value = "/{id}/documentos", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<DocumentoOrdenCompraResponseDTO> subirDocumento(
+            @PathVariable Integer id,
+            @RequestPart("archivo") MultipartFile archivo,
+            @RequestParam(value = "tipoDocumento", defaultValue = "FACTURA_PROVEEDOR") String tipoDocumento) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(documentoOrdenCompraService.subirDocumento(id, archivo, tipoDocumento));
+    }
+
+    @GetMapping("/{id}/documentos")
+    public ResponseEntity<List<DocumentoOrdenCompraResponseDTO>> listarDocumentos(@PathVariable Integer id) {
+        return ResponseEntity.ok(documentoOrdenCompraService.listarPorOrden(id));
+    }
+
+    @DeleteMapping("/documentos/{idDocumento}")
+    public ResponseEntity<Map<String, String>> eliminarDocumento(@PathVariable Integer idDocumento) {
+        documentoOrdenCompraService.eliminarDocumento(idDocumento);
+        return ResponseEntity.ok(Map.of("mensaje", "Documento eliminado exitosamente"));
     }
 }

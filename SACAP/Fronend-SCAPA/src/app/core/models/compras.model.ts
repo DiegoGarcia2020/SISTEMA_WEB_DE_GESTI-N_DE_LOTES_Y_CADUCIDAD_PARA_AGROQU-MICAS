@@ -19,6 +19,17 @@ export interface OrdenCompra {
   estado: 'PENDIENTE' | 'RECEPCIONADA' | 'ANULADA';
   fechaRegistro: string;
   detalles: DetalleCompra[];
+  documentos?: DocumentoOrdenCompraDTO[];
+}
+
+export interface DocumentoOrdenCompraDTO {
+  idDocumento: number;
+  idOrdenCompra: number;
+  nombreArchivo: string;
+  urlArchivo: string;
+  tipoDocumento: string;
+  fechaSubida: string;
+  idUsuarioSubida: number;
 }
 
 export interface DetalleCompra {

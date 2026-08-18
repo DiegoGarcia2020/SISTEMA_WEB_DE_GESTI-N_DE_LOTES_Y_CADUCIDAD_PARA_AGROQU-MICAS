@@ -42,6 +42,7 @@ export interface DevolucionTransitoDTO {
 }
 
 import { ComprobanteService } from '../../../core/services/comprobante.service';
+import { InventarioService, AlmacenDTO, ZonaDTO, EstanteriaDTO, UbicacionDTO } from '../../../core/services/inventario.service';
 
 @Component({
   selector: 'app-bodega-despachos',
@@ -71,9 +72,28 @@ export class BodegaDespachosComponent implements OnInit {
   cargandoLotes = signal(false);
   idVentaSeleccionada = signal<number | null>(null);
 
+  // Modal de Reintegro
+  private inventarioService = inject(InventarioService);
+  modalReintegroAbierto = signal(false);
+  devolucionSeleccionada = signal<DevolucionTransitoDTO | null>(null);
+  opcionReintegro = signal<'ORIGINAL' | 'NUEVA'>('ORIGINAL');
+  isProcessingReintegro = signal(false);
+
+  // Cascada de ubicación (Reintegro)
+  almacenes = signal<AlmacenDTO[]>([]);
+  zonas = signal<ZonaDTO[]>([]);
+  estanterias = signal<EstanteriaDTO[]>([]);
+  ubicaciones = signal<UbicacionDTO[]>([]);
+
+  idAlmacenSel = signal<number | null>(null);
+  idZonaSel = signal<number | null>(null);
+  idEstanteriaSel = signal<number | null>(null);
+  ubicacionSel = signal<UbicacionDTO | null>(null);
+
   ngOnInit(): void {
     this.cargarOrdenesPendientes();
     this.cargarDevoluciones();
+    this.cargarAlmacenes();
   }
 
   setActiveTab(tab: 'preparar' | 'devoluciones') {
@@ -169,20 +189,123 @@ export class BodegaDespachosComponent implements OnInit {
   }
 
   recibirDevolucion(idDevolucion: number, estadoInventario: 'CUARENTENA' | 'DISPONIBLE' | 'DESECHADO') {
-    this.http.put(`${environment.apiUrl}/operaciones/devoluciones-venta/${idDevolucion}/recibir-fisica?estadoInventario=${estadoInventario}`, {})
+    if (estadoInventario === 'DISPONIBLE') {
+      const dev = this.devolucionesEnTransito().find(d => d.id === idDevolucion);
+      if (dev) this.abrirModalReintegro(dev);
+      return;
+    }
+
+    this.enviarRecepcionFisica(idDevolucion, { estadoInventario });
+  }
+
+  abrirModalReintegro(dev: DevolucionTransitoDTO) {
+    this.devolucionSeleccionada.set(dev);
+    this.opcionReintegro.set('ORIGINAL');
+    this.modalReintegroAbierto.set(true);
+    
+    // Reset cascada
+    this.idAlmacenSel.set(null);
+    this.idZonaSel.set(null);
+    this.idEstanteriaSel.set(null);
+    this.ubicacionSel.set(null);
+    this.zonas.set([]);
+    this.estanterias.set([]);
+    this.ubicaciones.set([]);
+  }
+
+  cerrarModalReintegro() {
+    this.modalReintegroAbierto.set(false);
+    this.devolucionSeleccionada.set(null);
+    this.isProcessingReintegro.set(false);
+  }
+
+  confirmarReintegro() {
+    const dev = this.devolucionSeleccionada();
+    if (!dev) return;
+
+    const payload: any = { estadoInventario: 'DISPONIBLE' };
+    
+    if (this.opcionReintegro() === 'NUEVA') {
+      const u = this.ubicacionSel();
+      if (!u) {
+        this.toast.error('Error', 'Debe seleccionar una ubicación destino');
+        return;
+      }
+      payload.idUbicacionDestino = u.idUbicacion;
+    }
+
+    this.isProcessingReintegro.set(true);
+    this.enviarRecepcionFisica(dev.id, payload, true);
+  }
+
+  private enviarRecepcionFisica(idDevolucion: number, payload: any, fromModal: boolean = false) {
+    this.http.put(`${environment.apiUrl}/operaciones/devoluciones-venta/${idDevolucion}/recibir-fisica`, payload)
       .subscribe({
         next: () => {
-          this.toast.success('Devolución Recibida', `El producto ha sido ingresado a ${estadoInventario}.`);
+          this.toast.success('Devolución Recibida', `El producto ha sido ingresado a ${payload.estadoInventario}.`);
           this.devolucionesEnTransito.update(devs => devs.map(d => 
             d.id === idDevolucion 
-              ? { ...d, estadoLogistico: 'RECIBIDO_BODEGA', estadoInventario, fechaRecepcion: new Date().toISOString() }
+              ? { ...d, estadoLogistico: 'RECIBIDO_BODEGA', estadoInventario: payload.estadoInventario, fechaRecepcion: new Date().toISOString() }
               : d
           ));
+          if (fromModal) this.cerrarModalReintegro();
         },
-        error: () => {
-          this.toast.error('Error', 'No se pudo procesar la recepción física.');
+        error: (err) => {
+          const msg = err.error?.message || err.error || err.message || 'No se pudo procesar la recepción física.';
+          this.toast.error('Error', msg);
+          if (fromModal) this.isProcessingReintegro.set(false); // No cerramos el modal, permitimos corregir
         }
       });
+  }
+
+  // Cascada de ubicaciones
+  cargarAlmacenes() {
+    this.inventarioService.getAlmacenes().subscribe({ next: a => this.almacenes.set(a) });
+  }
+
+  onAlmacenChange(event: Event) {
+    const id = Number((event.target as HTMLSelectElement).value);
+    this.idAlmacenSel.set(id || null);
+    this.idZonaSel.set(null);
+    this.idEstanteriaSel.set(null);
+    this.ubicacionSel.set(null);
+    this.zonas.set([]);
+    this.estanterias.set([]);
+    this.ubicaciones.set([]);
+
+    if (id) {
+      this.inventarioService.getZonas(id).subscribe({ next: z => this.zonas.set(z) });
+    }
+  }
+
+  onZonaChange(event: Event) {
+    const id = Number((event.target as HTMLSelectElement).value);
+    this.idZonaSel.set(id || null);
+    this.idEstanteriaSel.set(null);
+    this.ubicacionSel.set(null);
+    this.estanterias.set([]);
+    this.ubicaciones.set([]);
+
+    if (id) {
+      this.inventarioService.getEstanterias(id).subscribe({ next: est => this.estanterias.set(est) });
+    }
+  }
+
+  onEstanteriaChange(event: Event) {
+    const id = Number((event.target as HTMLSelectElement).value);
+    this.idEstanteriaSel.set(id || null);
+    this.ubicacionSel.set(null);
+    this.ubicaciones.set([]);
+
+    if (id) {
+      this.inventarioService.getUbicaciones(id).subscribe({ next: u => this.ubicaciones.set(u) });
+    }
+  }
+
+  onUbicacionChange(event: Event) {
+    const id = Number((event.target as HTMLSelectElement).value);
+    const found = this.ubicaciones().find(u => u.idUbicacion === id) || null;
+    this.ubicacionSel.set(found);
   }
 
   descargarNotaDevolucion(dev: DevolucionTransitoDTO) {

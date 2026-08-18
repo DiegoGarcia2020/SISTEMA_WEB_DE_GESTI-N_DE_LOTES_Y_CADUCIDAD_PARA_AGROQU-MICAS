@@ -343,6 +343,32 @@ import { ComprobanteService } from '../../../core/services/comprobante.service';
               <p style="text-align:center; padding:2rem; color:var(--c-mid-green);">Cargando detalle…</p>
             }
 
+            @if (ordenDetalle()?.documentos?.length > 0) {
+              <div style="margin-top: 1.5rem; border-top: 1px solid var(--c-sage-border); padding-top: 1.5rem;">
+                <h3 style="margin: 0 0 1rem 0; font-size: 1rem; color: var(--c-warm-black);">Documentos Adjuntos</h3>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                  @for (doc of ordenDetalle().documentos; track doc.idDocumento) {
+                    <a [href]="doc.urlArchivo" target="_blank" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: #fff; border: 1px solid var(--c-sage-border); border-radius: 6px; text-decoration: none; color: var(--c-warm-black); transition: border-color 0.2s;">
+                      <div style="color: var(--c-dark-green);">
+                        @if (doc.tipoDocumento === 'FACTURA_PROVEEDOR') {
+                          <lucide-icon name="file-text" class="w-5 h-5"></lucide-icon>
+                        } @else {
+                          <lucide-icon name="paperclip" class="w-5 h-5"></lucide-icon>
+                        }
+                      </div>
+                      <div style="flex-grow: 1;">
+                        <p style="margin: 0; font-weight: 500; font-size: 0.875rem;">{{ doc.nombreArchivo }}</p>
+                        <p style="margin: 0.125rem 0 0; font-size: 0.75rem; color: var(--text-muted);">
+                          Subido el {{ doc.fechaSubida | date:'medium' }}
+                        </p>
+                      </div>
+                      <lucide-icon name="external-link" class="w-4 h-4" style="color: var(--c-mid-green);"></lucide-icon>
+                    </a>
+                  }
+                </div>
+              </div>
+            }
+
             <div style="display:flex; justify-content:flex-end; margin-top:1.75rem;">
               <button class="btn btn--ghost" (click)="cerrarDetalle()">Cerrar</button>
             </div>
@@ -470,7 +496,16 @@ export class ComprasListadoComponent implements OnInit, OnDestroy {
     this.ordenDetalle.set(null);
     this.modalDetalleAbierto.set(true);
     this.operacionesService.obtenerOrdenCompra(id).subscribe({
-      next: (orden) => this.ordenDetalle.set(orden),
+      next: (orden) => {
+        this.ordenDetalle.set(orden);
+        // Obtener documentos de la orden
+        this.operacionesService.listarDocumentosOrdenCompra(id).subscribe({
+          next: (documentos) => {
+            this.ordenDetalle.update(o => ({ ...o, documentos }));
+          },
+          error: () => console.warn('No se pudieron cargar los documentos adjuntos de la orden.')
+        });
+      },
       error: () => {
         this.modalDetalleAbierto.set(false);
         this.toast.error('Error', 'No se pudo cargar el detalle de la orden.');

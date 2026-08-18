@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.uteq.sacpa.dto.operaciones.DevolucionFisicaRequestDTO;
 import org.uteq.sacpa.dto.operaciones.DevolucionVentaRequestDTO;
 import org.uteq.sacpa.dto.operaciones.DevolucionVentaResponseDTO;
 import org.uteq.sacpa.service.operaciones.IDevolucionVentaService;
@@ -28,8 +29,8 @@ public class DevolucionVentaController {
     @PutMapping("/{idDevolucion}/recibir-fisica")
     public ResponseEntity<?> recibirDevolucionFisica(
             @PathVariable Integer idDevolucion,
-            @RequestParam String estadoInventario) {
-        return ResponseEntity.ok(devolucionService.recibirDevolucionFisica(idDevolucion, estadoInventario));
+            @Valid @RequestBody DevolucionFisicaRequestDTO request) {
+        return ResponseEntity.ok(devolucionService.recibirDevolucionFisica(idDevolucion, request));
     }
 
     @GetMapping("/pendientes-bodega")

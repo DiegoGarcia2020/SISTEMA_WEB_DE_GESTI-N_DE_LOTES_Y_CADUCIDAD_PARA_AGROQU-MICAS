@@ -87,6 +87,18 @@ import { ProveedorProductosModalComponent } from '../proveedores/proveedor-produ
                   <option value="14:00 - 16:00">14:00 - 16:00</option>
                 </select>
               </div>
+              <div class="form-group">
+                <label class="form-group__label">Factura del proveedor (opcional)</label>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                  <input type="file" id="archivoFactura" class="form-group__input" accept=".pdf,.jpg,.jpeg,.png" (change)="onArchivoSeleccionado($event)" style="padding: 0.35rem;">
+                  @if (archivoFactura) {
+                    <button type="button" class="btn--danger-sm" (click)="removerArchivo()" title="Quitar archivo adjunto">
+                      <lucide-icon name="x" class="w-4 h-4"></lucide-icon>
+                    </button>
+                  }
+                </div>
+                <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.25rem; display: block;">PDF, JPG, PNG. Máx 10MB.</small>
+              </div>
             </div>
           </div>
         </div>
@@ -277,6 +289,7 @@ export class ComprasCrearComponent implements OnInit {
   ordenForm!: FormGroup;
   proveedores: ProveedorSimple[] = [];
   productosProveedor: ProductoDeProveedor[] = [];
+  archivoFactura: File | null = null;
 
   totalesCalculados = {
     subtotalBruto: 0,
@@ -533,10 +546,53 @@ export class ComprasCrearComponent implements OnInit {
 
     this.operacionesService.crearOrdenCompra(payload).subscribe({
       next: (res) => {
-        this.toast.success('Orden Guardada', `La orden fue creada exitosamente con ID: ${res.idOrden}`);
-        this.router.navigate(['/supervisor/compras']);
+        if (this.archivoFactura) {
+          // Subir el documento
+          this.operacionesService.subirDocumentoOrdenCompra(res.idOrden, this.archivoFactura).subscribe({
+            next: () => {
+              this.toast.success('Orden Guardada', `La orden y la factura fueron guardadas exitosamente con ID: ${res.idOrden}`);
+              this.router.navigate(['/supervisor/compras']);
+            },
+            error: () => {
+              this.toast.error('Atención', 'La orden se guardó, pero hubo un error al subir la factura adjunta.');
+              this.router.navigate(['/supervisor/compras']);
+            }
+          });
+        } else {
+          this.toast.success('Orden Guardada', `La orden fue creada exitosamente con ID: ${res.idOrden}`);
+          this.router.navigate(['/supervisor/compras']);
+        }
       },
       error: () => this.toast.error('Error', 'No se pudo guardar la orden de compra.')
     });
+  }
+
+  onArchivoSeleccionado(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (file) {
+      const extensionesPermitidas = ['application/pdf', 'image/jpeg', 'image/png'];
+      if (!extensionesPermitidas.includes(file.type)) {
+        this.toast.error('Archivo no válido', 'Solo se permiten archivos PDF, JPG y PNG.');
+        (event.target as HTMLInputElement).value = '';
+        this.archivoFactura = null;
+        return;
+      }
+      
+      // Validar tamaño (10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        this.toast.error('Archivo demasiado grande', 'El tamaño máximo permitido es 10MB.');
+        (event.target as HTMLInputElement).value = '';
+        this.archivoFactura = null;
+        return;
+      }
+      
+      this.archivoFactura = file;
+    }
+  }
+
+  removerArchivo(): void {
+    this.archivoFactura = null;
+    const fileInput = document.getElementById('archivoFactura') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
   }
 }

@@ -12,6 +12,7 @@ import org.uteq.sacpa.repository.inventario.IProductoRepository;
 import org.uteq.sacpa.repository.inventario.ILoteRepository;
 import org.uteq.sacpa.repository.operaciones.DevolucionVentaRepository;
 import org.uteq.sacpa.repository.operaciones.VentaRepository;
+import org.uteq.sacpa.repository.inventario.IUbicacionInternaRepository;
 import org.uteq.sacpa.service.operaciones.IDevolucionVentaService;
 import org.uteq.sacpa.util.EstadoVenta;
 import org.uteq.sacpa.util.EstadoLogisticoDevolucion;
@@ -29,6 +30,7 @@ public class DevolucionVentaServiceImpl implements IDevolucionVentaService {
     private final VentaRepository ventaRepository;
     private final IProductoRepository productoRepository;
     private final ILoteRepository loteRepository;
+    private final IUbicacionInternaRepository ubicacionRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
     @Value("${sacpa.devolucion.plazo-dias:7}")
@@ -82,7 +84,7 @@ public class DevolucionVentaServiceImpl implements IDevolucionVentaService {
 
     @Override
     @Transactional
-    public org.uteq.sacpa.dto.operaciones.DevolucionVentaResponseDTO recibirDevolucionFisica(Integer idDevolucion, String estadoInventario) {
+    public org.uteq.sacpa.dto.operaciones.DevolucionVentaResponseDTO recibirDevolucionFisica(Integer idDevolucion, org.uteq.sacpa.dto.operaciones.DevolucionFisicaRequestDTO request) {
         DevolucionVenta devolucion = devolucionVentaRepository.findById(idDevolucion)
                 .orElseThrow(() -> new RuntimeException("Devolución no encontrada con ID: " + idDevolucion));
 
@@ -90,18 +92,52 @@ public class DevolucionVentaServiceImpl implements IDevolucionVentaService {
             throw new RuntimeException("La devolución ya fue recibida o está en estado incorrecto.");
         }
 
+        String estadoInventario = request.getEstadoInventario();
+
         devolucion.setEstadoLogistico(EstadoLogisticoDevolucion.RECIBIDO_BODEGA.name());
         devolucion.setEstadoInventario(estadoInventario); // CUARENTENA, DISPONIBLE o DESECHADO
         devolucion.setFechaRecepcion(LocalDateTime.now());
 
         // Reintegro de stock y trazabilidad
         if (EstadoInventarioDevolucion.DISPONIBLE.name().equals(estadoInventario)) {
-            // Buscamos un lote activo para este producto (Idealmente se debe elegir en frontend, por ahora tomamos el primero FEFO)
-            java.util.List<org.uteq.sacpa.entity.inventario.Lote> lotes = loteRepository.findByProductoForUpdate(devolucion.getProducto().getIdProducto());
-            if (lotes.isEmpty()) {
-                throw new RuntimeException("No hay un lote activo de este producto para reintegrar el stock.");
+            org.uteq.sacpa.entity.inventario.Lote loteReintegro;
+            
+            if (request.getIdLoteDestino() != null) {
+                loteReintegro = loteRepository.findByIdForUpdate(request.getIdLoteDestino())
+                        .orElseThrow(() -> new RuntimeException("Lote destino no encontrado: " + request.getIdLoteDestino()));
+            } else {
+                java.util.List<org.uteq.sacpa.entity.inventario.Lote> lotes = loteRepository.findByProductoForUpdate(devolucion.getProducto().getIdProducto());
+                if (lotes.isEmpty()) {
+                    throw new RuntimeException("No hay un lote activo de este producto para reintegrar el stock.");
+                }
+                loteReintegro = lotes.get(0);
             }
-            org.uteq.sacpa.entity.inventario.Lote loteReintegro = lotes.get(0);
+
+            Integer idUbicacionDestino = request.getIdUbicacionDestino();
+            if (idUbicacionDestino != null && (loteReintegro.getUbicacion() == null || !loteReintegro.getUbicacion().getIdUbicacion().equals(idUbicacionDestino))) {
+                org.uteq.sacpa.entity.inventario.UbicacionInterna nuevaUbicacion = ubicacionRepository.findById(idUbicacionDestino)
+                        .orElseThrow(() -> new RuntimeException("Ubicación destino no encontrada: " + idUbicacionDestino));
+                
+                // Validar capacidad
+                int capacidadOcupada = 0;
+                for (Object[] row : loteRepository.sumCantidadActualAgrupadoPorUbicacion()) {
+                    if (row[0] != null && row[0].equals(idUbicacionDestino)) {
+                        capacidadOcupada = ((Number) row[1]).intValue();
+                        break;
+                    }
+                }
+                
+                int capacidadMaxima = nuevaUbicacion.getCapacidadMaxima() != null ? nuevaUbicacion.getCapacidadMaxima() : 0;
+                int disponible = Math.max(0, capacidadMaxima - capacidadOcupada);
+                
+                if (devolucion.getCantidadDevuelta() > disponible) {
+                    throw new RuntimeException("La ubicación " + nuevaUbicacion.getCodigoNivel() + 
+                        " no tiene capacidad suficiente. Disponible: " + disponible + 
+                        ", requerido: " + devolucion.getCantidadDevuelta() + ".");
+                }
+                
+                loteReintegro.setUbicacion(nuevaUbicacion);
+            }
             
             loteReintegro.setCantidadActual(
                 (loteReintegro.getCantidadActual() != null ? loteReintegro.getCantidadActual() : 0) + devolucion.getCantidadDevuelta()

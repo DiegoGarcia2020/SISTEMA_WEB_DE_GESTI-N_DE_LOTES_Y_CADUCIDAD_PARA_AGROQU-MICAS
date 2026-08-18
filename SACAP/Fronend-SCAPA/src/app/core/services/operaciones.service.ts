@@ -904,5 +904,25 @@ export class OperacionesService {
       })
     );
   }
-}
 
+  // ================= DOCUMENTOS ORDEN DE COMPRA =================
+  subirDocumentoOrdenCompra(idOrden: number, archivo: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('archivo', archivo);
+    formData.append('tipoDocumento', 'FACTURA_PROVEEDOR');
+    return this.http.post<any>(`${this.apiUrl}/ordenes-compra/${idOrden}/documentos`, formData);
+  }
+
+  listarDocumentosOrdenCompra(idOrden: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/ordenes-compra/${idOrden}/documentos`).pipe(
+      catchError(err => {
+        if (err.status === 0 || err.status === 404) return of([]);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  eliminarDocumentoOrdenCompra(idDocumento: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/ordenes-compra/documentos/${idDocumento}`);
+  }
+}

@@ -187,4 +187,100 @@
       </div>
     </div>
   }
+
+  <!-- Modal Reintegro al Inventario -->
+  @if (modalReintegroAbierto()) {
+    <div class="vt-modal-overlay" (click)="cerrarModalReintegro()">
+      <div class="vt-modal" style="width: 500px; max-width: 95vw;" (click)="$event.stopPropagation()">
+        <div class="vt-modal-header">
+          <h3>Reintegrar al inventario</h3>
+          <button class="vt-modal-close" (click)="cerrarModalReintegro()">×</button>
+        </div>
+        <div class="vt-modal-body">
+          @if (devolucionSeleccionada(); as dev) {
+            <div style="background-color: var(--c-bone-bg); padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem;">
+              <p><strong>Producto:</strong> {{ dev.nombreProducto }}</p>
+              <p><strong>Cantidad a reintegrar:</strong> {{ dev.cantidadDevuelta }} unidades</p>
+              <p><strong>Motivo de devolución:</strong> {{ dev.motivo }}</p>
+            </div>
+
+            <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1rem;">
+              Use una ubicación distinta si el producto retornó con el empaque dañado y debe separarse del stock principal.
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem;">
+              <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                <input type="radio" name="opcionReintegro" [value]="'ORIGINAL'" [ngModel]="opcionReintegro()" (ngModelChange)="opcionReintegro.set($event)">
+                Reintegrar a la ubicación original
+              </label>
+              
+              <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                <input type="radio" name="opcionReintegro" [value]="'NUEVA'" [ngModel]="opcionReintegro()" (ngModelChange)="opcionReintegro.set($event)">
+                Reintegrar a otra ubicación
+              </label>
+            </div>
+
+            @if (opcionReintegro() === 'NUEVA') {
+              <div style="border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                <div class="form-group">
+                  <label>Almacén / Bodega</label>
+                  <select class="form-control" (change)="onAlmacenChange($event)">
+                    <option value="">-- Seleccione --</option>
+                    @for (a of almacenes(); track a.idAlmacen) {
+                      <option [value]="a.idAlmacen">{{ a.nombre }}</option>
+                    }
+                  </select>
+                </div>
+                
+                @if (zonas().length > 0) {
+                  <div class="form-group mt-3">
+                    <label>Zona</label>
+                    <select class="form-control" (change)="onZonaChange($event)">
+                      <option value="">-- Seleccione --</option>
+                      @for (z of zonas(); track z.idZona) {
+                        <option [value]="z.idZona">{{ z.nombre }}</option>
+                      }
+                    </select>
+                  </div>
+                }
+
+                @if (estanterias().length > 0) {
+                  <div class="form-group mt-3">
+                    <label>Estantería</label>
+                    <select class="form-control" (change)="onEstanteriaChange($event)">
+                      <option value="">-- Seleccione --</option>
+                      @for (e of estanterias(); track e.idEstanteria) {
+                        <option [value]="e.idEstanteria">{{ e.codigoAlfa }} - {{ e.tipoMaterial }}</option>
+                      }
+                    </select>
+                  </div>
+                }
+
+                @if (ubicaciones().length > 0) {
+                  <div class="form-group mt-3">
+                    <label>Ubicación (Nivel / Posición)</label>
+                    <select class="form-control" (change)="onUbicacionChange($event)">
+                      <option value="">-- Seleccione --</option>
+                      @for (u of ubicaciones(); track u.idUbicacion) {
+                        <option [value]="u.idUbicacion">
+                          {{ u.codigoNivel }}
+                          (Capacidad: {{ u.capacidadMaxima || 'N/A' }})
+                        </option>
+                      }
+                    </select>
+                  </div>
+                }
+              </div>
+            }
+          }
+        </div>
+        <div class="vt-modal-footer">
+          <button class="btn btn-secondary" (click)="cerrarModalReintegro()">Cancelar</button>
+          <button class="btn btn-primary" [disabled]="isProcessingReintegro() || (opcionReintegro() === 'NUEVA' && !ubicacionSel())" (click)="confirmarReintegro()">
+            {{ isProcessingReintegro() ? 'Procesando...' : 'Confirmar reintegro' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 </div>
