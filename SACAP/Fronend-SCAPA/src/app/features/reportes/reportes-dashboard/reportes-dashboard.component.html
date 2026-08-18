@@ -10,7 +10,7 @@
     <div *ngFor="let cat of categorias" class="category-section">
       <h2 class="category-title">{{ cat.nombre }}</h2>
       <div class="cards-grid">
-        <a *ngFor="let link of cat.links" [routerLink]="['/admin/reportes', link.ruta]" class="report-card">
+        <a *ngFor="let link of cat.links" [routerLink]="['/admin/reportes', link.categoria, link.id]" class="report-card">
           <div class="card-icon">
             <lucide-icon [name]="link.icon" class="w-6 h-6"></lucide-icon>
           </div>

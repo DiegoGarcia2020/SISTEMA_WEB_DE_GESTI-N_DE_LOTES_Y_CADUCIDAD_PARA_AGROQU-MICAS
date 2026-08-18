@@ -25,6 +25,7 @@ public class UsuarioPrincipal implements UserDetails {
         this.usuario = usuario;
         this.nombreRoles = usuario.getRoles() == null ? List.of() :
             usuario.getRoles().stream()
+                .filter(ur -> ur.getRol() != null && ur.getRol().getIdEstado() != null && ur.getRol().getIdEstado() == 1)
                 .map(ur -> ur.getRol().getNombre().toUpperCase())
                 .collect(Collectors.toList());
     }

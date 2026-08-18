@@ -122,11 +122,12 @@ public class SecurityConfig {
                     "/api/ia/reglas/**"
                 ).hasAnyAuthority("ADMINISTRADOR")
 
-                // ADMINISTRADOR y GERENTE — reportes y gerencia
+                // ADMINISTRADOR y GERENTE — gerencia (reportes tiene @PreAuthorize por endpoint)
                 .requestMatchers(
-                    "/api/reportes/**",
                     "/api/gerencia/**"
                 ).hasAnyAuthority("ADMINISTRADOR", "GERENTE")
+                
+                .requestMatchers("/api/reportes/**").authenticated()
 
                 // Lectura de combos/promociones activas para armar pedidos — también accesible al TECNICO
                 .requestMatchers(

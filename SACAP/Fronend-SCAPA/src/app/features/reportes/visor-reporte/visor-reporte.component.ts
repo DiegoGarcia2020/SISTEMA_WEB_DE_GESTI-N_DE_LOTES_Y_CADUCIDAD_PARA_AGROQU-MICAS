@@ -23,6 +23,7 @@ export class VisorReporteComponent implements OnInit {
   filtrosForm: FormGroup;
   reporteData: ReporteRespuesta | null = null;
   loading = false;
+  errorMsg = '';
   
   categoria = '';
   reporteId = '';
@@ -61,9 +62,19 @@ export class VisorReporteComponent implements OnInit {
   cargarReporte(): void {
     if (!this.categoria || !this.reporteId) return;
 
+    this.errorMsg = '';
     this.loading = true;
     const ruta = `${this.categoria}/${this.reporteId}`;
     const filtrosRaw = this.filtrosForm.value;
+    
+    // Validación de fechas
+    if (filtrosRaw.fechaInicio && filtrosRaw.fechaFin) {
+      if (filtrosRaw.fechaInicio > filtrosRaw.fechaFin) {
+        this.errorMsg = 'La fecha de inicio no puede ser mayor a la fecha de fin.';
+        this.loading = false;
+        return;
+      }
+    }
     
     // Limpiar nulos
     const filtros: any = {};
@@ -83,7 +94,8 @@ export class VisorReporteComponent implements OnInit {
         }
       },
       error: (err) => {
-        this.toast.error('Error', 'No se pudo cargar el reporte. Verifica tus permisos o la conexión.');
+        this.errorMsg = 'No se pudo cargar el reporte. Verifica tus permisos o la conexión.';
+        this.toast.error('Error', this.errorMsg);
         this.loading = false;
       }
     });
@@ -91,6 +103,36 @@ export class VisorReporteComponent implements OnInit {
 
   onSubmitFiltros(): void {
     this.cargarReporte();
+  }
+
+  exportarCSV(): void {
+    if (!this.reporteData || !this.reporteData.data || this.reporteData.data.length === 0) {
+      this.toast.info('Info', 'No hay datos para exportar.');
+      return;
+    }
+
+    const data = this.reporteData.data;
+    const headers = Object.keys(data[0]);
+    const csvRows = [];
+    csvRows.push(headers.join(','));
+
+    for (const row of data) {
+      const values = headers.map(header => {
+        const val = row[header];
+        const escaped = ('' + (val ?? '')).replace(/"/g, '""');
+        return `"${escaped}"`;
+      });
+      csvRows.push(values.join(','));
+    }
+
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `reporte_${this.reporteId}_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   private prepararGrafico(data: any[]): void {

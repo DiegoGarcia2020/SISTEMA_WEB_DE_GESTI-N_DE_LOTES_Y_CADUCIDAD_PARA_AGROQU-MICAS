@@ -98,7 +98,7 @@ public class LoteController {
     }
 
     @GetMapping("/ubicaciones")
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ADMINISTRADOR', 'SUPERVISOR', 'BODEGUERO')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyAuthority('ADMINISTRADOR', 'SUPERVISOR', 'BODEGUERO')")
     public ResponseEntity<List<UbicacionProductoDTO>> obtenerUbicacionesPorProducto(
             @RequestParam("idProducto") Integer idProducto) {
         return ResponseEntity.ok(loteService.obtenerUbicacionesPorProducto(idProducto));

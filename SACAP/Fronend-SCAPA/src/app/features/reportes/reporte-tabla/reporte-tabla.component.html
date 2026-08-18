@@ -18,7 +18,7 @@
         <td *ngFor="let col of columns" [ngClass]="{'text-right': isNumber(row[col])}">
           <ng-container *ngIf="isNumber(row[col]); else textData">
             <!-- Si la columna sugiere que es moneda o cantidad decimal, formatear -->
-            <span *ngIf="col.includes('total') || col.includes('ganancia') || col.includes('descuento'); else justNumber">
+            <span *ngIf="col.toLowerCase().includes('total') || col.toLowerCase().includes('ganancia') || col.toLowerCase().includes('descuento') || col.toLowerCase().includes('precio'); else justNumber">
               ${{ row[col] | number:'1.2-2' }}
             </span>
             <ng-template #justNumber>
@@ -26,7 +26,12 @@
             </ng-template>
           </ng-container>
           <ng-template #textData>
-            {{ row[col] }}
+            <ng-container *ngIf="isDateColumn(col); else plainText">
+              {{ row[col] | date:'shortDate' }}
+            </ng-container>
+            <ng-template #plainText>
+              {{ row[col] }}
+            </ng-template>
           </ng-template>
         </td>
       </tr>

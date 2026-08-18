@@ -24,6 +24,10 @@ export class ReporteTablaComponent {
     return key.replace(/_/g, ' ').toUpperCase();
   }
 
+  isDateColumn(key: string): boolean {
+    return key.toLowerCase().includes('fecha');
+  }
+
   isNumber(val: any): boolean {
     return typeof val === 'number';
   }

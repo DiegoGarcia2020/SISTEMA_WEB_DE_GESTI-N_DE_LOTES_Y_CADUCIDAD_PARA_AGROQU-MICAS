@@ -22,7 +22,7 @@ export interface ReporteRespuesta {
 })
 export class ReportesService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/reportes`;
+  private apiUrl = `${environment.apiUrl}/v1/reportes`;
 
   getReporte(ruta: string, filtros?: ReporteFiltros): Observable<ReporteRespuesta> {
     let params = new HttpParams();
@@ -31,6 +31,8 @@ export class ReportesService {
       if (filtros.fechaFin) params = params.set('fechaFin', filtros.fechaFin);
       if (filtros.idProducto) params = params.set('idProducto', filtros.idProducto.toString());
       if (filtros.idCliente) params = params.set('idCliente', filtros.idCliente.toString());
+      if (filtros.idCategoria) params = params.set('idCategoria', filtros.idCategoria.toString());
+      if (filtros.idTemporada) params = params.set('idTemporada', filtros.idTemporada.toString());
     }
     return this.http.get<ReporteRespuesta>(`${this.apiUrl}/${ruta}`, { params });
   }

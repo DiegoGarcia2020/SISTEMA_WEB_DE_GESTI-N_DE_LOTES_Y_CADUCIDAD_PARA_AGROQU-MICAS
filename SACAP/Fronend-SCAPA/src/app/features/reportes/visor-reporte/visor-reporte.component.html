@@ -12,6 +12,10 @@
         <lucide-icon name="refresh-cw" [class.animate-spin]="loading" class="w-4 h-4"></lucide-icon>
         Actualizar
       </button>
+      <button class="btn-primary" (click)="exportarCSV()" [disabled]="loading || !reporteData || reporteData.data.length === 0" title="Exportar CSV">
+        <lucide-icon name="download" class="w-4 h-4"></lucide-icon>
+        Exportar CSV
+      </button>
     </div>
   </div>
 
@@ -34,6 +38,16 @@
     </form>
   </div>
 
+  <div class="error-panel" *ngIf="errorMsg">
+    <lucide-icon name="alert-circle" class="w-8 h-8 text-red-500"></lucide-icon>
+    <p>{{ errorMsg }}</p>
+  </div>
+
+  <div class="empty-panel" *ngIf="!loading && !errorMsg && reporteData && reporteData.data.length === 0">
+    <lucide-icon name="inbox" class="w-8 h-8 text-gray-400"></lucide-icon>
+    <p>No hay datos para mostrar con los filtros actuales.</p>
+  </div>
+
   <!-- Gráfico CSS Simple (Top 10) -->
   <div class="chart-panel" *ngIf="showChart && chartData.length > 0">
     <h3 class="panel-subtitle">Visualización (Top 10)</h3>
@@ -49,9 +63,9 @@
   </div>
 
   <!-- Tabla Dinámica -->
-  <div class="table-panel">
+  <div class="table-panel" *ngIf="!errorMsg && reporteData && reporteData.data.length > 0">
     <app-reporte-tabla 
-      [data]="reporteData?.data || []" 
+      [data]="reporteData.data" 
       [loading]="loading">
     </app-reporte-tabla>
   </div>
