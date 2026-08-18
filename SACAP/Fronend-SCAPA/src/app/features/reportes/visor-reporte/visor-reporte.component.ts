@@ -6,6 +6,8 @@ import { LucideAngularModule } from 'lucide-angular';
 import { ReportesService, ReporteRespuesta } from '../../../core/services/reportes.service';
 import { ReporteTablaComponent } from '../reporte-tabla/reporte-tabla.component';
 import { ToastService } from '../../../shared/components/toast/toast.service';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 @Component({
   selector: 'app-visor-reporte',
@@ -133,6 +135,36 @@ export class VisorReporteComponent implements OnInit {
     a.download = `reporte_${this.reporteId}_${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  exportarPDF(): void {
+    if (!this.reporteData || !this.reporteData.data || this.reporteData.data.length === 0) {
+      this.toast.info('Info', 'No hay datos para exportar.');
+      return;
+    }
+
+    const doc = new jsPDF();
+    const data = this.reporteData.data;
+    const headers = Object.keys(data[0]);
+
+    const body = data.map(row => {
+      return headers.map(header => {
+        const val = row[header];
+        return val !== null && val !== undefined ? val.toString() : '';
+      });
+    });
+
+    doc.text(this.tituloReporte, 14, 15);
+
+    autoTable(doc, {
+      head: [headers.map(h => h.toUpperCase().replace(/_/g, ' '))],
+      body: body,
+      startY: 20,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [41, 128, 185] }
+    });
+
+    doc.save(`reporte_${this.reporteId}_${new Date().toISOString().split('T')[0]}.pdf`);
   }
 
   private prepararGrafico(data: any[]): void {

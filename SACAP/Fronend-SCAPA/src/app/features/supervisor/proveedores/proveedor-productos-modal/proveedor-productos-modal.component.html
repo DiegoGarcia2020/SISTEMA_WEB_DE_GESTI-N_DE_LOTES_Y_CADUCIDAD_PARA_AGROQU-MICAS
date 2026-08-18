@@ -1,5 +1,5 @@
 <div class="modal-overlay" (click)="cerrar()">
-  <div class="modal-container" (click)="$event.stopPropagation()">
+  <div class="modal-container" (click)="$event.stopPropagation()" style="max-width: 800px; width: 90%;">
     <div class="modal-header">
       <h2>Productos de {{ nombreProveedor || 'Proveedor' }}</h2>
       <button class="btn-icon" (click)="cerrar()">
@@ -8,25 +8,65 @@
     </div>
 
     <div class="modal-body">
-      <form [formGroup]="asociarForm" class="association-form" (ngSubmit)="asociarProducto()">
-        <div class="form-group flex-1">
-          <select formControlName="idProducto" class="form-control">
-            <option [ngValue]="null" disabled>Seleccionar Producto...</option>
-            @for (prod of productosMaestros(); track prod.idProducto) {
-              <option [ngValue]="prod.idProducto">{{ prod.nombre }}</option>
+      @if (mostrarCrearProducto) {
+        <div style="background: var(--bg-card); padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--c-sage-border); margin-bottom: 1rem;">
+          <h3 style="margin-bottom: 1rem; color: var(--c-dark-green); display: flex; align-items: center; gap: 0.5rem;">
+            <lucide-icon name="plus-circle" size="18"></lucide-icon> Crear Nuevo Producto en el Sistema
+          </h3>
+          <form [formGroup]="nuevoProductoForm" (ngSubmit)="crearNuevoProductoSistema()">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+              <div class="form-group">
+                <input type="text" formControlName="nombre" class="form-control" placeholder="Nombre del Producto *">
+              </div>
+              <div class="form-group">
+                <input type="number" formControlName="precioSugerido" class="form-control" placeholder="Precio Sugerido *" step="0.01">
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+              <button type="button" class="btn btn-outline" (click)="toggleCrearProducto()">Cancelar</button>
+              <button type="submit" class="btn btn-secondary" [disabled]="nuevoProductoForm.invalid">Guardar Producto</button>
+            </div>
+          </form>
+        </div>
+      } @else {
+        <form [formGroup]="asociarForm" class="association-form" (ngSubmit)="asociarProducto()" style="display: flex; gap: 0.5rem; align-items: flex-start;">
+          <div class="form-group flex-1" style="position: relative;">
+            <input type="text" class="form-control" 
+                   [value]="textoBusquedaProducto"
+                   (input)="filtrarProductos($event)"
+                   (focus)="onFocusProducto()"
+                   (blur)="onBlurProducto()"
+                   placeholder="Buscar producto...">
+            
+            @if (mostrarDropdownProducto) {
+              <ul style="position: absolute; top: 100%; left: 0; right: 0; max-height: 200px; overflow-y: auto; background: white; border: 1px solid var(--c-sage-border); border-radius: 0.5rem; z-index: 50; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-top: 0.25rem; padding: 0.25rem 0;" class="custom-scrollbar">
+                @for (prod of productosFiltrados(); track prod.idProducto) {
+                  <li style="padding: 0.5rem 1rem; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='transparent'" (mousedown)="seleccionarProducto(prod)">
+                    {{ prod.nombre }}
+                  </li>
+                }
+                @if (productosFiltrados().length === 0) {
+                  <li style="padding: 0.5rem 1rem; color: gray; cursor: default;">No se encontraron resultados</li>
+                }
+              </ul>
             }
-          </select>
-        </div>
-        <div class="form-group w-32">
-          <input type="number" formControlName="precioReferencial" class="form-control" placeholder="Precio Ref." step="0.01">
-        </div>
-        <div class="form-group flex-1">
-          <input type="text" formControlName="codigoProductoProveedor" class="form-control" placeholder="Código Prov. (Opcional)">
-        </div>
-        <button type="submit" class="btn btn-secondary" [disabled]="asociarForm.invalid">
-          Asociar
-        </button>
-      </form>
+          </div>
+          
+          <button type="button" class="btn btn-outline" (click)="toggleCrearProducto()" title="Crear un producto nuevo en el sistema" style="padding: 0.5rem;">
+            <lucide-icon name="plus" size="18"></lucide-icon>
+          </button>
+
+          <div class="form-group w-32">
+            <input type="number" formControlName="precioReferencial" class="form-control" placeholder="Precio Ref." step="0.01">
+          </div>
+          <div class="form-group flex-1">
+            <input type="text" formControlName="codigoProductoProveedor" class="form-control" placeholder="Código Prov. (Opcional)">
+          </div>
+          <button type="submit" class="btn btn-secondary" [disabled]="asociarForm.invalid">
+            Asociar
+          </button>
+        </form>
+      }
 
       <div class="table-container mt-4">
         <table class="table">
@@ -35,20 +75,41 @@
               <th>Producto</th>
               <th>Precio Ref.</th>
               <th>Código Prov.</th>
-              <th>Acción</th>
+              <th style="text-align: center;">Acción</th>
             </tr>
           </thead>
           <tbody>
             @for (pp of productosAsociados(); track pp.idProducto) {
               <tr>
                 <td>{{ pp.nombreProducto }}</td>
-                <td>\${{ pp.precioReferencial }}</td>
-                <td class="text-stamped">{{ pp.codigoProductoProveedor || 'N/A' }}</td>
-                <td>
-                  <button class="btn-icon btn-icon-danger" (click)="desasociarProducto(pp.idProducto!)">
-                    <lucide-icon name="trash-2" size="18"></lucide-icon>
-                  </button>
-                </td>
+                
+                @if (idEdicionActiva === pp.idProducto) {
+                  <td colspan="2">
+                    <form [formGroup]="formEdicion" style="display: flex; gap: 0.5rem;">
+                      <input type="number" formControlName="precioReferencial" class="form-control" step="0.01" style="width: 100px;">
+                      <input type="text" formControlName="codigoProductoProveedor" class="form-control" style="width: 120px;">
+                    </form>
+                  </td>
+                  <td style="text-align: center; display: flex; gap: 0.5rem; justify-content: center;">
+                    <button class="btn-icon" style="color: var(--c-dark-green);" (click)="guardarEdicion(pp.idProducto!)" title="Guardar">
+                      <lucide-icon name="check" size="18"></lucide-icon>
+                    </button>
+                    <button class="btn-icon text-muted" (click)="cancelarEdicion()" title="Cancelar">
+                      <lucide-icon name="x" size="18"></lucide-icon>
+                    </button>
+                  </td>
+                } @else {
+                  <td>\${{ pp.precioReferencial }}</td>
+                  <td class="text-stamped">{{ pp.codigoProductoProveedor || 'N/A' }}</td>
+                  <td style="text-align: center; display: flex; gap: 0.5rem; justify-content: center;">
+                    <button class="btn-icon" style="color: var(--c-amber);" (click)="iniciarEdicion(pp)" title="Editar">
+                      <lucide-icon name="edit-2" size="18"></lucide-icon>
+                    </button>
+                    <button class="btn-icon btn-icon-danger" (click)="desasociarProducto(pp.idProducto!)" title="Desasociar">
+                      <lucide-icon name="trash-2" size="18"></lucide-icon>
+                    </button>
+                  </td>
+                }
               </tr>
             } @empty {
               <tr><td colspan="4" class="text-center text-muted">No hay productos asociados.</td></tr>

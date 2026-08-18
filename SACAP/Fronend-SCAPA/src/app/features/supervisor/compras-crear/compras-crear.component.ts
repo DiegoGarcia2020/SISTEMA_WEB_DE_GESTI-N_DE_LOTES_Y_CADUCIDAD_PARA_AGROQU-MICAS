@@ -53,13 +53,28 @@ import { ProveedorProductosModalComponent } from '../proveedores/proveedor-produ
                     <lucide-icon name="plus-circle" class="w-3.5 h-3.5"></lucide-icon> Añadir producto
                   </button>
                 </div>
-                <select class="form-group__select" formControlName="idProveedor" 
-                        [class.form-group__input--error]="campoInvalido('idProveedor')">
-                  <option [ngValue]="null" disabled>Seleccione un proveedor</option>
-                  @for (prov of proveedores; track prov.idProveedor) {
-                    <option [ngValue]="prov.idProveedor">{{ prov.nombre || prov.nombreRepresentante }}</option>
+                <div style="position: relative;">
+                  <input type="text" class="form-group__input" 
+                         [class.form-group__input--error]="campoInvalido('idProveedor')"
+                         [value]="textoBusquedaProveedor"
+                         (input)="filtrarProveedores($event)"
+                         (focus)="onFocusProveedor()"
+                         (blur)="onBlurProveedor()"
+                         placeholder="Escriba para buscar proveedor...">
+                  
+                  @if (mostrarDropdownProveedor) {
+                    <ul style="position: absolute; top: 100%; left: 0; right: 0; max-height: 200px; overflow-y: auto; background: white; border: 1px solid var(--c-sage-border); border-radius: 0.5rem; z-index: 50; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-top: 0.25rem; padding: 0.25rem 0;" class="custom-scrollbar">
+                      @for (prov of proveedoresFiltrados; track prov.idProveedor) {
+                        <li style="padding: 0.5rem 1rem; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='transparent'" (mousedown)="seleccionarProveedor(prov)">
+                          {{ prov.nombre || prov.nombreRepresentante }} <span style="font-size: 0.8em; color: gray;">({{ prov.ruc }})</span>
+                        </li>
+                      }
+                      @if (proveedoresFiltrados.length === 0) {
+                        <li style="padding: 0.5rem 1rem; color: gray; cursor: default;">No se encontraron resultados</li>
+                      }
+                    </ul>
                   }
-                </select>
+                </div>
               </div>
               <div class="form-group">
                 <label class="form-group__label">N° de Factura *</label>
@@ -287,6 +302,10 @@ export class ComprasCrearComponent implements OnInit {
 
   ordenForm!: FormGroup;
   proveedores: ProveedorSimple[] = [];
+  proveedoresFiltrados: ProveedorSimple[] = [];
+  mostrarDropdownProveedor = false;
+  textoBusquedaProveedor = '';
+  
   productosProveedor: ProductoDeProveedor[] = [];
   archivoFactura: File | null = null;
 
@@ -349,7 +368,10 @@ export class ComprasCrearComponent implements OnInit {
   private cargarDatosMaestros(): void {
     // Proveedores
     this.proveedorService.listarTodos().subscribe({
-      next: (data) => this.proveedores = data as unknown as ProveedorSimple[],
+      next: (data) => {
+        this.proveedores = data as unknown as ProveedorSimple[];
+        this.proveedoresFiltrados = [...this.proveedores];
+      },
       error: () => this.toast.error('Error', 'No se pudieron cargar los proveedores')
     });
   }
@@ -366,6 +388,41 @@ export class ComprasCrearComponent implements OnInit {
     if (!id) return '';
     const prov = this.proveedores.find(p => p.idProveedor === id);
     return prov ? (prov.nombre || prov.nombreRepresentante) : '';
+  }
+
+  onFocusProveedor(): void {
+    this.mostrarDropdownProveedor = true;
+    this.proveedoresFiltrados = [...this.proveedores];
+  }
+
+  filtrarProveedores(event: Event): void {
+    const texto = (event.target as HTMLInputElement).value.toLowerCase();
+    this.textoBusquedaProveedor = (event.target as HTMLInputElement).value;
+    if (!texto) {
+      this.proveedoresFiltrados = [...this.proveedores];
+    } else {
+      this.proveedoresFiltrados = this.proveedores.filter(p => 
+        (p.nombre || p.nombreRepresentante).toLowerCase().includes(texto) ||
+        p.ruc.includes(texto)
+      );
+    }
+  }
+
+  seleccionarProveedor(prov: ProveedorSimple): void {
+    this.ordenForm.patchValue({ idProveedor: prov.idProveedor });
+    this.textoBusquedaProveedor = prov.nombre || prov.nombreRepresentante;
+    this.mostrarDropdownProveedor = false;
+  }
+  
+  onBlurProveedor(): void {
+    setTimeout(() => {
+      this.mostrarDropdownProveedor = false;
+      if (!this.ordenForm.get('idProveedor')?.value) {
+        this.textoBusquedaProveedor = '';
+      } else {
+        this.textoBusquedaProveedor = this.nombreProveedorSeleccionado();
+      }
+    }, 200);
   }
 
   abrirModalProductos(): void {

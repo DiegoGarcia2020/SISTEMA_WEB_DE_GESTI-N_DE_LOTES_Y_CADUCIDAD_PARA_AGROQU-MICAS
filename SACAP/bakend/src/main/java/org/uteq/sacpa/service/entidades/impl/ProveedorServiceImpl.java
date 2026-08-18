@@ -117,16 +117,22 @@ public class ProveedorServiceImpl implements IProveedorService {
         org.uteq.sacpa.entity.inventario.Producto producto = productoRepository.findById(dto.getIdProducto())
             .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
-        if (proveedorProductoRepository.existsByProveedor_IdProveedorAndProducto_IdProducto(dto.getIdProveedor(), dto.getIdProducto())) {
-            throw new RuntimeException("El producto ya está asociado al proveedor");
+        java.util.Optional<org.uteq.sacpa.entity.entidades.ProveedorProducto> existente = 
+            proveedorProductoRepository.findByProveedor_IdProveedorAndProducto_IdProducto(dto.getIdProveedor(), dto.getIdProducto());
+            
+        org.uteq.sacpa.entity.entidades.ProveedorProducto pp;
+        
+        if (existente.isPresent()) {
+            pp = existente.get();
+        } else {
+            pp = new org.uteq.sacpa.entity.entidades.ProveedorProducto();
+            pp.setProveedor(proveedor);
+            pp.setProducto(producto);
+            pp.setIdEstado(dto.getIdEstado() != null ? dto.getIdEstado() : 1);
         }
 
-        org.uteq.sacpa.entity.entidades.ProveedorProducto pp = new org.uteq.sacpa.entity.entidades.ProveedorProducto();
-        pp.setProveedor(proveedor);
-        pp.setProducto(producto);
         pp.setPrecioReferencial(dto.getPrecioReferencial());
         pp.setCodigoProductoProveedor(dto.getCodigoProductoProveedor());
-        pp.setIdEstado(dto.getIdEstado() != null ? dto.getIdEstado() : 1);
 
         proveedorProductoRepository.save(pp);
     }

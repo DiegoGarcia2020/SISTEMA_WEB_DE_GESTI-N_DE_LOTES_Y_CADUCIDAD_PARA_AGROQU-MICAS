@@ -16,6 +16,10 @@
         <lucide-icon name="download" class="w-4 h-4"></lucide-icon>
         Exportar CSV
       </button>
+      <button class="btn-primary" style="background-color: #dc2626; border-color: #dc2626;" (click)="exportarPDF()" [disabled]="loading || !reporteData || reporteData.data.length === 0" title="Exportar PDF">
+        <lucide-icon name="file-text" class="w-4 h-4"></lucide-icon>
+        Exportar PDF
+      </button>
     </div>
   </div>
 
