@@ -1,6 +1,7 @@
 package org.uteq.sacpa.service.ia_alertas.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.uteq.sacpa.dto.ia_alertas.LoteSugeridoDTO;
@@ -11,6 +12,7 @@ import org.uteq.sacpa.repository.ia_alertas.IReglaNegocioIARepository;
 import org.uteq.sacpa.repository.operaciones.ITemporadaRepository;
 import org.uteq.sacpa.repository.inventario.ILoteRepository;
 import org.uteq.sacpa.service.ia_alertas.IMotorSugerenciaIAService;
+import org.uteq.sacpa.service.ia_externa.IGeminiIAService;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -21,10 +23,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Algoritmo determinístico 0-100 pts, sin API de IA externa:
+ * Score 0-100 pts determinístico (nunca delegado a la IA externa):
  *   Variable A (urgencia FEFO, 0-70 pts) + Variable B (temporada agrícola activa, 0-30 pts)
  *   Variable C (categoría del producto) es un filtro duro, no un puntaje.
+ * La API de Gemini ({@link IGeminiIAService}) solo redacta el texto de la justificación
+ * a partir de ese score ya calculado; si falla o no hay key configurada, se usa el
+ * texto determinístico de siempre como fallback.
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MotorSugerenciaIAServiceImpl implements IMotorSugerenciaIAService {
@@ -37,6 +43,7 @@ public class MotorSugerenciaIAServiceImpl implements IMotorSugerenciaIAService {
     private final ILoteRepository loteRepository;
     private final ITemporadaRepository temporadaRepository;
     private final IReglaNegocioIARepository reglaRepository;
+    private final IGeminiIAService geminiIAService;
 
     @Override
     @Transactional(readOnly = true)
@@ -78,6 +85,7 @@ public class MotorSugerenciaIAServiceImpl implements IMotorSugerenciaIAService {
                 .toList();
 
         List<SugerenciaComboDTO> resultado = new ArrayList<>();
+        List<String> prompts = new ArrayList<>();
         if (paraCombo.size() >= 2) {
             int scoreCombo = (int) Math.round(paraCombo.stream().mapToInt(LoteSugeridoDTO::getScoreUrgencia).average().orElse(0));
             BigDecimal descuento = mapearDescuento(scoreCombo, descuentoMaximo);
@@ -89,12 +97,20 @@ public class MotorSugerenciaIAServiceImpl implements IMotorSugerenciaIAService {
                     .justificacionIA(construirJustificacionCombo(paraCombo, true, scoreCombo, descuento))
                     .lotes(paraCombo)
                     .build());
+            prompts.add(promptCombo(paraCombo, true, scoreCombo, descuento));
             relevantes.stream()
                     .filter(l -> !paraCombo.contains(l))
-                    .forEach(l -> resultado.add(individual(l, true, descuentoMaximo)));
+                    .forEach(l -> {
+                        resultado.add(individual(l, true, descuentoMaximo));
+                        prompts.add(promptIndividual(l, true, mapearDescuento(l.getScoreUrgencia(), descuentoMaximo)));
+                    });
         } else {
-            relevantes.forEach(l -> resultado.add(individual(l, true, descuentoMaximo)));
+            relevantes.forEach(l -> {
+                resultado.add(individual(l, true, descuentoMaximo));
+                prompts.add(promptIndividual(l, true, mapearDescuento(l.getScoreUrgencia(), descuentoMaximo)));
+            });
         }
+        enriquecerConIA(resultado, prompts);
         return resultado;
     }
 
@@ -103,7 +119,10 @@ public class MotorSugerenciaIAServiceImpl implements IMotorSugerenciaIAService {
     public SugerenciaComboDTO generarSugerenciaParaLote(Lote lote) {
         boolean temporadaActiva = hayTemporadaActiva(null);
         BigDecimal descuentoMaximo = obtenerDescuentoMaximo();
-        return individual(puntuarLote(lote, temporadaActiva), temporadaActiva, descuentoMaximo);
+        LoteSugeridoDTO l = puntuarLote(lote, temporadaActiva);
+        SugerenciaComboDTO dto = individual(l, temporadaActiva, descuentoMaximo);
+        enriquecerConIA(List.of(dto), List.of(promptIndividual(l, temporadaActiva, mapearDescuento(l.getScoreUrgencia(), descuentoMaximo))));
+        return dto;
     }
 
     private SugerenciaComboDTO individual(LoteSugeridoDTO l, boolean temporadaActiva, BigDecimal descuentoMaximo) {
@@ -116,6 +135,58 @@ public class MotorSugerenciaIAServiceImpl implements IMotorSugerenciaIAService {
                 .justificacionIA(construirJustificacionIndividual(l, temporadaActiva, descuento))
                 .lotes(List.of(l))
                 .build();
+    }
+
+    /**
+     * Redacta con UNA sola llamada a Gemini las justificaciones de toda la pantalla (no una por lote —
+     * el free tier de la API permite pocas solicitudes por día). Si falla o la key no está configurada,
+     * los DTOs ya traen el texto determinístico de {@link #construirJustificacionIndividual} /
+     * {@link #construirJustificacionCombo} puesto de antemano, así que no hace falta hacer nada más.
+     */
+    private void enriquecerConIA(List<SugerenciaComboDTO> resultado, List<String> prompts) {
+        try {
+            List<String> textos = geminiIAService.generarJustificaciones(prompts);
+            if (textos == null || textos.size() != resultado.size()) {
+                throw new IllegalStateException("Gemini devolvió " + (textos == null ? 0 : textos.size())
+                        + " justificaciones, se esperaban " + resultado.size());
+            }
+            for (int i = 0; i < resultado.size(); i++) {
+                String texto = textos.get(i);
+                if (texto != null && !texto.isBlank()) {
+                    resultado.get(i).setJustificacionIA(texto);
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Gemini no disponible, usando justificaciones determinísticas: {}", e.getMessage());
+        }
+    }
+
+    private String promptIndividual(LoteSugeridoDTO l, boolean temporadaActiva, BigDecimal descuento) {
+        return """
+                Eres el asistente de ventas de un sistema agrícola. Redacta en español, en 1-2 frases,
+                un mensaje breve y persuasivo (sin emojis) para ofrecerle este producto a un técnico de campo.
+                Usa solo estos datos, no inventes nada más:
+                - Producto: %s
+                - Vence en %d días
+                - Descuento sugerido: %s%%
+                - Temporada agrícola activa: %s
+                """.formatted(
+                l.getNombreProducto(),
+                l.getDiasHastaVencimiento(),
+                descuento.toPlainString(),
+                temporadaActiva ? "sí" : "no");
+    }
+
+    private String promptCombo(List<LoteSugeridoDTO> lotes, boolean temporadaActiva, int score, BigDecimal descuento) {
+        String nombres = lotes.stream().map(LoteSugeridoDTO::getNombreProducto).collect(Collectors.joining(", "));
+        return """
+                Eres el asistente de ventas de un sistema agrícola. Redacta en español, en 1-2 frases,
+                un mensaje breve y persuasivo (sin emojis) para ofrecer este combo a un técnico de campo.
+                Usa solo estos datos, no inventes nada más:
+                - Productos del combo: %s
+                - Descuento sugerido: %s%%
+                - Temporada agrícola activa: %s
+                """.formatted(nombres, descuento.toPlainString(), temporadaActiva ? "sí" : "no");
     }
 
     private LoteSugeridoDTO puntuarLote(Lote lote, boolean temporadaActiva) {
