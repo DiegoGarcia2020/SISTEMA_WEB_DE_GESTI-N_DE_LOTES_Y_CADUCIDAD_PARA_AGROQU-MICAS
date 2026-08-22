@@ -38,6 +38,18 @@ public class DespachoServiceImpl implements IDespachoService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<OrdenPendienteDespachoDTO> listarListasParaEntrega(String busqueda) {
+        List<Venta> ventas = (busqueda == null || busqueda.isBlank())
+                ? ventaRepository.findTop50ByEstadoOrderByFechaDesc(EstadoVenta.PREPARADA.name())
+                : ventaRepository.buscarPendientesPreparar(EstadoVenta.PREPARADA.name(), busqueda.trim(), PageRequest.of(0, 50));
+
+        return ventas.stream()
+                .map(OrdenPendienteDespachoDTO::from)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<DesgloseLoteDespachoDTO> obtenerLotesADespachar(Integer idVenta) {
         Venta venta = ventaRepository.findById(idVenta)
                 .orElseThrow(() -> new RuntimeException("Venta no encontrada con ID: " + idVenta));

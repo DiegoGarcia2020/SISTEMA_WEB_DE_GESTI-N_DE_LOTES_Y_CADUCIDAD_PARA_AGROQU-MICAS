@@ -56,8 +56,9 @@ export class BodegaDespachosComponent implements OnInit {
   private toast = inject(ToastService);
   private comprobanteService = inject(ComprobanteService);
 
-  activeTab = signal<'preparar' | 'devoluciones'>('preparar');
+  activeTab = signal<'preparar' | 'listas' | 'devoluciones'>('preparar');
   ordenesPendientes = signal<OrdenPendienteDTO[]>([]);
+  ordenesListas = signal<OrdenPendienteDTO[]>([]);
   devolucionesEnTransito = signal<DevolucionTransitoDTO[]>([]);
   paginaDevoluciones = signal<number>(0);
   totalPaginasDevoluciones = signal<number>(0);
@@ -96,9 +97,10 @@ export class BodegaDespachosComponent implements OnInit {
     this.cargarAlmacenes();
   }
 
-  setActiveTab(tab: 'preparar' | 'devoluciones') {
+  setActiveTab(tab: 'preparar' | 'listas' | 'devoluciones') {
     this.activeTab.set(tab);
     if (tab === 'preparar') this.cargarOrdenesPendientes();
+    if (tab === 'listas') this.cargarOrdenesListas();
     if (tab === 'devoluciones') this.cargarDevoluciones();
   }
 
@@ -120,6 +122,16 @@ export class BodegaDespachosComponent implements OnInit {
       .subscribe({
         next: (data) => this.ordenesPendientes.set(data || []),
         error: () => this.toast.error('Error', 'No se pudieron cargar las órdenes pendientes de preparación')
+      });
+  }
+
+  cargarOrdenesListas() {
+    const texto = this.textoBusqueda().trim();
+    const params: Record<string, string> = texto ? { busqueda: texto } : {};
+    this.http.get<OrdenPendienteDTO[]>(`${environment.apiUrl}/operaciones/despachos/pendientes-entrega`, { params })
+      .subscribe({
+        next: (data) => this.ordenesListas.set(data || []),
+        error: () => this.toast.error('Error', 'No se pudieron cargar las órdenes listas para entrega')
       });
   }
 
@@ -183,6 +195,22 @@ export class BodegaDespachosComponent implements OnInit {
         },
         error: (err) => {
           this.toast.error('Error', 'No se pudo preparar la orden.');
+          this.setProcessing(idVenta, false);
+        }
+      });
+  }
+
+  confirmarEntrega(idVenta: number) {
+    this.setProcessing(idVenta, true);
+    this.http.put(`${environment.apiUrl}/operaciones/despachos/${idVenta}/entregar`, {})
+      .subscribe({
+        next: () => {
+          this.toast.success('Entrega Confirmada', `La orden #${idVenta} fue entregada.`);
+          this.ordenesListas.update(ords => ords.filter(o => o.id !== idVenta));
+          this.setProcessing(idVenta, false);
+        },
+        error: () => {
+          this.toast.error('Error', 'No se pudo confirmar la entrega.');
           this.setProcessing(idVenta, false);
         }
       });

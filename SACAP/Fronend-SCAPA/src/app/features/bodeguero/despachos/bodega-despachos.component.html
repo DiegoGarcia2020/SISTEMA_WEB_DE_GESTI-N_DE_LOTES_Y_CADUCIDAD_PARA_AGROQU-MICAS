@@ -9,6 +9,9 @@
     <button class="tab-btn" [class.active]="activeTab() === 'preparar'" (click)="setActiveTab('preparar')">
       Órdenes por Preparar
     </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'listas'" (click)="setActiveTab('listas')">
+      Listas para Entrega
+    </button>
     <button class="tab-btn" [class.active]="activeTab() === 'devoluciones'" (click)="setActiveTab('devoluciones')">
       Recepción de Devoluciones
     </button>
@@ -51,6 +54,48 @@
               </div>
               <button class="btn btn-success" (click)="abrirModalPreparacion(orden.id)" [disabled]="isProcessing(orden.id)">
                 {{ isProcessing(orden.id) ? 'Procesando...' : 'Preparar Paquete' }}
+              </button>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- TAB 1.5: ÓRDENES PREPARADAS / LISTAS PARA ENTREGA -->
+    @if (activeTab() === 'listas') {
+      <div style="margin-bottom: 1rem;">
+        <input type="text" placeholder="Buscar por N° de comprobante o ID de orden..."
+               [(ngModel)]="textoBusqueda" (ngModelChange)="cargarOrdenesListas()"
+               class="busqueda-input" />
+      </div>
+      @if (ordenesListas().length === 0) {
+        <div class="empty-state">
+          {{ textoBusqueda().trim() ? 'No se encontraron órdenes con ese N° de comprobante o ID.' : 'No hay órdenes preparadas pendientes de entrega.' }}
+        </div>
+      } @else {
+        <div class="ordenes-grid">
+          @for (orden of ordenesListas(); track orden.id) {
+            <div class="orden-card">
+              <div class="orden-card__header">
+                <div>
+                  <h3 class="orden-card__title">Orden #{{ orden.id }}</h3>
+                  <p class="orden-card__subtitle" style="font-family: monospace;">{{ orden.numeroComprobante }}</p>
+                  <p class="orden-card__subtitle">Técnico: {{ orden.tecnico }}</p>
+                </div>
+                <span class="badge" style="background-color: var(--c-success); color: white; border: none;">PREPARADA</span>
+              </div>
+              <div class="orden-card__body">
+                <div class="info-row">
+                  <span class="info-label">Entrega Estimada:</span>
+                  <span>{{ orden.fechaEstimadaEntrega }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Ventana Horaria:</span>
+                  <span>{{ orden.ventanaHoraria }}</span>
+                </div>
+              </div>
+              <button class="btn btn-primary" (click)="confirmarEntrega(orden.id)" [disabled]="isProcessing(orden.id)">
+                {{ isProcessing(orden.id) ? 'Procesando...' : 'Confirmar Entrega' }}
               </button>
             </div>
           }

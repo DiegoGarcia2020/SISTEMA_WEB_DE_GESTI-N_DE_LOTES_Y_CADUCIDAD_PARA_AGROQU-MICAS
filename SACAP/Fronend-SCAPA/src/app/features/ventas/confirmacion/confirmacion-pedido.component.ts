@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { VentasService } from '../../../core/services/ventas.service';
 import { VentaDTO } from '../../../core/models/ventas.model';
 import { ComprobanteService } from '../../../core/services/comprobante.service';
+import { ToastService } from '../../../shared/components/toast/toast.service';
 
 @Component({
   selector: 'app-confirmacion-pedido',
@@ -17,6 +18,7 @@ export class ConfirmacionPedidoComponent implements OnInit {
   private router = inject(Router);
   private ventasService = inject(VentasService);
   private comprobanteService = inject(ComprobanteService);
+  private toast = inject(ToastService);
 
   venta = signal<VentaDTO | null>(null);
   cargando = signal(true);
@@ -45,5 +47,12 @@ export class ConfirmacionPedidoComponent implements OnInit {
     if (v) {
       this.comprobanteService.generarComprobanteVenta(v);
     }
+  }
+
+  copiarOrden(numero: string): void {
+    navigator.clipboard.writeText(numero).then(
+      () => this.toast.success('Copiado', `Orden ${numero} copiada al portapapeles.`),
+      () => this.toast.error('Error', 'No se pudo copiar.')
+    );
   }
 }

@@ -189,6 +189,11 @@ import { ProveedorProductosModalComponent } from '../proveedores/proveedor-produ
                              formControlName="precioUnitario" step="0.01" min="0"
                              [class.detalles-table__input--readonly]="detalle.get('esBonificacion')?.value"
                              [readonly]="detalle.get('esBonificacion')?.value">
+                      @if (!detalle.get('esBonificacion')?.value && detalle.get('_precioCatalogo')?.value > 0 && detalle.get('precioUnitario')?.value !== detalle.get('_precioCatalogo')?.value) {
+                        <small style="color: var(--amber-600); font-size: 0.7rem; margin-top: 0.2rem; display: block;">
+                          Precio modificado respecto al catálogo (\${{ detalle.get('_precioCatalogo')?.value | number:'1.2-2' }}).
+                        </small>
+                      }
                     </td>
                     <td>
                       <input type="number" class="detalles-table__input detalles-table__input--number" 
@@ -351,7 +356,8 @@ export class ComprasCrearComponent implements OnInit {
       porcentajeDescuento: [{ value: 0, disabled: esBonificacion }, [Validators.required, Validators.min(0), Validators.max(100)]],
       esBonificacion: [esBonificacion],
       _aplicaIva: [false],
-      _porcentajeIva: [0]
+      _porcentajeIva: [0],
+      _precioCatalogo: [0]
     });
 
     this.detallesFormArray.push(detalleGroup);
@@ -468,14 +474,20 @@ export class ComprasCrearComponent implements OnInit {
       this.operacionesService.obtenerUltimoPrecioProducto(idProducto).subscribe({
         next: (response) => {
           if (response.encontrado) {
-            detalleControl.patchValue({ precioUnitario: response.precioUnitario }, { emitEvent: false });
+            detalleControl.patchValue({ 
+              precioUnitario: response.precioUnitario,
+              _precioCatalogo: response.precioUnitario 
+            }, { emitEvent: false });
             this.toast.info('Precio recuperado', `Se aplicó el último precio pagado: $${response.precioUnitario}`);
             this.recalcularTotales(); // Forzar recálculo
           } else {
             // Si no hay compras previas, usar el precio de catálogo como sugerencia
             const productoCatalogo = this.productosProveedor.find(p => p.idProducto === idProducto);
             if (productoCatalogo && productoCatalogo.precioReferencial) {
-              detalleControl.patchValue({ precioUnitario: productoCatalogo.precioReferencial }, { emitEvent: false });
+              detalleControl.patchValue({ 
+                precioUnitario: productoCatalogo.precioReferencial,
+                _precioCatalogo: productoCatalogo.precioReferencial 
+              }, { emitEvent: false });
             }
           }
         }
