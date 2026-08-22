@@ -13,6 +13,32 @@ export class ReporteTablaComponent {
   @Input() data: any[] = [];
   @Input() loading: boolean = false;
 
+  currentPage: number = 1;
+  pageSize: number = 50;
+
+  get totalPages(): number {
+    return Math.ceil((this.data?.length || 0) / this.pageSize);
+  }
+
+  get paginatedData(): any[] {
+    if (!this.data || this.data.length === 0) return [];
+    const start = (this.currentPage - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    return this.data.slice(start, end);
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+    }
+  }
+
+  prevPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+    }
+  }
+
   get columns(): string[] {
     if (this.data && this.data.length > 0) {
       return Object.keys(this.data[0]);

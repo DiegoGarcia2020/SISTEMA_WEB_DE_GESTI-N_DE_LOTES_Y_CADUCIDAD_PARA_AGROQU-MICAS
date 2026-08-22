@@ -344,9 +344,9 @@ public class ReporteServiceImpl implements IReporteService {
             "SELECT p.nombre          AS producto, " +
             "       l.numero_lote     AS lote, " +
             "       l.cantidad_actual AS stock, " +
-            "       MAX(v.fecha)      AS ultima_venta, " +
-            "       COALESCE(CURRENT_DATE - MAX(v.fecha)::date, " +
-            "                CURRENT_DATE - l.fecha_ingreso::date) AS dias_sin_movimiento " +
+            "       COALESCE(MAX(v.fecha)::text, 'Sin ventas') AS ultima_venta, " +
+            "       COALESCE(COALESCE(CURRENT_DATE - MAX(v.fecha)::date, " +
+            "                CURRENT_DATE - l.fecha_ingreso::date), 0) AS dias_sin_movimiento " +
             "FROM inventario.lotes l " +
             "JOIN inventario.producto p ON l.id_producto = p.id_producto " +
             "LEFT JOIN operaciones.detalle_ventas dv ON dv.id_lote = l.id_lote " +
@@ -359,7 +359,8 @@ public class ReporteServiceImpl implements IReporteService {
         }
         sql.append(" GROUP BY l.id_lote, p.nombre, l.numero_lote, l.cantidad_actual, l.fecha_ingreso ")
            .append(" HAVING MAX(v.fecha) IS NULL OR MAX(v.fecha) < CURRENT_DATE - INTERVAL '60 days' ")
-           .append(" ORDER BY dias_sin_movimiento DESC NULLS FIRST");
+           .append(" ORDER BY dias_sin_movimiento DESC NULLS FIRST ")
+           .append(" LIMIT 200");
 
         List<Map<String, Object>> data = jdbcTemplate.queryForList(sql.toString(), params.toArray());
         return new ReporteRespuestaDTO("Artículos Estancados", data);
