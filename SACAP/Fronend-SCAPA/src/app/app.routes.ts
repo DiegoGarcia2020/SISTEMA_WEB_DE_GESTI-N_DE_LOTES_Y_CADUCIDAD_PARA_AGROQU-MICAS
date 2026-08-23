@@ -108,19 +108,19 @@ export const routes: Routes = [
         path: 'dashboard',
         component: DashboardComponent,
         canActivate: [roleGuard],
-        data: { roles: ['Administrador', 'Supervisor', 'Gerente'] }
+        data: { roles: ['Administrador', 'Supervisor'] }
       },
       {
         path: 'usuarios',
         component: GestionUsuariosComponent,
         canActivate: [roleGuard],
-        data: { roles: ['Administrador', 'Supervisor', 'Gerente'] }
+        data: { roles: ['Administrador', 'Supervisor'] }
       },
       {
         path: 'solicitudes',
         component: SolicitudesRegistroComponent,
         canActivate: [roleGuard],
-        data: { roles: ['Administrador', 'Gerente'] }
+        data: { roles: ['Administrador'] }
       },
       {
         path: 'roles',
@@ -138,7 +138,7 @@ export const routes: Routes = [
         path: 'temporadas',
         component: GestionTemporadasComponent,
         canActivate: [roleGuard],
-        data: { roles: ['Administrador', 'Supervisor', 'Gerente'] }
+        data: { roles: ['Administrador', 'Supervisor'] }
       },
       {
         path: 'alertas',
@@ -150,7 +150,7 @@ export const routes: Routes = [
         path: 'ia/promociones',
         component: PromocionesIAComponent,
         canActivate: [roleGuard],
-        data: { roles: ['Administrador', 'Gerente'] }
+        data: { roles: ['Administrador'] }
       },
       {
         path: 'catalogos',

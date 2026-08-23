@@ -13,6 +13,9 @@ import org.uteq.sacpa.repository.catalogos.ICatEstadoAlertaRepository;
 import org.uteq.sacpa.security.UsuarioPrincipal;
 import org.uteq.sacpa.service.ia_alertas.IAlertaCaducidadService;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import java.util.List;
 import java.util.Map;
 
@@ -32,22 +35,15 @@ public class AlertaController {
 
 
     @GetMapping
-    public ResponseEntity<List<AlertaCaducidadResponseDTO>> listarAlertas() {
-        try {
-            return ResponseEntity.ok(alertaService.listarAlertasActivas(1));
-        } catch (Exception e) {
-            return ResponseEntity.ok(List.of());
-        }
+    public ResponseEntity<Page<AlertaCaducidadResponseDTO>> listarAlertas(@PageableDefault(size = 10) Pageable pageable) {
+        return ResponseEntity.ok(alertaService.listarAlertasActivas(1, pageable));
     }
 
     @GetMapping("/activas")
-    public ResponseEntity<List<AlertaCaducidadResponseDTO>> listarAlertasActivas(@RequestParam("idEstadoActivo") Integer idEstadoActivo) {
-        try {
-            return ResponseEntity.ok(alertaService.listarAlertasActivas(idEstadoActivo));
-        } catch (Exception e) {
-            return ResponseEntity.ok(List.of());
-        }
-
+    public ResponseEntity<Page<AlertaCaducidadResponseDTO>> listarAlertasActivas(
+            @RequestParam("idEstadoActivo") Integer idEstadoActivo,
+            @PageableDefault(size = 10) Pageable pageable) {
+        return ResponseEntity.ok(alertaService.listarAlertasActivas(idEstadoActivo, pageable));
     }
 
     @GetMapping("/lote/{idLote}")

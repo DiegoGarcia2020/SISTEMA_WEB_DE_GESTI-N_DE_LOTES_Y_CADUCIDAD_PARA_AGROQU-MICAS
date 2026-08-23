@@ -31,6 +31,21 @@
   --radius-btn: 4px;
   --radius-card: 0px; /* Bordes rectos tipo etiqueta/documento técnico */
   --radius-input: 2px;
+
+  /* --- Alias semánticos sobre la paleta "Etiqueta de Almacén" --- */
+  /* Definidos para resolver var() huérfanos. No introducen colores nuevos. */
+  --c-surface: #FFFFFF;
+  --bg-app: var(--c-bone-bg);
+  --c-border: var(--c-sage-border);
+  --c-text: var(--c-warm-black);
+  --c-text-muted: #5A6B60;
+  --c-sage-text: #6E8A78;
+  --c-obsidian: var(--c-dark-green);
+  --c-amber: var(--c-cacao-accent);
+  --c-warning: #C77F3D;
+  --primary-color: var(--c-dark-green);
+  --text-color: var(--c-warm-black);
+  --gray-600: #5A6B60;
 }
 
 

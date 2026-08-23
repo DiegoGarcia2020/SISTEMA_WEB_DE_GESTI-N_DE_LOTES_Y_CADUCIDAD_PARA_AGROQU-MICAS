@@ -4,6 +4,8 @@ import org.uteq.sacpa.dto.ia_alertas.AlertaRequestDTO;
 import org.uteq.sacpa.dto.ia_alertas.AlertaCaducidadResponseDTO;
 import org.uteq.sacpa.dto.ia_modelos.PromocionResponseDTO;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface IAlertaCaducidadService {
@@ -12,7 +14,7 @@ public interface IAlertaCaducidadService {
     void crearAlerta(AlertaRequestDTO dto);
 
     /** Obtiene todas las alertas activas */
-    List<AlertaCaducidadResponseDTO> listarAlertasActivas(Integer idEstadoActivo);
+    Page<AlertaCaducidadResponseDTO> listarAlertasActivas(Integer idEstadoActivo, Pageable pageable);
 
     /** Obtiene alertas por lote */
     List<AlertaCaducidadResponseDTO> buscarPorLote(Integer idLote);

@@ -10,11 +10,18 @@ export interface ReporteFiltros {
   idCliente?: number;
   idCategoria?: number;
   idTemporada?: number;
+  idTipoMovimiento?: number;
+  idPromocion?: number;
+  pagina?: number;
+  tamanio?: number;
 }
 
 export interface ReporteRespuesta {
   titulo: string;
   data: any[];
+  total?: number;
+  pagina?: number;
+  tamanio?: number;
 }
 
 @Injectable({
@@ -33,6 +40,12 @@ export class ReportesService {
       if (filtros.idCliente) params = params.set('idCliente', filtros.idCliente.toString());
       if (filtros.idCategoria) params = params.set('idCategoria', filtros.idCategoria.toString());
       if (filtros.idTemporada) params = params.set('idTemporada', filtros.idTemporada.toString());
+      if (filtros.idTipoMovimiento) params = params.set('idTipoMovimiento', filtros.idTipoMovimiento.toString());
+      if (filtros.idPromocion) params = params.set('idPromocion', filtros.idPromocion.toString());
+      if (filtros.pagina !== undefined && filtros.pagina !== null) {
+        params = params.set('pagina', filtros.pagina.toString());
+      }
+      if (filtros.tamanio) params = params.set('tamanio', filtros.tamanio.toString());
     }
     return this.http.get<ReporteRespuesta>(`${this.apiUrl}/${ruta}`, { params });
   }

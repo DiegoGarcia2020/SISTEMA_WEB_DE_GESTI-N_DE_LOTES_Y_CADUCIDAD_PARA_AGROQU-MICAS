@@ -12,12 +12,68 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Implementacion de los reportes gerenciales de SACAP.
+ *
+ * REGLAS QUE APLICA ESTA CLASE (no modificar sin revisar el esquema real):
+ *
+ *  1. FILTRO DE FECHAS: operaciones.ventas.fecha es TIMESTAMP y el filtro
+ *     llega como LocalDate. Usar BETWEEN excluye todo lo ocurrido despues
+ *     de las 00:00 del ultimo dia. Por eso SIEMPRE se usa el patron
+ *     media-abierto:  campo >= ?  AND  campo < (? + INTERVAL '1 day').
+ *
+ *  2. NOMBRES REALES DE COLUMNAS verificados contra el esquema:
+ *       - operaciones.detalle_ventas   -> PK "id"  (NO id_detalle)
+ *       - operaciones.movimientos_inventario -> "id_tipo_movimiento"
+ *         (NO tipo_movimiento; el nombre legible esta en catalogos.cat_tipo_movimiento.nombre)
+ *       - entidades.proveedor          -> "nombre_representante" (NO nombre_razon_social)
+ *       - temporadas                   -> ia_alertas.temporadas_agricolas
+ *         con "nombre_temporada" (NO operaciones.temporada, esa tabla no existe)
+ *       - ia_alertas.alertas_caducidad -> "fecha_generada" (NOT NULL) y
+ *         "fecha_generacion" (nullable); se usa COALESCE de ambas.
+ *
+ *  3. Todas las ventas ANULADAS se excluyen de los reportes de venta.
+ */
 @Service
 @RequiredArgsConstructor
 public class ReporteServiceImpl implements IReporteService {
 
     private final JdbcTemplate jdbcTemplate;
     private final IUsuarioRepository usuarioRepository;
+
+    /**
+     * Resolucion del nombre real de la persona detras de un seguridad.usuario.
+     *
+     * El esquema NO tiene una tabla unica de empleados: cada rol guarda su
+     * ficha en su propia tabla (gerencia.administrador, inventario.supervisor,
+     * inventario.bodeguero, operaciones.tecnico_campo), todas con las columnas
+     * id_usuario / nombres / apellidos.
+     *
+     * Este subquery las unifica y garantiza UNA sola fila por id_usuario
+     * (DISTINCT ON + prioridad), de modo que el LEFT JOIN nunca multiplique
+     * filas si un usuario llegara a tener ficha en dos tablas.
+     *
+     * Uso: el alias externo debe ser "u" (seguridad.usuario) y el subquery
+     * expone el alias "e" con e.nombres y e.apellidos.
+     */
+    private static final String JOIN_PERSONA =
+        "LEFT JOIN ( " +
+        "    SELECT DISTINCT ON (id_usuario) id_usuario, nombres, apellidos " +
+        "    FROM ( " +
+        "        SELECT id_usuario, nombres, apellidos, 1 AS prio FROM gerencia.administrador    WHERE id_usuario IS NOT NULL " +
+        "        UNION ALL " +
+        "        SELECT id_usuario, nombres, apellidos, 2 AS prio FROM inventario.supervisor     WHERE id_usuario IS NOT NULL " +
+        "        UNION ALL " +
+        "        SELECT id_usuario, nombres, apellidos, 3 AS prio FROM inventario.bodeguero      WHERE id_usuario IS NOT NULL " +
+        "        UNION ALL " +
+        "        SELECT id_usuario, nombres, apellidos, 4 AS prio FROM operaciones.tecnico_campo WHERE id_usuario IS NOT NULL " +
+        "    ) fichas " +
+        "    ORDER BY id_usuario, prio " +
+        ") e ON e.id_usuario = u.id_usuario ";
+
+    // ------------------------------------------------------------------
+    // Helpers
+    // ------------------------------------------------------------------
 
     private Integer getUserId(String username) {
         if (username == null) return null;
@@ -26,28 +82,76 @@ public class ReporteServiceImpl implements IReporteService {
                 .orElse(null);
     }
 
+    /** El catalogo seguridad.rol tiene dos variantes para tecnico. */
+    private boolean esTecnico(String rol) {
+        if (rol == null) return false;
+        String r = rol.trim().toUpperCase();
+        return r.equals("TECNICO")
+            || r.equals("TECNICO_CAMPO")
+            || r.equals("TÉCNICO DE CAMPO")
+            || r.equals("TECNICO DE CAMPO");
+    }
+
+    private boolean esBodeguero(String rol) {
+        return rol != null && rol.trim().equalsIgnoreCase("BODEGUERO");
+    }
+
+    private boolean esSupervisor(String rol) {
+        return rol != null && rol.trim().equalsIgnoreCase("SUPERVISOR");
+    }
+
+    /**
+     * Aplica el rango de fechas con el patron media-abierto.
+     * Si solo viene una de las dos fechas, aplica solo ese extremo.
+     */
+    private void aplicarRangoFechas(StringBuilder sql, List<Object> params,
+                                    ReporteFiltrosDTO f, String columna) {
+        if (f == null) return;
+        if (f.getFechaInicio() != null) {
+            sql.append(" AND ").append(columna).append(" >= ? ");
+            params.add(f.getFechaInicio());
+        }
+        if (f.getFechaFin() != null) {
+            sql.append(" AND ").append(columna).append(" < (CAST(? AS date) + INTERVAL '1 day') ");
+            params.add(f.getFechaFin());
+        }
+    }
+
+    private void aplicarFiltro(StringBuilder sql, List<Object> params,
+                               Integer valor, String condicion) {
+        if (valor != null) {
+            sql.append(" ").append(condicion).append(" ");
+            params.add(valor);
+        }
+    }
+
+    // ==================================================================
+    // A. VENTAS Y RENTABILIDAD
+    // ==================================================================
+
     @Override
     @Transactional(readOnly = true)
-    public ReporteRespuestaDTO getProductosMasVendidos(ReporteFiltrosDTO filtros, String username, String rol) {
+    public ReporteRespuestaDTO getProductosMasVendidos(ReporteFiltrosDTO f, String username, String rol) {
         StringBuilder sql = new StringBuilder(
-            "SELECT p.nombre AS producto, SUM(dv.cantidad) AS cantidad_vendida, SUM(dv.subtotal) AS total_generado " +
+            "SELECT p.nombre AS producto, " +
+            "       SUM(dv.cantidad) AS cantidad_vendida, " +
+            "       SUM(dv.subtotal) AS total_generado " +
             "FROM operaciones.ventas v " +
             "JOIN operaciones.detalle_ventas dv ON v.id = dv.id_venta " +
             "JOIN inventario.lotes l ON dv.id_lote = l.id_lote " +
             "JOIN inventario.producto p ON l.id_producto = p.id_producto " +
-            "WHERE 1=1 "
+            "WHERE v.estado <> 'ANULADA' "
         );
         List<Object> params = new ArrayList<>();
 
-        if ("TÉCNICO DE CAMPO".equalsIgnoreCase(rol)) {
+        if (esTecnico(rol)) {
             sql.append(" AND v.id_tecnico = ? ");
             params.add(getUserId(username));
         }
-
-        if (filtros != null && filtros.getFechaInicio() != null && filtros.getFechaFin() != null) {
-            sql.append(" AND v.fecha BETWEEN ? AND ? ");
-            params.add(filtros.getFechaInicio());
-            params.add(filtros.getFechaFin());
+        aplicarRangoFechas(sql, params, f, "v.fecha");
+        if (f != null) {
+            aplicarFiltro(sql, params, f.getIdProducto(),  "AND p.id_producto = ?");
+            aplicarFiltro(sql, params, f.getIdCategoria(), "AND p.id_categoria = ?");
         }
 
         sql.append(" GROUP BY p.nombre ORDER BY cantidad_vendida DESC");
@@ -58,279 +162,455 @@ public class ReporteServiceImpl implements IReporteService {
 
     @Override
     @Transactional(readOnly = true)
-    public ReporteRespuestaDTO getProductosMayorGanancia(ReporteFiltrosDTO filtros) {
+    public ReporteRespuestaDTO getProductosMayorGanancia(ReporteFiltrosDTO f) {
         StringBuilder sql = new StringBuilder(
             "SELECT p.nombre AS producto, " +
-            "SUM((dv.precio_unitario - COALESCE(l.costo_unitario_real, 0)) * dv.cantidad) AS ganancia_total " +
+            "       SUM(dv.cantidad) AS unidades_vendidas, " +
+            "       SUM(dv.subtotal) AS ingreso_total, " +
+            "       SUM(COALESCE(l.costo_unitario_real, 0) * dv.cantidad) AS costo_total, " +
+            "       SUM(dv.subtotal - (COALESCE(l.costo_unitario_real, 0) * dv.cantidad)) AS ganancia_total " +
             "FROM operaciones.detalle_ventas dv " +
+            "JOIN operaciones.ventas v ON v.id = dv.id_venta " +
             "JOIN inventario.lotes l ON dv.id_lote = l.id_lote " +
             "JOIN inventario.producto p ON l.id_producto = p.id_producto " +
-            "JOIN operaciones.ventas v ON v.id = dv.id_venta " +
-            "WHERE 1=1 "
+            "WHERE v.estado <> 'ANULADA' "
         );
         List<Object> params = new ArrayList<>();
-
-        if (filtros != null && filtros.getFechaInicio() != null && filtros.getFechaFin() != null) {
-            sql.append(" AND v.fecha BETWEEN ? AND ? ");
-            params.add(filtros.getFechaInicio());
-            params.add(filtros.getFechaFin());
+        aplicarRangoFechas(sql, params, f, "v.fecha");
+        if (f != null) {
+            aplicarFiltro(sql, params, f.getIdProducto(),  "AND p.id_producto = ?");
+            aplicarFiltro(sql, params, f.getIdCategoria(), "AND p.id_categoria = ?");
         }
-
         sql.append(" GROUP BY p.nombre ORDER BY ganancia_total DESC");
 
         List<Map<String, Object>> data = jdbcTemplate.queryForList(sql.toString(), params.toArray());
         return new ReporteRespuestaDTO("Productos con Mayor Ganancia", data);
     }
 
+    /**
+     * CORREGIDO: la version anterior consultaba operaciones.temporada, tabla
+     * que no existe en ningun script. Las temporadas viven en
+     * ia_alertas.temporadas_agricolas (columna nombre_temporada + cultivo).
+     */
     @Override
     @Transactional(readOnly = true)
-    public ReporteRespuestaDTO getProductoMayorDemandaTemporada(ReporteFiltrosDTO filtros) {
-        // En esta base simplificada, podemos cruzar las ventas que ocurren dentro del rango de una temporada
-        String sql = "SELECT p.nombre AS producto, t.nombre AS temporada, SUM(dv.cantidad) AS cantidad_vendida " +
-                     "FROM operaciones.ventas v " +
-                     "JOIN operaciones.detalle_ventas dv ON v.id = dv.id_venta " +
-                     "JOIN inventario.lotes l ON dv.id_lote = l.id_lote " +
-                     "JOIN inventario.producto p ON l.id_producto = p.id_producto " +
-                     "JOIN operaciones.temporada t ON v.fecha >= t.fecha_inicio " +
-                     "  AND (t.fecha_fin IS NULL OR v.fecha <= t.fecha_fin) " +
-                     "GROUP BY p.nombre, t.nombre " +
-                     "ORDER BY cantidad_vendida DESC";
+    public ReporteRespuestaDTO getProductoMayorDemandaTemporada(ReporteFiltrosDTO f) {
+        StringBuilder sql = new StringBuilder(
+            "SELECT t.nombre_temporada AS temporada, " +
+            "       t.cultivo          AS cultivo, " +
+            "       p.nombre           AS producto, " +
+            "       SUM(dv.cantidad)   AS cantidad_vendida, " +
+            "       SUM(dv.subtotal)   AS total_generado " +
+            "FROM operaciones.ventas v " +
+            "JOIN operaciones.detalle_ventas dv ON v.id = dv.id_venta " +
+            "JOIN inventario.lotes l ON dv.id_lote = l.id_lote " +
+            "JOIN inventario.producto p ON l.id_producto = p.id_producto " +
+            "JOIN ia_alertas.temporadas_agricolas t " +
+            "       ON v.fecha >= t.fecha_inicio " +
+            "      AND v.fecha <  (t.fecha_fin + INTERVAL '1 day') " +
+            "WHERE v.estado <> 'ANULADA' "
+        );
+        List<Object> params = new ArrayList<>();
+        if (f != null) {
+            aplicarFiltro(sql, params, f.getIdTemporada(), "AND t.id_temporada = ?");
+            aplicarFiltro(sql, params, f.getIdProducto(),  "AND p.id_producto = ?");
+        }
+        sql.append(" GROUP BY t.nombre_temporada, t.cultivo, p.nombre ")
+           .append(" ORDER BY t.nombre_temporada, cantidad_vendida DESC");
 
-        List<Map<String, Object>> data = jdbcTemplate.queryForList(sql);
+        List<Map<String, Object>> data = jdbcTemplate.queryForList(sql.toString(), params.toArray());
         return new ReporteRespuestaDTO("Mayor Demanda por Temporada", data);
     }
 
+    /**
+     * CORREGIDO: to_char(fecha,'Day') rellena con espacios hasta 9 caracteres
+     * ("Monday   ") y ordenar por conteo mezclaba el orden natural de la semana.
+     */
     @Override
     @Transactional(readOnly = true)
-    public ReporteRespuestaDTO getDiaMasCompras(ReporteFiltrosDTO filtros) {
-        String sql = "SELECT to_char(fecha, 'Day') AS dia_semana, COUNT(id) AS total_ventas " +
-                     "FROM operaciones.ventas " +
-                     "GROUP BY to_char(fecha, 'Day') " +
-                     "ORDER BY total_ventas DESC";
+    public ReporteRespuestaDTO getDiaMasCompras(ReporteFiltrosDTO f) {
+        StringBuilder sql = new StringBuilder(
+            "SELECT TRIM(to_char(v.fecha, 'TMDay')) AS dia_semana, " +
+            "       COUNT(v.id)                     AS total_ventas, " +
+            "       SUM(v.total)                    AS monto_total " +
+            "FROM operaciones.ventas v " +
+            "WHERE v.estado <> 'ANULADA' "
+        );
+        List<Object> params = new ArrayList<>();
+        aplicarRangoFechas(sql, params, f, "v.fecha");
+        sql.append(" GROUP BY EXTRACT(ISODOW FROM v.fecha), TRIM(to_char(v.fecha, 'TMDay')) ")
+           .append(" ORDER BY EXTRACT(ISODOW FROM v.fecha)");
 
-        List<Map<String, Object>> data = jdbcTemplate.queryForList(sql);
+        List<Map<String, Object>> data = jdbcTemplate.queryForList(sql.toString(), params.toArray());
         return new ReporteRespuestaDTO("Día con Más Compras", data);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ReporteRespuestaDTO getRotacionTemporada(ReporteFiltrosDTO filtros, String username, String rol) {
+    public ReporteRespuestaDTO getRotacionTemporada(ReporteFiltrosDTO f, String username, String rol) {
         StringBuilder sql = new StringBuilder(
-            "SELECT p.nombre AS producto, AVG(v.fecha::date - l.fecha_ingreso::date) AS dias_rotacion_promedio " +
+            "SELECT p.nombre AS producto, " +
+            "       COUNT(*) AS lineas_vendidas, " +
+            "       ROUND(AVG(v.fecha::date - l.fecha_ingreso::date), 1) AS dias_rotacion_promedio " +
             "FROM operaciones.detalle_ventas dv " +
             "JOIN operaciones.ventas v ON dv.id_venta = v.id " +
             "JOIN inventario.lotes l ON dv.id_lote = l.id_lote " +
             "JOIN inventario.producto p ON l.id_producto = p.id_producto " +
-            "WHERE l.fecha_ingreso IS NOT NULL "
+            "WHERE l.fecha_ingreso IS NOT NULL " +
+            "  AND v.estado <> 'ANULADA' " +
+            "  AND v.fecha >= l.fecha_ingreso "
         );
         List<Object> params = new ArrayList<>();
-
-        if ("TÉCNICO DE CAMPO".equalsIgnoreCase(rol)) {
+        if (esTecnico(rol)) {
             sql.append(" AND v.id_tecnico = ? ");
             params.add(getUserId(username));
         }
-
+        aplicarRangoFechas(sql, params, f, "v.fecha");
         sql.append(" GROUP BY p.nombre ORDER BY dias_rotacion_promedio ASC");
 
         List<Map<String, Object>> data = jdbcTemplate.queryForList(sql.toString(), params.toArray());
-        return new ReporteRespuestaDTO("Rotación Rápida", data);
+        return new ReporteRespuestaDTO("Rotación Rápida de Inventario", data);
     }
 
+    // ==================================================================
+    // B. PROMOCIONES E IA
+    // ==================================================================
+
+    /** CORREGIDO: dv.id_detalle no existe; la PK de detalle_ventas es "id". */
     @Override
     @Transactional(readOnly = true)
-    public ReporteRespuestaDTO getCombosMayorExito(ReporteFiltrosDTO filtros) {
-        String sql = "SELECT pr.nombre_promocion AS combo, COUNT(dv.id_detalle) AS veces_vendido " +
-                     "FROM operaciones.detalle_ventas dv " +
-                     "JOIN ia_alertas.promociones pr ON dv.id_promocion = pr.id_promocion " +
-                     "GROUP BY pr.nombre_promocion " +
-                     "ORDER BY veces_vendido DESC";
-        List<Map<String, Object>> data = jdbcTemplate.queryForList(sql);
+    public ReporteRespuestaDTO getCombosMayorExito(ReporteFiltrosDTO f) {
+        StringBuilder sql = new StringBuilder(
+            "SELECT pr.nombre_promocion         AS combo, " +
+            "       pr.descuento_global         AS descuento_pct, " +
+            "       COUNT(DISTINCT dv.id_venta) AS ventas_con_combo, " +
+            "       COUNT(dv.id)                AS lineas_vendidas, " +
+            "       SUM(dv.cantidad)            AS unidades_vendidas, " +
+            "       SUM(dv.subtotal)            AS total_generado " +
+            "FROM ia_alertas.promociones pr " +
+            "JOIN operaciones.detalle_ventas dv ON dv.id_promocion = pr.id_promocion " +
+            "JOIN operaciones.ventas v ON v.id = dv.id_venta " +
+            "WHERE v.estado <> 'ANULADA' "
+        );
+        List<Object> params = new ArrayList<>();
+        aplicarRangoFechas(sql, params, f, "v.fecha");
+        sql.append(" GROUP BY pr.id_promocion, pr.nombre_promocion, pr.descuento_global ")
+           .append(" ORDER BY unidades_vendidas DESC");
+
+        List<Map<String, Object>> data = jdbcTemplate.queryForList(sql.toString(), params.toArray());
         return new ReporteRespuestaDTO("Combos de Mayor Éxito", data);
     }
 
+    /**
+     * CORREGIDO: gerencia.empleado NO existe en el esquema. El nombre de la
+     * persona se resuelve con JOIN_PERSONA, que unifica administrador /
+     * supervisor / bodeguero / tecnico_campo. Si el usuario no tiene ficha,
+     * cae al correo por el COALESCE.
+     */
     @Override
     @Transactional(readOnly = true)
-    public ReporteRespuestaDTO getEfectividadCombos(ReporteFiltrosDTO filtros, String username, String rol) {
+    public ReporteRespuestaDTO getEfectividadCombos(ReporteFiltrosDTO f, String username, String rol) {
         StringBuilder sql = new StringBuilder(
-            "SELECT e.nombres || ' ' || e.apellidos AS supervisor, " +
-            "COUNT(pr.id_promocion) AS combos_aprobados, " +
-            "SUM(CASE WHEN dv.id_promocion IS NOT NULL THEN 1 ELSE 0 END) AS ventas_generadas " +
+            "SELECT COALESCE(e.nombres || ' ' || e.apellidos, u.correo) AS supervisor, " +
+            "       COUNT(DISTINCT pr.id_promocion)                     AS combos_aprobados, " +
+            "       COUNT(DISTINCT dv.id_venta)                         AS ventas_generadas, " +
+            "       COALESCE(SUM(dv.subtotal), 0)                       AS total_generado " +
             "FROM ia_alertas.promociones pr " +
-            "JOIN gerencia.empleado e ON pr.id_usuario_aprueba = e.id_usuario " +
-            "LEFT JOIN operaciones.detalle_ventas dv ON pr.id_promocion = dv.id_promocion " +
-            "WHERE pr.id_estado = 1 " // ACTIVO
+            "JOIN seguridad.usuario u ON pr.id_usuario_aprueba = u.id_usuario " +
+            JOIN_PERSONA +
+            "LEFT JOIN operaciones.detalle_ventas dv ON dv.id_promocion = pr.id_promocion " +
+            "LEFT JOIN operaciones.ventas v ON v.id = dv.id_venta AND v.estado <> 'ANULADA' " +
+            "WHERE 1=1 "
         );
         List<Object> params = new ArrayList<>();
-
-        if ("SUPERVISOR".equalsIgnoreCase(rol)) {
+        if (esSupervisor(rol)) {
             sql.append(" AND pr.id_usuario_aprueba = ? ");
             params.add(getUserId(username));
         }
-
-        sql.append(" GROUP BY e.nombres, e.apellidos ORDER BY ventas_generadas DESC");
+        sql.append(" GROUP BY u.id_usuario, e.nombres, e.apellidos, u.correo ")
+           .append(" ORDER BY ventas_generadas DESC");
 
         List<Map<String, Object>> data = jdbcTemplate.queryForList(sql.toString(), params.toArray());
         return new ReporteRespuestaDTO("Efectividad de Combos Aprobados", data);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public ReporteRespuestaDTO getProductosPorCaducar(ReporteFiltrosDTO filtros) {
-        String sql = "SELECT p.nombre AS producto, l.numero_lote AS lote, l.fecha_vencimiento AS caducidad, " +
-                     "(l.fecha_vencimiento - CURRENT_DATE) AS dias_restantes " +
-                     "FROM inventario.lotes l " +
-                     "JOIN inventario.producto p ON l.id_producto = p.id_producto " +
-                     "WHERE l.fecha_vencimiento >= CURRENT_DATE AND (l.fecha_vencimiento - CURRENT_DATE) <= 30 " +
-                     "ORDER BY dias_restantes ASC";
-        List<Map<String, Object>> data = jdbcTemplate.queryForList(sql);
-        return new ReporteRespuestaDTO("Productos Próximos a Caducar", data);
-    }
+    // ==================================================================
+    // C. INVENTARIO Y CADUCIDAD
+    // ==================================================================
 
     @Override
     @Transactional(readOnly = true)
-    public ReporteRespuestaDTO getArticulosEstancados(ReporteFiltrosDTO filtros) {
-        // Lotes que no han tenido ventas en los últimos 60 días
-        String sql = "SELECT p.nombre AS producto, l.numero_lote AS lote, MAX(v.fecha) AS ultima_venta " +
-                     "FROM inventario.lotes l " +
-                     "JOIN inventario.producto p ON l.id_producto = p.id_producto " +
-                     "LEFT JOIN operaciones.detalle_ventas dv ON l.id_lote = dv.id_lote " +
-                     "LEFT JOIN operaciones.ventas v ON dv.id_venta = v.id " +
-                     "GROUP BY p.nombre, l.numero_lote " +
-                     "HAVING MAX(v.fecha) < CURRENT_DATE - INTERVAL '60 days' OR MAX(v.fecha) IS NULL " +
-                     "ORDER BY ultima_venta ASC NULLS FIRST";
-        List<Map<String, Object>> data = jdbcTemplate.queryForList(sql);
+    public ReporteRespuestaDTO getProductosPorCaducar(ReporteFiltrosDTO f) {
+        StringBuilder sql = new StringBuilder(
+            "SELECT p.nombre                             AS producto, " +
+            "       l.numero_lote                        AS lote, " +
+            "       l.cantidad_actual                    AS stock, " +
+            "       l.fecha_vencimiento                  AS caducidad, " +
+            "       (l.fecha_vencimiento - CURRENT_DATE) AS dias_restantes " +
+            "FROM inventario.lotes l " +
+            "JOIN inventario.producto p ON l.id_producto = p.id_producto " +
+            "WHERE l.cantidad_actual > 0 " +
+            "  AND l.fecha_vencimiento >= CURRENT_DATE " +
+            "  AND l.fecha_vencimiento <= CURRENT_DATE + 30 "
+        );
+        List<Object> params = new ArrayList<>();
+        if (f != null) {
+            aplicarFiltro(sql, params, f.getIdProducto(),  "AND p.id_producto = ?");
+            aplicarFiltro(sql, params, f.getIdCategoria(), "AND p.id_categoria = ?");
+        }
+        sql.append(" ORDER BY dias_restantes ASC");
+
+        List<Map<String, Object>> data = jdbcTemplate.queryForList(sql.toString(), params.toArray());
+        return new ReporteRespuestaDTO("Productos Próximos a Caducar", data);
+    }
+
+    /**
+     * CORREGIDO: agrupaba por (nombre, numero_lote), lo que mezclaba lotes de
+     * productos distintos que compartieran numero. Ahora agrupa por l.id_lote.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public ReporteRespuestaDTO getArticulosEstancados(ReporteFiltrosDTO f) {
+        StringBuilder sql = new StringBuilder(
+            "SELECT p.nombre          AS producto, " +
+            "       l.numero_lote     AS lote, " +
+            "       l.cantidad_actual AS stock, " +
+            "       COALESCE(MAX(v.fecha)::text, 'Sin ventas') AS ultima_venta, " +
+            "       COALESCE(COALESCE(CURRENT_DATE - MAX(v.fecha)::date, " +
+            "                CURRENT_DATE - l.fecha_ingreso::date), 0) AS dias_sin_movimiento " +
+            "FROM inventario.lotes l " +
+            "JOIN inventario.producto p ON l.id_producto = p.id_producto " +
+            "LEFT JOIN operaciones.detalle_ventas dv ON dv.id_lote = l.id_lote " +
+            "LEFT JOIN operaciones.ventas v ON v.id = dv.id_venta AND v.estado <> 'ANULADA' " +
+            "WHERE l.cantidad_actual > 0 "
+        );
+        List<Object> params = new ArrayList<>();
+        if (f != null) {
+            aplicarFiltro(sql, params, f.getIdProducto(), "AND p.id_producto = ?");
+        }
+        sql.append(" GROUP BY l.id_lote, p.nombre, l.numero_lote, l.cantidad_actual, l.fecha_ingreso ")
+           .append(" HAVING MAX(v.fecha) IS NULL OR MAX(v.fecha) < CURRENT_DATE - INTERVAL '60 days' ")
+           .append(" ORDER BY dias_sin_movimiento DESC NULLS FIRST ")
+           .append(" LIMIT 200");
+
+        List<Map<String, Object>> data = jdbcTemplate.queryForList(sql.toString(), params.toArray());
         return new ReporteRespuestaDTO("Artículos Estancados", data);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ReporteRespuestaDTO getTotalInventarioAlmacenado(ReporteFiltrosDTO filtros, String rol) {
-        boolean mostrarMontos = !"BODEGUERO".equalsIgnoreCase(rol);
-        
-        String select = mostrarMontos 
-            ? "SELECT p.nombre AS producto, SUM(l.cantidad_actual) AS total_unidades, SUM(l.cantidad_actual * COALESCE(l.costo_unitario_real, 0)) AS valor_total " 
-            : "SELECT p.nombre AS producto, SUM(l.cantidad_actual) AS total_unidades ";
-            
-        String sql = select +
-                     "FROM inventario.lotes l " +
-                     "JOIN inventario.producto p ON l.id_producto = p.id_producto " +
-                     "WHERE l.cantidad_actual > 0 " +
-                     "GROUP BY p.nombre " +
-                     "ORDER BY total_unidades DESC";
+    public ReporteRespuestaDTO getTotalInventarioAlmacenado(ReporteFiltrosDTO f, String rol) {
+        boolean mostrarMontos = !esBodeguero(rol);
 
-        List<Map<String, Object>> data = jdbcTemplate.queryForList(sql);
-        return new ReporteRespuestaDTO("Total de Inventario", data);
+        StringBuilder sql = new StringBuilder(
+            mostrarMontos
+              ? "SELECT p.nombre AS producto, " +
+                "       SUM(l.cantidad_actual) AS total_unidades, " +
+                "       COUNT(DISTINCT l.id_lote) AS lotes, " +
+                "       SUM(l.cantidad_actual * COALESCE(l.costo_unitario_real, 0)) AS valor_total "
+              : "SELECT p.nombre AS producto, " +
+                "       SUM(l.cantidad_actual) AS total_unidades, " +
+                "       COUNT(DISTINCT l.id_lote) AS lotes "
+        );
+        sql.append("FROM inventario.lotes l ")
+           .append("JOIN inventario.producto p ON l.id_producto = p.id_producto ")
+           .append("WHERE l.cantidad_actual > 0 ");
+
+        List<Object> params = new ArrayList<>();
+        if (f != null) {
+            aplicarFiltro(sql, params, f.getIdCategoria(), "AND p.id_categoria = ?");
+            aplicarFiltro(sql, params, f.getIdProducto(),  "AND p.id_producto = ?");
+        }
+        sql.append(" GROUP BY p.nombre ORDER BY total_unidades DESC");
+
+        List<Map<String, Object>> data = jdbcTemplate.queryForList(sql.toString(), params.toArray());
+        return new ReporteRespuestaDTO("Total de Inventario Almacenado", data);
     }
 
+    /**
+     * CORREGIDO: m.tipo_movimiento no existe. La columna real es
+     * m.id_tipo_movimiento y el nombre legible esta en
+     * catalogos.cat_tipo_movimiento.nombre.
+     */
     @Override
     @Transactional(readOnly = true)
-    public ReporteRespuestaDTO getMovimientosPorProducto(ReporteFiltrosDTO filtros) {
+    public ReporteRespuestaDTO getMovimientosPorProducto(ReporteFiltrosDTO f) {
         StringBuilder sql = new StringBuilder(
-            "SELECT p.nombre AS producto, m.tipo_movimiento AS tipo, m.cantidad AS cantidad, m.fecha_movimiento AS fecha " +
+            "SELECT m.fecha_movimiento AS fecha, " +
+            "       p.nombre           AS producto, " +
+            "       l.numero_lote      AS lote, " +
+            "       tm.nombre          AS tipo_movimiento, " +
+            "       tm.naturaleza      AS naturaleza, " +
+            "       m.cantidad         AS cantidad, " +
+            "       COALESCE(e.nombres || ' ' || e.apellidos, u.correo) AS usuario, " +
+            "       m.observacion      AS observacion " +
             "FROM operaciones.movimientos_inventario m " +
+            "JOIN catalogos.cat_tipo_movimiento tm ON m.id_tipo_movimiento = tm.id_tipo_movimiento " +
             "JOIN inventario.lotes l ON m.id_lote = l.id_lote " +
             "JOIN inventario.producto p ON l.id_producto = p.id_producto " +
+            "LEFT JOIN seguridad.usuario u ON m.id_usuario = u.id_usuario " +
+            JOIN_PERSONA +
             "WHERE 1=1 "
         );
         List<Object> params = new ArrayList<>();
-
-        if (filtros != null && filtros.getFechaInicio() != null && filtros.getFechaFin() != null) {
-            sql.append(" AND m.fecha_movimiento BETWEEN ? AND ? ");
-            params.add(filtros.getFechaInicio());
-            params.add(filtros.getFechaFin());
+        aplicarRangoFechas(sql, params, f, "m.fecha_movimiento");
+        if (f != null) {
+            aplicarFiltro(sql, params, f.getIdProducto(), "AND p.id_producto = ?");
         }
-
         sql.append(" ORDER BY m.fecha_movimiento DESC");
 
         List<Map<String, Object>> data = jdbcTemplate.queryForList(sql.toString(), params.toArray());
-        return new ReporteRespuestaDTO("Movimientos de Inventario", data);
+        return new ReporteRespuestaDTO("Kardex de Movimientos", data);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ReporteRespuestaDTO getAlertasCriticas(ReporteFiltrosDTO filtros) {
-        String sql = "SELECT l.numero_lote AS lote, na.nombre AS riesgo, ac.fecha_generacion AS fecha " +
-                     "FROM ia_alertas.alertas_caducidad ac " +
-                     "JOIN inventario.lotes l ON ac.id_lote = l.id_lote " +
-                     "JOIN catalogos.cat_nivel_alerta na ON ac.id_nivel_alerta = na.id_nivel_alerta " +
-                     "WHERE ac.id_estado = 1 " + // ACTIVA
-                     "ORDER BY ac.fecha_generacion DESC";
+    public ReporteRespuestaDTO getAlertasCriticas(ReporteFiltrosDTO f) {
+        String sql =
+            "SELECT COALESCE(ac.fecha_generacion, ac.fecha_generada) AS fecha, " +
+            "       na.nombre           AS nivel_riesgo, " +
+            "       p.nombre            AS producto, " +
+            "       l.numero_lote       AS lote, " +
+            "       l.cantidad_actual   AS stock, " +
+            "       l.fecha_vencimiento AS caducidad, " +
+            "       ac.mensaje          AS mensaje " +
+            "FROM ia_alertas.alertas_caducidad ac " +
+            "JOIN inventario.lotes l ON ac.id_lote = l.id_lote " +
+            "JOIN inventario.producto p ON l.id_producto = p.id_producto " +
+            "JOIN catalogos.cat_nivel_alerta na ON ac.id_nivel_alerta = na.id_nivel_alerta " +
+            "WHERE ac.id_estado = 1 " +
+            "ORDER BY COALESCE(ac.fecha_generacion, ac.fecha_generada) DESC";
+
         List<Map<String, Object>> data = jdbcTemplate.queryForList(sql);
         return new ReporteRespuestaDTO("Alertas Críticas Activas", data);
     }
 
+    /**
+     * CORREGIDO: antes contaba cualquier venta con promocion del lote, aunque
+     * fuera anterior a la alerta o posterior a la caducidad. Ahora exige que la
+     * venta ocurra entre la generacion de la alerta y la fecha de vencimiento,
+     * que es lo que realmente significa "salvado".
+     */
     @Override
     @Transactional(readOnly = true)
-    public ReporteRespuestaDTO getProductosSalvadosCaducidad(ReporteFiltrosDTO filtros, String username, String rol) {
-        // Simplificación: lotes con alerta que terminaron con ventas asociadas a promociones
-        String sql = "SELECT p.nombre AS producto, l.numero_lote AS lote, SUM(dv.cantidad) AS cantidad_salvada " +
-                     "FROM ia_alertas.alertas_caducidad ac " +
-                     "JOIN inventario.lotes l ON ac.id_lote = l.id_lote " +
-                     "JOIN inventario.producto p ON l.id_producto = p.id_producto " +
-                     "JOIN operaciones.detalle_ventas dv ON dv.id_lote = l.id_lote " +
-                     "WHERE dv.id_promocion IS NOT NULL " +
-                     "GROUP BY p.nombre, l.numero_lote";
-        List<Map<String, Object>> data = jdbcTemplate.queryForList(sql);
-        return new ReporteRespuestaDTO("Productos Salvados", data);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public ReporteRespuestaDTO getOrdenesPendientesDespacho(ReporteFiltrosDTO filtros, String username, String rol) {
-        String sql = "SELECT o.numero_factura AS orden, p.nombre_razon_social AS proveedor, o.fecha_llegada_estimada AS esperada " +
-                     "FROM operaciones.orden_compra o " +
-                     "JOIN entidades.proveedor p ON o.id_proveedor = p.id_proveedor " +
-                     "WHERE o.estado = 'PENDIENTE'";
-        List<Map<String, Object>> data = jdbcTemplate.queryForList(sql);
-        return new ReporteRespuestaDTO("Órdenes Pendientes", data);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public ReporteRespuestaDTO getOrdenesDespachadasHoy(ReporteFiltrosDTO filtros, String username, String rol) {
+    public ReporteRespuestaDTO getProductosSalvadosCaducidad(ReporteFiltrosDTO f, String username, String rol) {
         StringBuilder sql = new StringBuilder(
-            "SELECT e.nombres || ' ' || e.apellidos AS bodeguero, COUNT(DISTINCT m.id_movimiento) AS despachos " +
+            "SELECT p.nombre            AS producto, " +
+            "       l.numero_lote       AS lote, " +
+            "       l.fecha_vencimiento AS caducidad, " +
+            "       SUM(dv.cantidad)    AS cantidad_salvada, " +
+            "       SUM(dv.subtotal)    AS valor_recuperado " +
+            "FROM ia_alertas.alertas_caducidad ac " +
+            "JOIN inventario.lotes l ON ac.id_lote = l.id_lote " +
+            "JOIN inventario.producto p ON l.id_producto = p.id_producto " +
+            "JOIN operaciones.detalle_ventas dv ON dv.id_lote = l.id_lote AND dv.id_promocion IS NOT NULL " +
+            "JOIN operaciones.ventas v ON v.id = dv.id_venta " +
+            "WHERE v.estado <> 'ANULADA' " +
+            "  AND v.fecha >= ac.fecha_generada " +
+            "  AND v.fecha <  (l.fecha_vencimiento + INTERVAL '1 day') "
+        );
+        List<Object> params = new ArrayList<>();
+        aplicarRangoFechas(sql, params, f, "v.fecha");
+        sql.append(" GROUP BY l.id_lote, p.nombre, l.numero_lote, l.fecha_vencimiento ")
+           .append(" ORDER BY cantidad_salvada DESC");
+
+        List<Map<String, Object>> data = jdbcTemplate.queryForList(sql.toString(), params.toArray());
+        return new ReporteRespuestaDTO("Impacto IA: Productos Salvados", data);
+    }
+
+    // ==================================================================
+    // D. OPERACION DE BODEGA
+    // ==================================================================
+
+    /** CORREGIDO: entidades.proveedor no tiene nombre_razon_social. */
+    @Override
+    @Transactional(readOnly = true)
+    public ReporteRespuestaDTO getOrdenesPendientesDespacho(ReporteFiltrosDTO f, String username, String rol) {
+        StringBuilder sql = new StringBuilder(
+            "SELECT o.numero_factura         AS orden, " +
+            "       p.nombre_representante   AS proveedor, " +
+            "       p.ruc                    AS ruc, " +
+            "       o.fecha_emision          AS emitida, " +
+            "       o.fecha_llegada_estimada AS llegada_estimada, " +
+            "       o.ventana_horaria        AS ventana, " +
+            "       o.total_neto             AS total, " +
+            "       (o.fecha_llegada_estimada - CURRENT_DATE) AS dias_para_llegada " +
+            "FROM operaciones.orden_compra o " +
+            "JOIN entidades.proveedor p ON o.id_proveedor = p.id_proveedor " +
+            "WHERE o.estado = 'PENDIENTE' "
+        );
+        List<Object> params = new ArrayList<>();
+        if (f != null) {
+            if (f.getFechaInicio() != null) { sql.append(" AND o.fecha_emision >= ? "); params.add(f.getFechaInicio()); }
+            if (f.getFechaFin()    != null) { sql.append(" AND o.fecha_emision <= ? "); params.add(f.getFechaFin()); }
+        }
+        sql.append(" ORDER BY o.fecha_llegada_estimada ASC NULLS LAST");
+
+        List<Map<String, Object>> data = jdbcTemplate.queryForList(sql.toString(), params.toArray());
+        return new ReporteRespuestaDTO("Órdenes de Compra Pendientes de Recepción", data);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ReporteRespuestaDTO getOrdenesDespachadasHoy(ReporteFiltrosDTO f, String username, String rol) {
+        StringBuilder sql = new StringBuilder(
+            "SELECT COALESCE(e.nombres || ' ' || e.apellidos, u.correo) AS bodeguero, " +
+            "       COUNT(DISTINCT m.id_movimiento) AS despachos, " +
+            "       SUM(m.cantidad)                 AS unidades_despachadas " +
             "FROM operaciones.movimientos_inventario m " +
             "JOIN catalogos.cat_tipo_movimiento tm ON m.id_tipo_movimiento = tm.id_tipo_movimiento " +
-            "JOIN gerencia.empleado e ON m.id_usuario = e.id_usuario " +
-            "WHERE tm.naturaleza = 'SALIDA' AND m.fecha_movimiento::date = CURRENT_DATE "
+            "JOIN seguridad.usuario u ON m.id_usuario = u.id_usuario " +
+            JOIN_PERSONA +
+            "WHERE tm.naturaleza = 'SALIDA' "
         );
         List<Object> params = new ArrayList<>();
 
-        if ("BODEGUERO".equalsIgnoreCase(rol)) {
+        // Si no llega rango, se usa el dia de hoy (comportamiento historico del reporte)
+        if (f == null || (f.getFechaInicio() == null && f.getFechaFin() == null)) {
+            sql.append(" AND m.fecha_movimiento >= CURRENT_DATE ")
+               .append(" AND m.fecha_movimiento <  (CURRENT_DATE + INTERVAL '1 day') ");
+        } else {
+            aplicarRangoFechas(sql, params, f, "m.fecha_movimiento");
+        }
+
+        if (esBodeguero(rol)) {
             sql.append(" AND m.id_usuario = ? ");
             params.add(getUserId(username));
         }
-
-        sql.append(" GROUP BY bodeguero");
+        sql.append(" GROUP BY u.id_usuario, e.nombres, e.apellidos, u.correo ")
+           .append(" ORDER BY despachos DESC");
 
         List<Map<String, Object>> data = jdbcTemplate.queryForList(sql.toString(), params.toArray());
-        return new ReporteRespuestaDTO("Órdenes Despachadas Hoy", data);
+        return new ReporteRespuestaDTO("Rendimiento de Despacho", data);
     }
+
+    // ==================================================================
+    // E. CLIENTES
+    // ==================================================================
 
     @Override
     @Transactional(readOnly = true)
-    public ReporteRespuestaDTO getClientesMasCompran(ReporteFiltrosDTO filtros, String username, String rol) {
+    public ReporteRespuestaDTO getClientesMasCompran(ReporteFiltrosDTO f, String username, String rol) {
         StringBuilder sql = new StringBuilder(
-            "SELECT c.nombre_finca AS cliente, SUM(v.total) AS total_comprado " +
+            "SELECT c.nombre_finca       AS cliente, " +
+            "       c.cedula             AS cedula, " +
+            "       COUNT(DISTINCT v.id) AS num_compras, " +
+            "       SUM(v.total)         AS total_comprado " +
             "FROM operaciones.ventas v " +
             "JOIN entidades.clientes c ON v.id_cliente = c.id_cliente " +
-            "WHERE 1=1 "
+            "WHERE v.estado <> 'ANULADA' "
         );
         List<Object> params = new ArrayList<>();
-
-        if ("TÉCNICO DE CAMPO".equalsIgnoreCase(rol)) {
+        if (esTecnico(rol)) {
             sql.append(" AND c.id_tecnico_asignado = ? ");
             params.add(getUserId(username));
         }
-
-        if (filtros != null && filtros.getFechaInicio() != null && filtros.getFechaFin() != null) {
-            sql.append(" AND v.fecha BETWEEN ? AND ? ");
-            params.add(filtros.getFechaInicio());
-            params.add(filtros.getFechaFin());
+        if (f != null) {
+            aplicarFiltro(sql, params, f.getIdCliente(), "AND c.id_cliente = ?");
         }
-
-        sql.append(" GROUP BY c.nombre_finca ORDER BY total_comprado DESC");
+        aplicarRangoFechas(sql, params, f, "v.fecha");
+        sql.append(" GROUP BY c.id_cliente, c.nombre_finca, c.cedula ")
+           .append(" ORDER BY total_comprado DESC");
 
         List<Map<String, Object>> data = jdbcTemplate.queryForList(sql.toString(), params.toArray());
         return new ReporteRespuestaDTO("Top Clientes", data);
@@ -338,57 +618,96 @@ public class ReporteServiceImpl implements IReporteService {
 
     @Override
     @Transactional(readOnly = true)
-    public ReporteRespuestaDTO getMercaderiaDevueltaPorMes(ReporteFiltrosDTO filtros, String username, String rol) {
+    public ReporteRespuestaDTO getMercaderiaDevueltaPorMes(ReporteFiltrosDTO f, String username, String rol) {
         StringBuilder sql = new StringBuilder(
-            "SELECT to_char(d.fecha_solicitud, 'YYYY-MM') AS mes, d.motivo AS motivo, COUNT(*) AS cantidad " +
+            "SELECT to_char(d.fecha_solicitud, 'YYYY-MM') AS mes, " +
+            "       d.motivo                              AS motivo, " +
+            "       COUNT(*)                              AS num_devoluciones, " +
+            "       SUM(d.cantidad_devuelta)              AS unidades_devueltas " +
             "FROM operaciones.devoluciones_venta d " +
             "JOIN operaciones.ventas v ON d.id_venta = v.id " +
             "WHERE 1=1 "
         );
         List<Object> params = new ArrayList<>();
-
-        if ("TÉCNICO DE CAMPO".equalsIgnoreCase(rol)) {
+        if (esTecnico(rol)) {
             sql.append(" AND v.id_tecnico = ? ");
             params.add(getUserId(username));
         }
-
-        sql.append(" GROUP BY mes, d.motivo ORDER BY mes DESC, cantidad DESC");
+        aplicarRangoFechas(sql, params, f, "d.fecha_solicitud");
+        sql.append(" GROUP BY to_char(d.fecha_solicitud, 'YYYY-MM'), d.motivo ")
+           .append(" ORDER BY mes DESC, num_devoluciones DESC");
 
         List<Map<String, Object>> data = jdbcTemplate.queryForList(sql.toString(), params.toArray());
-        return new ReporteRespuestaDTO("Devoluciones Mensuales", data);
+        return new ReporteRespuestaDTO("Análisis de Devoluciones", data);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ReporteRespuestaDTO getClientesChurn(ReporteFiltrosDTO filtros, String username, String rol) {
-        // Clientes que compraron antes, pero no en los últimos 3 meses
+    public ReporteRespuestaDTO getClientesChurn(ReporteFiltrosDTO f, String username, String rol) {
         StringBuilder sql = new StringBuilder(
-            "SELECT c.nombre_finca AS cliente, MAX(v.fecha) AS ultima_compra " +
+            "SELECT c.nombre_finca AS cliente, " +
+            "       c.telefono     AS telefono, " +
+            "       MAX(v.fecha)   AS ultima_compra, " +
+            "       (CURRENT_DATE - MAX(v.fecha)::date) AS dias_sin_comprar, " +
+            "       COUNT(v.id)    AS compras_historicas " +
             "FROM entidades.clientes c " +
-            "JOIN operaciones.ventas v ON c.id_cliente = v.id_cliente " +
+            "JOIN operaciones.ventas v ON c.id_cliente = v.id_cliente AND v.estado <> 'ANULADA' " +
             "WHERE 1=1 "
         );
         List<Object> params = new ArrayList<>();
-
-        if ("TÉCNICO DE CAMPO".equalsIgnoreCase(rol)) {
+        if (esTecnico(rol)) {
             sql.append(" AND c.id_tecnico_asignado = ? ");
             params.add(getUserId(username));
         }
-
-        sql.append(" GROUP BY c.nombre_finca HAVING MAX(v.fecha) < CURRENT_DATE - INTERVAL '90 days'");
+        sql.append(" GROUP BY c.id_cliente, c.nombre_finca, c.telefono ")
+           .append(" HAVING MAX(v.fecha) < CURRENT_DATE - INTERVAL '90 days' ")
+           .append(" ORDER BY dias_sin_comprar DESC");
 
         List<Map<String, Object>> data = jdbcTemplate.queryForList(sql.toString(), params.toArray());
         return new ReporteRespuestaDTO("Riesgo de Abandono (Churn)", data);
     }
 
+    // ==================================================================
+    // F. AUDITORIA
+    // ==================================================================
+
+    /**
+     * CORREGIDO: seguridad.auditoria tiene "accion" (NOT NULL, historica) y
+     * "operacion" (nullable, nueva). Filtrar solo por "operacion" descartaba
+     * todos los registros historicos. Ahora se usa COALESCE de ambas, igual
+     * que con fecha_hora / fecha.
+     */
     @Override
     @Transactional(readOnly = true)
-    public ReporteRespuestaDTO getAuditoriaAnulaciones(ReporteFiltrosDTO filtros) {
-        String sql = "SELECT operacion AS accion, tabla_afectada AS tabla, id_usuario AS usuario, fecha_hora AS fecha " +
-                     "FROM seguridad.auditoria " +
-                     "WHERE operacion ILIKE '%ANULAR%' OR operacion ILIKE '%AJUSTAR%' " +
-                     "ORDER BY fecha_hora DESC";
-        List<Map<String, Object>> data = jdbcTemplate.queryForList(sql);
-        return new ReporteRespuestaDTO("Auditoría de Anulaciones", data);
+    public ReporteRespuestaDTO getAuditoriaAnulaciones(ReporteFiltrosDTO f) {
+        StringBuilder sql = new StringBuilder(
+            "SELECT COALESCE(a.fecha_hora, a.fecha)                     AS fecha, " +
+            "       COALESCE(a.operacion, a.accion)                     AS accion, " +
+            "       a.tabla_afectada                                    AS tabla, " +
+            "       COALESCE(e.nombres || ' ' || e.apellidos, u.correo) AS usuario, " +
+            "       a.descripcion                                       AS descripcion " +
+            "FROM seguridad.auditoria a " +
+            "LEFT JOIN seguridad.usuario u ON a.id_usuario = u.id_usuario " +
+            JOIN_PERSONA +
+            "WHERE (COALESCE(a.operacion, a.accion) ILIKE '%ANUL%' " +
+            "    OR COALESCE(a.operacion, a.accion) ILIKE '%AJUST%' " +
+            "    OR COALESCE(a.operacion, a.accion) ILIKE '%DELETE%' " +
+            "    OR COALESCE(a.operacion, a.accion) ILIKE '%ELIMIN%') "
+        );
+        List<Object> params = new ArrayList<>();
+        if (f != null) {
+            if (f.getFechaInicio() != null) {
+                sql.append(" AND COALESCE(a.fecha_hora, a.fecha) >= ? ");
+                params.add(f.getFechaInicio());
+            }
+            if (f.getFechaFin() != null) {
+                sql.append(" AND COALESCE(a.fecha_hora, a.fecha) < (CAST(? AS date) + INTERVAL '1 day') ");
+                params.add(f.getFechaFin());
+            }
+        }
+        sql.append(" ORDER BY 1 DESC");
+
+        List<Map<String, Object>> data = jdbcTemplate.queryForList(sql.toString(), params.toArray());
+        return new ReporteRespuestaDTO("Log de Anulaciones", data);
     }
 }

@@ -1,6 +1,8 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { LucideAngularModule } from 'lucide-angular';
 import { OperacionesService } from '../../../core/services/operaciones.service';
 import { PromocionIADTO } from '../../../core/models/operaciones.model';
@@ -11,118 +13,114 @@ import { ToastService } from '../../../shared/components/toast/toast.service';
   selector: 'app-promociones-ia',
   standalone: true,
   imports: [CommonModule, FormsModule, LucideAngularModule, SectionHeaderComponent],
+  styleUrl: './promociones-ia.component.css',
   template: `
-    <div class="space-y-6 animate-fade-in pb-12">
+    <div class="promos-container">
       <!-- Cabecera -->
       <app-section-header title="Sugerencias IA y Combos Automáticos" 
-                          subtitle="Descuentos calculados algorítmicamente por AgroSense para liquidar lotes con prioridad alta o próxima caducidad.">
-        <button (click)="openCreateModal()" class="px-4 py-2.5 bg-[#0B4628] hover:bg-[#146C43] text-white font-bold text-sm rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer">
-          <lucide-icon name="plus" class="w-4 h-4"></lucide-icon>
-          <span>+ Crear Combo Manual</span>
+                          subtitle="Descuentos sugeridos por el motor de reglas para liquidar lotes con prioridad alta o próxima caducidad.">
+        <button (click)="openCreateModal()" class="btn btn--primary">
+          <lucide-icon name="plus"></lucide-icon>
+          <span>Crear Combo Manual</span>
         </button>
       </app-section-header>
 
       <!-- Barra de Filtros -->
-      <div class="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-4 flex flex-wrap items-center justify-between gap-4">
-        <div class="flex items-center gap-2">
-          <lucide-icon name="filter" class="w-4 h-4 text-gray-400"></lucide-icon>
-          <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Estado del Combo:</span>
-          <div class="flex bg-gray-100 p-1 rounded-xl text-xs font-semibold">
-            <button (click)="filterEstado.set('TODAS')" [class.bg-white]="filterEstado() === 'TODAS'" [class.shadow-2xs]="filterEstado() === 'TODAS'" class="px-3 py-1.5 rounded-lg transition-all cursor-pointer">Todas</button>
-            <button (click)="filterEstado.set('SUGERIDA')" [class.bg-purple-600]="filterEstado() === 'SUGERIDA'" [class.text-white]="filterEstado() === 'SUGERIDA'" class="px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1">
-              <lucide-icon name="sparkles" class="w-3 h-3"></lucide-icon>
+      <div class="filters-bar">
+        <div class="filters-bar__group">
+          <lucide-icon name="filter" class="filters-bar__icon"></lucide-icon>
+          <span class="filters-bar__label">Estado del Combo:</span>
+          <div class="segmented">
+            <button (click)="filterEstado.set('TODAS')" [class.segmented__btn--active]="filterEstado() === 'TODAS'" class="segmented__btn">Todas</button>
+            <button (click)="filterEstado.set('SUGERIDA')" [class.segmented__btn--active-sugerida]="filterEstado() === 'SUGERIDA'" class="segmented__btn">
               <span>Sugeridas IA</span>
             </button>
-            <button (click)="filterEstado.set('APROBADA')" [class.bg-blue-600]="filterEstado() === 'APROBADA'" [class.text-white]="filterEstado() === 'APROBADA'" class="px-3 py-1.5 rounded-lg transition-all cursor-pointer">Aprobadas</button>
-            <button (click)="filterEstado.set('ACTIVA')" [class.bg-[#0B4628]]="filterEstado() === 'ACTIVA'" [class.text-white]="filterEstado() === 'ACTIVA'" class="px-3 py-1.5 rounded-lg transition-all cursor-pointer">Activas</button>
+            <button (click)="filterEstado.set('APROBADA')" [class.segmented__btn--active-aprobada]="filterEstado() === 'APROBADA'" class="segmented__btn">Aprobadas</button>
+            <button (click)="filterEstado.set('ACTIVA')" [class.segmented__btn--active]="filterEstado() === 'ACTIVA'" class="segmented__btn">Activas</button>
           </div>
         </div>
 
-        <div class="text-xs font-bold text-purple-700 bg-purple-50 px-3 py-1.5 rounded-xl border border-purple-200 flex items-center gap-1.5">
-          <lucide-icon name="sparkles" class="w-3.5 h-3.5 text-purple-600"></lucide-icon>
-          <span>AgroSense Dynamic Pricing activo</span>
+        <div class="engine-status">
+          <span class="engine-status__dot"></span>
+          <span>Motor de sugerencias activo</span>
         </div>
       </div>
 
       <!-- Grid de Promociones y Combos -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div class="promos-grid">
         @for (p of filteredPromociones(); track p.idPromocion) {
-          <div class="bg-white rounded-2xl border border-gray-200/80 shadow-xs hover:shadow-md transition-all p-5 flex flex-col justify-between relative overflow-hidden group">
+          <div class="promo-card" [class]="getCardClass(p)">
             
             <!-- Insignia de Estado -->
-            <div class="flex items-center justify-between mb-3">
-              <span class="font-mono text-xs font-bold text-gray-500 bg-gray-100 px-2.5 py-0.5 rounded-md">{{ p.codigoLote }}</span>
+            <div class="promo-card__head">
+              <span class="lote-code">{{ p.codigoLote }}</span>
               @if (p.estado === 'SUGERIDA') {
-                <span class="bg-purple-100 text-purple-800 text-[10px] font-extrabold px-3 py-0.5 rounded-full uppercase flex items-center gap-1 border border-purple-200">
-                  <lucide-icon name="sparkles" class="w-3 h-3 text-purple-600 animate-pulse"></lucide-icon>
+                <span class="badge badge--sugerida">
                   <span>Sugerencia IA</span>
                 </span>
               } @else if (p.estado === 'APROBADA') {
-                <span class="bg-blue-100 text-blue-800 text-[10px] font-extrabold px-3 py-0.5 rounded-full uppercase border border-blue-200">
+                <span class="badge badge--aprobada">
                   Aprobado (Listo para POS)
                 </span>
               } @else if (p.estado === 'ACTIVA') {
-                <span class="bg-green-100 text-[#0B4628] text-[10px] font-extrabold px-3 py-0.5 rounded-full uppercase border border-green-200 flex items-center gap-1">
+                <span class="badge badge--activa">
                   ● Vigente en Portal
                 </span>
               } @else {
-                <span class="bg-gray-100 text-gray-500 text-[10px] font-bold px-3 py-0.5 rounded-full uppercase">
+                <span class="badge badge--rechazada">
                   Rechazado
                 </span>
               }
             </div>
 
             <div>
-              <h3 class="font-extrabold text-base text-gray-900 group-hover:text-purple-700 transition-colors">{{ p.titulo }}</h3>
-              <p class="text-xs text-gray-500 mt-0.5">{{ p.nombreProducto }}</p>
+              <h3 class="promo-card__title">{{ p.titulo }}</h3>
+              <p class="promo-card__product">{{ p.nombreProducto }}</p>
 
               <!-- Precio y Descuento -->
-              <div class="mt-4 flex items-baseline justify-between bg-purple-50/50 p-3.5 rounded-xl border border-purple-100">
-                <div>
-                  <span class="text-[10px] font-bold text-gray-400 uppercase block">Precio Original</span>
-                  <span class="text-sm font-semibold text-gray-500 line-through">\${{ p.precioOriginal | number:'1.2-2' }}</span>
+              <div class="price-box">
+                <div class="price-box__col">
+                  <span class="price-box__label">Precio Original</span>
+                  <span class="price-box__original">\${{ p.precioOriginal | number:'1.2-2' }}</span>
                 </div>
-                <div class="text-right">
-                  <span class="text-[10px] font-extrabold text-purple-700 uppercase block">Precio Combo IA</span>
-                  <span class="text-2xl font-black text-purple-900">\${{ p.precioPromocion | number:'1.2-2' }}</span>
+                <div class="price-box__col">
+                  <span class="price-box__label">Precio Promocional</span>
+                  <span class="price-box__final">\${{ p.precioPromocion | number:'1.2-2' }}</span>
                 </div>
-                <span class="bg-purple-600 text-white font-extrabold text-xs px-2.5 py-1 rounded-lg shadow-2xs">
+                <span class="price-box__off">
                   -{{ p.descuentoSugerido }}% OFF
                 </span>
               </div>
 
               <!-- Justificación Algorítmica IA -->
-              <div class="mt-3.5 p-3 bg-gray-50 rounded-xl border border-gray-200/60 text-xs text-gray-600">
-                <div class="flex items-center gap-1 text-[11px] font-bold text-purple-800 mb-1">
-                  <lucide-icon name="sparkles" class="w-3 h-3 text-purple-600"></lucide-icon>
-                  <span>Análisis AgroSense</span>
+              <div class="rationale">
+                <div class="rationale__title">
+                  <lucide-icon name="activity" class="rationale__icon"></lucide-icon>
+                  <span>Cálculo del motor</span>
                 </div>
-                <p class="italic leading-relaxed">{{ p.justificacionIA }}</p>
+                <p class="rationale__text">{{ p.justificacionIA }}</p>
               </div>
             </div>
 
             <!-- Botones de Decisión -->
-            <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end gap-2">
+            <div class="promo-card__foot">
               @if (p.estado === 'SUGERIDA') {
-                <button (click)="cambiarEstado(p, 'RECHAZADA')" 
-                        class="px-3 py-2 text-xs font-bold text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer flex items-center gap-1">
+                <button (click)="cambiarEstado(p, 'RECHAZADA')" class="btn btn--discard">
                   <lucide-icon name="x" class="w-3.5 h-3.5"></lucide-icon>
                   <span>Descartar</span>
                 </button>
-                <button (click)="cambiarEstado(p, 'APROBADA')" 
-                        class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer flex items-center gap-1">
+                <button (click)="cambiarEstado(p, 'APROBADA')" class="btn btn--approve">
                   <lucide-icon name="check" class="w-3.5 h-3.5"></lucide-icon>
                   <span>Aprobar Descuento</span>
                 </button>
               } @else if (p.estado === 'APROBADA') {
-                <button (click)="cambiarEstado(p, 'ACTIVA')" 
-                        class="w-full py-2 bg-[#0B4628] hover:bg-[#146C43] text-white font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer flex items-center justify-center gap-1.5">
+                <button (click)="cambiarEstado(p, 'ACTIVA')" class="btn btn--publish">
                   <lucide-icon name="play" class="w-3.5 h-3.5"></lucide-icon>
                   <span>Publicar e Iniciar Vigencia</span>
                 </button>
               } @else if (p.estado === 'ACTIVA') {
-                <span class="text-xs font-bold text-[#0B4628] flex items-center gap-1">
-                  <lucide-icon name="check-circle" class="w-4 h-4"></lucide-icon>
+                <span class="status-line">
+                  <lucide-icon name="check-circle"></lucide-icon>
                   <span>Disponible para Venta</span>
                 </span>
               }
@@ -130,72 +128,98 @@ import { ToastService } from '../../../shared/components/toast/toast.service';
 
           </div>
         } @empty {
-          <div class="col-span-full bg-white rounded-2xl p-12 text-center border border-gray-200/80">
-            <lucide-icon name="gift" class="w-16 h-16 mx-auto text-purple-300 mb-3"></lucide-icon>
-            <h3 class="font-bold text-gray-900 text-lg">No hay promociones ni sugerencias pendientes</h3>
-            <p class="text-sm text-gray-500 mt-1">El motor AgroSense generará automáticamente nuevas sugerencias cuando un lote agrícola cumpla las reglas de anticipación.</p>
+          <div class="empty-state">
+            <div class="empty-state__icon">
+              <lucide-icon name="gift"></lucide-icon>
+            </div>
+            <h3 class="empty-state__title">No hay promociones ni sugerencias pendientes</h3>
+            <p class="empty-state__text">El motor AgroSense generará automáticamente nuevas sugerencias cuando un lote agrícola cumpla las reglas de anticipación.</p>
           </div>
+
+      <!-- Paginación -->
+      <div class="pagination" style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--c-sage-border);">
+        <span style="font-size: 0.85rem; color: var(--c-mid-green);">Mostrando página {{ page() + 1 }} de {{ totalPages() || 1 }} ({{ totalElements() }} resultados)</span>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="btn btn--ghost" (click)="prevPage()" [disabled]="page() === 0">
+            <lucide-icon name="chevron-left" class="w-4 h-4"></lucide-icon> Anterior
+          </button>
+          <button class="btn btn--ghost" (click)="nextPage()" [disabled]="page() >= totalPages() - 1">
+            Siguiente <lucide-icon name="chevron-right" class="w-4 h-4"></lucide-icon>
+          </button>
+        </div>
+      </div>
         }
       </div>
 
       <!-- MODAL CREAR COMBO MANUAL -->
       @if (isModalOpen()) {
-        <div class="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 animate-fade-in p-4">
-          <div class="bg-white rounded-2xl shadow-xl border border-gray-200 max-w-md w-full overflow-hidden">
-            <div class="p-6 border-b border-gray-100 flex items-center justify-between bg-purple-50/60">
-              <div class="flex items-center gap-2">
-                <lucide-icon name="gift" class="w-5 h-5 text-purple-700"></lucide-icon>
-                <h3 class="font-bold text-base text-gray-900">Crear Combo / Promoción Manual</h3>
+        <div class="modal-overlay">
+          <div class="modal">
+            <div class="modal__header">
+              <div class="modal__title-group">
+                <lucide-icon name="gift"></lucide-icon>
+                <h3 class="modal__title">Crear Combo / Promoción Manual</h3>
               </div>
-              <button (click)="isModalOpen.set(false)" class="p-1 text-gray-400 hover:text-gray-600 rounded-lg">
-                <lucide-icon name="x" class="w-5 h-5"></lucide-icon>
+              <button (click)="isModalOpen.set(false)" class="modal__close">
+                <lucide-icon name="x"></lucide-icon>
               </button>
             </div>
 
-            <div class="p-6 space-y-4">
+            <div class="modal__body">
               <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Título de la Promoción</label>
+                <label class="field__label">Título de la Promoción</label>
                 <input type="text" [(ngModel)]="form.titulo" placeholder="Ej: Combo Semilla Maíz + Fertilizante"
-                       class="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-sm focus:border-purple-600 outline-none font-bold">
+                       class="field__input">
               </div>
 
               <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Producto / Lote Agrícola</label>
-                <input type="text" [(ngModel)]="form.nombreProducto" placeholder="Ej: Semilla Híbrida Maíz Trueno"
-                       class="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-sm focus:border-purple-600 outline-none">
+                <label class="field__label">Producto / Lote Agrícola</label>
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                  <input type="text" [(ngModel)]="searchLoteText" (ngModelChange)="onSearchLote()" placeholder="Buscar por número o producto..." class="field__input">
+                </div>
+                <div class="lotes-list" style="max-height: 150px; overflow-y: auto; border: 1px solid var(--c-sage-border); border-radius: var(--radius-input); margin-bottom: 1rem;">
+                  @for (l of lotes(); track l.idLote) {
+                    <div (click)="seleccionarLote(l)" [style.background]="form.idLote === l.idLote ? 'var(--c-sage-border)' : 'transparent'" style="padding: 0.5rem; cursor: pointer; border-bottom: 1px solid var(--c-sage-border); font-size: 0.85rem;">
+                      <strong>{{ l.numeroLote }}</strong> - {{ l.nombreProducto }}
+                      <div style="color: var(--c-dark-green)">Vence: {{ l.fechaVencimiento }} ({{ l.cantidadActual }} {{ l.unidadMedida }})</div>
+                    </div>
+                  } @empty {
+                    <div style="padding: 0.5rem; text-align: center; color: var(--c-mid-green); font-size: 0.85rem;">No se encontraron lotes.</div>
+                  }
+                </div>
               </div>
 
-              <div class="grid grid-cols-2 gap-3">
+              <div class="field-grid">
                 <div>
-                  <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Precio Normal ($)</label>
-                  <input type="number" [(ngModel)]="form.precioOriginal" (ngModelChange)="calcPromo()" step="0.5"
-                         class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm font-mono focus:border-purple-600 outline-none">
+                  <label class="field__label">Precio Normal ($)</label>
+                  <input type="number" [(ngModel)]="form.precioOriginal" (ngModelChange)="calcPromo()" step="0.5" readonly
+                         class="field__input field__input--num" style="background-color: var(--c-bone-bg); cursor: not-allowed;">
                 </div>
                 <div>
-                  <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Descuento (%)</label>
+                  <label class="field__label">Descuento (%)</label>
                   <input type="number" [(ngModel)]="form.descuentoSugerido" (ngModelChange)="calcPromo()" min="5" max="50"
-                         class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm font-mono focus:border-purple-600 outline-none">
+                         class="field__input field__input--num">
                 </div>
               </div>
 
-              <div class="p-3 bg-purple-50 rounded-xl border border-purple-200 flex justify-between items-center font-bold">
-                <span class="text-xs text-purple-900">Precio Final Calculado:</span>
-                <span class="text-lg text-purple-700">\${{ form.precioPromocion | number:'1.2-2' }}</span>
+              <div class="calc-row">
+                <span class="calc-row__label">Precio Final Calculado:</span>
+                <span class="calc-row__value">\${{ form.precioPromocion | number:'1.2-2' }}</span>
               </div>
 
               <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Justificación o Motivo</label>
+                <label class="field__label">Justificación o Motivo</label>
                 <textarea [(ngModel)]="form.justificacionIA" rows="2" placeholder="Motivo de la promoción para autorización gerencial..."
-                          class="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-sm focus:border-purple-600 outline-none"></textarea>
+                          class="field__textarea"></textarea>
               </div>
             </div>
 
-            <div class="p-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-2">
-              <button (click)="isModalOpen.set(false)" class="px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
+            <div class="modal__footer">
+              <button (click)="isModalOpen.set(false)" class="btn btn--ghost">
                 Cancelar
               </button>
-              <button (click)="saveManual()" class="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-xl shadow-md transition-all flex items-center gap-1.5">
-                <lucide-icon name="save" class="w-4 h-4"></lucide-icon>
+              <button (click)="saveManual()" class="btn btn--primary">
+                <lucide-icon name="save"></lucide-icon>
                 <span>Crear Promoción</span>
               </button>
             </div>
@@ -213,14 +237,53 @@ export class PromocionesIAComponent implements OnInit {
   filterEstado = signal<string>('TODAS');
 
   isModalOpen = signal<boolean>(false);
-  form = { titulo: '', nombreProducto: '', codigoLote: 'LT-2026-MAN', precioOriginal: 50.0, descuentoSugerido: 15, precioPromocion: 42.5, justificacionIA: 'Promoción creada manualmente por la gerencia para impulso de ventas.' };
+  form = { titulo: '', idLote: null as number | null, nombreProducto: '', codigoLote: '', precioOriginal: 0, descuentoSugerido: 15, precioPromocion: 0, fechaFin: '', justificacionIA: 'Promoción creada manualmente por la gerencia para impulso de ventas.' };
+
+  lotes = signal<any[]>([]);
+  searchLoteText = '';
+  searchSubject = new Subject<string>();
+
+  page = signal(0);
+  size = signal(10);
+  totalPages = signal(0);
+  totalElements = signal(0);
 
   ngOnInit(): void {
     this.loadData();
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(q => {
+      this.opService.listarLotesProximosVencer(0, 10, q).subscribe({
+        next: (res) => this.lotes.set(res.content),
+        error: () => this.toast.error('Error', 'No se pudieron cargar los lotes')
+      });
+    });
   }
 
   loadData(): void {
-    this.opService.listarPromociones().subscribe(data => this.promociones.set(data));
+    this.opService.listarPromociones(this.page(), this.size()).subscribe({
+      next: res => {
+        this.promociones.set(res.content);
+        this.totalPages.set(res.totalPages);
+        this.totalElements.set(res.totalElements);
+      },
+      error: () => this.toast.error('Error', 'No se pudieron cargar las promociones.')
+    });
+  }
+
+  nextPage(): void {
+    if (this.page() < this.totalPages() - 1) {
+      this.page.set(this.page() + 1);
+      this.loadData();
+    }
+  }
+
+  prevPage(): void {
+    if (this.page() > 0) {
+      this.page.set(this.page() - 1);
+      this.loadData();
+    }
   }
 
   filteredPromociones = computed(() => {
@@ -241,21 +304,67 @@ export class PromocionesIAComponent implements OnInit {
         const txt = nuevoEstado === 'APROBADA' ? 'aprobada' : nuevoEstado === 'ACTIVA' ? 'activada en POS' : 'rechazada';
         this.toast.success('Estado modificado', `La promoción "${p.titulo}" fue ${txt}.`);
         this.loadData();
-      }
+      },
+      error: () => this.toast.error('Error', 'No se pudo cambiar el estado de la promoción.')
     });
   }
 
+  onSearchLote(): void {
+    this.searchSubject.next(this.searchLoteText);
+  }
+
+  seleccionarLote(lote: any): void {
+    this.form.idLote = lote.idLote;
+    this.form.nombreProducto = lote.nombreProducto;
+    this.form.codigoLote = lote.numeroLote;
+    this.form.precioOriginal = lote.precioOriginal;
+    this.calcPromo();
+  }
+
   openCreateModal(): void {
-    this.form = { titulo: '', nombreProducto: '', codigoLote: 'LT-2026-MAN', precioOriginal: 50.0, descuentoSugerido: 15, precioPromocion: 42.5, justificacionIA: 'Promoción creada manualmente por la gerencia para impulso de ventas.' };
+    const hoy = new Date();
+    const fin = new Date(hoy);
+    fin.setDate(hoy.getDate() + 30);
+
+    this.form = { titulo: '', idLote: null, nombreProducto: '', codigoLote: '', precioOriginal: 0, descuentoSugerido: 15, precioPromocion: 0, fechaFin: fin.toISOString().substring(0, 10), justificacionIA: 'Promoción creada manualmente por la gerencia para impulso de ventas.' };
+    this.searchLoteText = '';
+    this.lotes.set([]);
     this.isModalOpen.set(true);
+    this.searchSubject.next('');
   }
 
   saveManual(): void {
-    if (!this.form.titulo.trim() || !this.form.nombreProducto.trim()) {
-      this.toast.warning('Validación', 'Ingresa un título y producto.');
+    if (!this.form.titulo.trim()) {
+      this.toast.warning('Validación', 'Ingresa un título para el combo.');
       return;
     }
-    this.toast.success('Promoción Creada', `El combo "${this.form.titulo}" ha sido guardado como Aprobado.`);
-    this.isModalOpen.set(false);
+    if (!this.form.idLote) {
+      this.toast.warning('Validación', 'Selecciona el lote al que aplica el combo.');
+      return;
+    }
+    const hoy = new Date().toISOString().substring(0, 10);
+    this.opService.crearPromocionManual({
+      nombre: this.form.titulo.trim(),
+      descripcion: this.form.justificacionIA,
+      fechaInicio: hoy,
+      fechaFin: this.form.fechaFin,
+      porcentajeDescuento: Number(this.form.descuentoSugerido),
+      idEstado: 2,                       // APROBADA — creado manualmente por el Administrador
+      idLote: this.form.idLote
+    }).subscribe({
+      next: () => {
+        this.toast.success('Combo creado', `El combo "${this.form.titulo}" fue registrado.`);
+        this.isModalOpen.set(false);
+        this.loadData();
+      },
+      error: () => this.toast.error('Error', 'No se pudo crear el combo. Revisa los datos e intenta de nuevo.')
+    });
+  }
+
+  getCardClass(p: PromocionIADTO): string {
+    if (p.estado === 'SUGERIDA') return 'promo-card--sugerida';
+    if (p.estado === 'APROBADA') return 'promo-card--aprobada';
+    if (p.estado === 'ACTIVA') return 'promo-card--activa';
+    return 'promo-card--rechazada';
   }
 }

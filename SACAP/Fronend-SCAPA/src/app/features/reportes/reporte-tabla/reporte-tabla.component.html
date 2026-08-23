@@ -14,7 +14,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let row of data">
+      <tr *ngFor="let row of paginatedData">
         <td *ngFor="let col of columns" [ngClass]="{'text-right': isNumber(row[col])}">
           <ng-container *ngIf="isNumber(row[col]); else textData">
             <!-- Si la columna sugiere que es moneda o cantidad decimal, formatear -->
@@ -37,4 +37,10 @@
       </tr>
     </tbody>
   </table>
+
+  <div *ngIf="!loading && totalPaginas > 1" class="pagination-controls">
+    <button class="btn btn-sm btn-secondary pagination-btn" [disabled]="paginaActual === 0" (click)="prevPage()">← Anterior</button>
+    <span class="pagination-text">Página {{ paginaActual + 1 }} de {{ totalPaginas }} ({{ totalRegistros }} registros)</span>
+    <button class="btn btn-sm btn-secondary pagination-btn" [disabled]="paginaActual >= totalPaginas - 1" (click)="nextPage()">Siguiente →</button>
+  </div>
 </div>

@@ -66,8 +66,8 @@ export class CentroAprobacionesComponent implements OnInit {
   }
 
   loadAll(): void {
-    this.operacionesService.listarPromociones().subscribe(data => {
-      this.promosPendientes.set(data.filter(p => p.estado === 'SUGERIDA' || (p as any).idEstado === 2));
+    this.operacionesService.listarPromociones().subscribe(res => {
+      this.promosPendientes.set(res.content.filter(p => p.estado === 'SUGERIDA' || (p as any).idEstado === 2));
     });
     this.operacionesService.listarDespachosPendientes().subscribe(data => this.despachosPendientes.set(data));
     this.operacionesService.listarDevolucionesPendientes().subscribe(data => this.devolucionesPendientes.set(data));

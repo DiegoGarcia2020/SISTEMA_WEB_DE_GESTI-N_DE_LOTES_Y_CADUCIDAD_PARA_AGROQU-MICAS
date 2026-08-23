@@ -222,8 +222,8 @@ export class DashboardComponent implements OnInit {
     this.operacionesService.listarTemporadas().subscribe((t: any[]) => {
       this.temporadasActivas.set(t.filter((x: any) => x.estado === 'ACTIVA').length);
     });
-    this.operacionesService.listarAlertas().subscribe((a: any[]) => {
-      this.alertasActivas.set(a.filter((x: any) => x.estado === 'ACTIVA').length);
+    this.operacionesService.listarAlertas().subscribe(res => {
+      this.alertasActivas.set(res.totalElements);
     });
   }
 }

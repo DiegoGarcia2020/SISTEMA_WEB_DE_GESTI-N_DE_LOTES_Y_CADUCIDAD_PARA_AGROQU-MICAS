@@ -1,0 +1,576 @@
+/* =================================================================
+   COMBOS Y SUGERENCIAS — Dirección A: "Etiqueta de Almacén"
+   ================================================================= */
+
+.promos-container {
+  padding-bottom: 3rem;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* ── Botones ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--radius-btn);
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn--primary {
+  background: var(--c-dark-green);
+  color: var(--c-bone-bg);
+}
+
+.btn--primary:hover { background: var(--c-mid-green); }
+
+.btn--ghost {
+  background: transparent;
+  color: var(--c-warm-black);
+  border: 1px solid var(--c-sage-border);
+}
+
+.btn--ghost:hover {
+  border-color: var(--c-dark-green);
+  color: var(--c-dark-green);
+}
+
+.btn--sm {
+  padding: 0.375rem 0.875rem;
+  font-size: 0.75rem;
+}
+
+/* ── Barra de filtros ── */
+.filters-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: var(--c-bone-bg);
+  border: 1px solid var(--c-sage-border);
+  border-radius: var(--radius-card);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.filters-bar__group {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.filters-bar__label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--c-warm-black);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.filters-bar__icon { color: var(--c-sage-border); }
+
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--c-sage-border);
+  border-radius: var(--radius-btn);
+  overflow: hidden;
+}
+
+.segmented__btn {
+  padding: 0.375rem 0.875rem;
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--c-sage-border);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--c-warm-black);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.segmented__btn:last-child { border-right: none; }
+
+.segmented__btn:hover { background: rgba(143, 174, 155, 0.15); }
+
+.segmented__btn--active {
+  background: var(--c-dark-green);
+  color: var(--c-bone-bg);
+}
+
+.segmented__btn--active-sugerida {
+  background: var(--c-cacao-accent);
+  color: var(--c-bone-bg);
+}
+
+.segmented__btn--active-aprobada {
+  background: var(--c-mid-green);
+  color: var(--c-bone-bg);
+}
+
+/* ── Indicador del motor (reemplaza la píldora violeta) ── */
+.engine-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3125rem 0.75rem;
+  border: 1px solid var(--c-sage-border);
+  border-radius: var(--radius-input);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--c-warm-black);
+}
+
+.engine-status__dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  background: var(--c-success);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Grid ── */
+.promos-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .promos-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 1280px) {
+  .promos-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ── Tarjeta de combo ── */
+.promo-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: var(--c-bone-bg);
+  border: 1px solid var(--c-sage-border);
+  border-top: 3px solid var(--c-sage-border);
+  border-radius: var(--radius-card);
+  padding: 1.25rem;
+  transition: border-color 0.2s ease;
+}
+
+.promo-card:hover { border-color: var(--c-mid-green); }
+
+.promo-card--sugerida { border-top-color: var(--c-cacao-accent); }
+.promo-card--aprobada { border-top-color: var(--c-mid-green); }
+.promo-card--activa   { border-top-color: var(--c-dark-green); }
+.promo-card--rechazada {
+  border-top-color: var(--c-sage-border);
+  opacity: 0.6;
+}
+
+.promo-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.lote-code {
+  font-family: var(--font-slab);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--c-warm-black);
+  background: rgba(143, 174, 155, 0.2);
+  border: 1px solid var(--c-sage-border);
+  border-radius: var(--radius-input);
+  padding: 0.125rem 0.5rem;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--radius-input);
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.badge--sugerida {
+  background: rgba(199, 127, 61, 0.1);
+  color: var(--c-cacao-accent);
+  border: 1px solid var(--c-cacao-accent);
+}
+
+.badge--aprobada {
+  background: rgba(47, 93, 69, 0.1);
+  color: var(--c-mid-green);
+  border: 1px solid var(--c-mid-green);
+}
+
+.badge--activa {
+  background: rgba(18, 38, 29, 0.1);
+  color: var(--c-dark-green);
+  border: 1px solid var(--c-dark-green);
+}
+
+.badge--rechazada {
+  background: transparent;
+  color: var(--c-sage-border);
+  border: 1px solid var(--c-sage-border);
+}
+
+.promo-card__title {
+  font-family: var(--font-slab);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--c-warm-black);
+  margin: 0;
+}
+
+.promo-card__product {
+  font-size: 0.75rem;
+  color: var(--c-sage-border);
+  margin: 0.1875rem 0 0 0;
+}
+
+/* ── Bloque de precios: tabla de etiqueta, no caja de color ── */
+.price-box {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--c-sage-border);
+  border-bottom: 1px solid var(--c-sage-border);
+}
+
+.price-box__col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1875rem;
+}
+
+.price-box__label {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--c-sage-border);
+}
+
+.price-box__original {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--c-sage-border);
+  text-decoration: line-through;
+}
+
+.price-box__final {
+  font-family: var(--font-slab);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--c-dark-green);
+}
+
+.price-box__off {
+  align-self: center;
+  background: var(--c-cacao-accent);
+  color: var(--c-bone-bg);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-input);
+  white-space: nowrap;
+}
+
+/* ── Justificación del motor de reglas ── */
+.rationale {
+  margin-top: 0.875rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--c-sage-border);
+}
+
+.rationale__title {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--c-warm-black);
+  margin-bottom: 0.25rem;
+}
+
+.rationale__icon { color: var(--c-sage-border); }
+
+.rationale__text {
+  font-size: 0.75rem;
+  line-height: 1.55;
+  color: var(--c-warm-black);
+  margin: 0;
+}
+
+/* ── Pie de la tarjeta ── */
+.promo-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1.125rem;
+  padding-top: 0.875rem;
+  border-top: 1px solid var(--c-sage-border);
+}
+
+.btn--discard {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  background: transparent;
+  color: var(--c-sage-border);
+  border: 1px solid transparent;
+}
+
+.btn--discard:hover {
+  color: var(--c-error);
+  border-color: var(--c-error);
+}
+
+.btn--approve {
+  padding: 0.375rem 0.875rem;
+  font-size: 0.75rem;
+  background: var(--c-cacao-accent);
+  color: var(--c-bone-bg);
+}
+
+.btn--approve:hover { background: var(--c-warm-black); }
+
+.btn--publish {
+  width: 100%;
+  justify-content: center;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.75rem;
+  background: var(--c-dark-green);
+  color: var(--c-bone-bg);
+}
+
+.btn--publish:hover { background: var(--c-mid-green); }
+
+.status-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--c-dark-green);
+}
+
+/* ── Estado vacío ── */
+.empty-state {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 3.5rem 1.5rem;
+  background: var(--c-bone-bg);
+  border: 1px dashed var(--c-sage-border);
+  border-radius: var(--radius-card);
+}
+
+.empty-state__icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--c-sage-border);
+  color: var(--c-sage-border);
+  margin-bottom: 1rem;
+}
+
+.empty-state__title {
+  font-family: var(--font-slab);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--c-warm-black);
+  margin: 0 0 0.375rem 0;
+}
+
+.empty-state__text {
+  font-size: 0.8125rem;
+  color: var(--c-sage-border);
+  max-width: 34rem;
+  margin: 0;
+}
+
+/* ── Modal crear combo manual ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(26, 26, 22, 0.55);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal {
+  width: 100%;
+  max-width: 30rem;
+  background: var(--c-bone-bg);
+  border: 1px solid var(--c-warm-black);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--c-dark-green);
+  color: var(--c-bone-bg);
+}
+
+.modal__title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.modal__title {
+  font-family: var(--font-slab);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--c-bone-bg);
+}
+
+.modal__close {
+  background: transparent;
+  border: none;
+  color: var(--c-sage-border);
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: color 0.2s ease;
+}
+
+.modal__close:hover { color: var(--c-bone-bg); }
+
+.modal__body {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--c-sage-border);
+}
+
+/* ── Formulario ── */
+.field__label {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--c-warm-black);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.375rem;
+}
+
+.field__input,
+.field__textarea {
+  width: 100%;
+  padding: 0.5rem 0;
+  border: none;
+  border-bottom: 1px solid var(--c-sage-border);
+  background: transparent;
+  color: var(--c-warm-black);
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+  resize: vertical;
+}
+
+.field__input:focus,
+.field__textarea:focus {
+  border-bottom-color: var(--c-dark-green);
+}
+
+.field__input::placeholder,
+.field__textarea::placeholder {
+  color: var(--c-sage-border);
+}
+
+.field__input--num {
+  font-family: var(--font-slab);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.875rem;
+}
+
+.calc-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem;
+  border: 1px solid var(--c-sage-border);
+  border-radius: var(--radius-card);
+}
+
+.calc-row__label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--c-warm-black);
+}
+
+.calc-row__value {
+  font-family: var(--font-slab);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--c-dark-green);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

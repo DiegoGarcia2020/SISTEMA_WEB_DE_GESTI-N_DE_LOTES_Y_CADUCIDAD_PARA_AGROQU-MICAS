@@ -78,7 +78,7 @@ public class VentaIAServiceImpl implements IVentaIAService {
 
         List<PromocionResponseDTO> promociones = catEstadoPromocionRepository.findByNombreIgnoreCase("ACTIVA")
                 .map(CatEstadoPromocion::getIdEstadoPromocion)
-                .map(promocionRepository::findByEstado_IdEstadoPromocion)
+                .map(id -> promocionRepository.findByEstado_IdEstadoPromocion(id, org.springframework.data.domain.Pageable.unpaged()).getContent())
                 .orElse(List.of())
                 .stream().map(PromocionResponseDTO::from).toList();
 

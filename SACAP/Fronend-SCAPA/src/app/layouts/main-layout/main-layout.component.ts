@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { SidebarComponent } from './sidebar.component';
@@ -11,9 +11,9 @@ import { ToastComponent } from '../../shared/components/toast/toast.component';
   imports: [CommonModule, RouterModule, SidebarComponent, TopbarComponent, ToastComponent],
   styleUrl: './main-layout.component.css',
   template: `
-    <div class="layout-wrapper">
+    <div class="layout-wrapper" [class.layout-collapsed]="sidebarColapsado()">
       <!-- Sidebar Fijo -->
-      <app-sidebar></app-sidebar>
+      <app-sidebar [colapsado]="sidebarColapsado()" (toggle)="toggleSidebar()"></app-sidebar>
 
       <!-- Área de contenido principal -->
       <div class="layout-content">
@@ -31,4 +31,10 @@ import { ToastComponent } from '../../shared/components/toast/toast.component';
     </div>
   `
 })
-export class MainLayoutComponent {}
+export class MainLayoutComponent {
+  sidebarColapsado = signal(false);
+
+  toggleSidebar() {
+    this.sidebarColapsado.set(!this.sidebarColapsado());
+  }
+}

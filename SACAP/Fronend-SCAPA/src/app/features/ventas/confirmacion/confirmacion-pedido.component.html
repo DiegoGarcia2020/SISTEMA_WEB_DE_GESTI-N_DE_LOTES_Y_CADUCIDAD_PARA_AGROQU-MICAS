@@ -9,7 +9,13 @@
     <div class="vt-confirm-card">
       <div class="vt-confirm-icon">📄</div>
       <h1 class="vt-confirm-title">Detalle de Venta</h1>
-      <p class="vt-confirm-orden">Orden {{ v.numeroOrden || v.idVenta }}</p>
+      <p class="vt-confirm-orden">
+        Orden {{ v.numeroOrden || v.idVenta }}
+        <button class="vt-btn vt-btn--ghost" style="padding: .2rem .5rem; font-size: .75rem; margin-left: .5rem;"
+                (click)="copiarOrden((v.numeroOrden || v.idVenta).toString())" title="Copiar número de orden">
+          📋
+        </button>
+      </p>
       <span class="vt-badge vt-badge--pendiente">{{ v.estado }}</span>
     </div>
 

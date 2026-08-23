@@ -60,7 +60,7 @@ public class OrdenCompraController {
         if (esOperativo) {
             return principal.getIdUsuario(); // Ignora el parámetro recibido
         }
-        return idRecibido; // ADMINISTRADOR/GERENTE/BODEGUERO conservan acceso completo
+        return idRecibido; // ADMINISTRADOR/BODEGUERO conservan acceso completo
     }
 
     /**

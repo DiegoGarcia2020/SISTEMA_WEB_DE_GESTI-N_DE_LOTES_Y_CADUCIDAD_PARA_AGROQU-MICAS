@@ -21,15 +21,18 @@ public class ReporteController {
     }
 
     private String getRol(Authentication authentication) {
-        return authentication.getAuthorities().stream()
-                .findFirst()
+        var authorities = authentication.getAuthorities().stream()
                 .map(a -> a.getAuthority().replace("ROLE_", ""))
-                .orElse("");
+                .toList();
+        if (authorities.contains("ADMINISTRADOR")) return "ADMINISTRADOR";
+        if (authorities.contains("SUPERVISOR"))    return "SUPERVISOR";
+        if (authorities.contains("BODEGUERO"))     return "BODEGUERO";
+        return authorities.isEmpty() ? "" : authorities.get(0);
     }
 
     // A. Ventas y Rentabilidad
     @GetMapping("/ventas/productos-mas-vendidos")
-    @PreAuthorize("hasAnyAuthority('ADMINISTRADOR', 'SUPERVISOR', 'TÉCNICO DE CAMPO')")
+    @PreAuthorize("hasAnyAuthority('ADMINISTRADOR', 'SUPERVISOR', 'TÉCNICO DE CAMPO', 'TECNICO', 'TECNICO_CAMPO')")
     public ResponseEntity<ReporteRespuestaDTO> getProductosMasVendidos(@ModelAttribute ReporteFiltrosDTO filtros, Authentication auth) {
         return ResponseEntity.ok(reporteService.getProductosMasVendidos(filtros, getUsername(auth), getRol(auth)));
     }
@@ -53,7 +56,7 @@ public class ReporteController {
     }
 
     @GetMapping("/ventas/rotacion-temporada")
-    @PreAuthorize("hasAnyAuthority('ADMINISTRADOR', 'SUPERVISOR', 'TÉCNICO DE CAMPO')")
+    @PreAuthorize("hasAnyAuthority('ADMINISTRADOR', 'SUPERVISOR', 'TÉCNICO DE CAMPO', 'TECNICO', 'TECNICO_CAMPO')")
     public ResponseEntity<ReporteRespuestaDTO> getRotacionTemporada(@ModelAttribute ReporteFiltrosDTO filtros, Authentication auth) {
         return ResponseEntity.ok(reporteService.getRotacionTemporada(filtros, getUsername(auth), getRol(auth)));
     }
@@ -123,19 +126,19 @@ public class ReporteController {
 
     // E. Clientes
     @GetMapping("/clientes/mas-compran")
-    @PreAuthorize("hasAnyAuthority('ADMINISTRADOR', 'SUPERVISOR', 'TÉCNICO DE CAMPO')")
+    @PreAuthorize("hasAnyAuthority('ADMINISTRADOR', 'SUPERVISOR', 'TÉCNICO DE CAMPO', 'TECNICO', 'TECNICO_CAMPO')")
     public ResponseEntity<ReporteRespuestaDTO> getClientesMasCompran(@ModelAttribute ReporteFiltrosDTO filtros, Authentication auth) {
         return ResponseEntity.ok(reporteService.getClientesMasCompran(filtros, getUsername(auth), getRol(auth)));
     }
 
     @GetMapping("/clientes/devoluciones")
-    @PreAuthorize("hasAnyAuthority('ADMINISTRADOR', 'SUPERVISOR', 'TÉCNICO DE CAMPO')")
+    @PreAuthorize("hasAnyAuthority('ADMINISTRADOR', 'SUPERVISOR', 'TÉCNICO DE CAMPO', 'TECNICO', 'TECNICO_CAMPO')")
     public ResponseEntity<ReporteRespuestaDTO> getMercaderiaDevueltaPorMes(@ModelAttribute ReporteFiltrosDTO filtros, Authentication auth) {
         return ResponseEntity.ok(reporteService.getMercaderiaDevueltaPorMes(filtros, getUsername(auth), getRol(auth)));
     }
 
     @GetMapping("/clientes/churn")
-    @PreAuthorize("hasAnyAuthority('ADMINISTRADOR', 'SUPERVISOR', 'TÉCNICO DE CAMPO')")
+    @PreAuthorize("hasAnyAuthority('ADMINISTRADOR', 'SUPERVISOR', 'TÉCNICO DE CAMPO', 'TECNICO', 'TECNICO_CAMPO')")
     public ResponseEntity<ReporteRespuestaDTO> getClientesChurn(@ModelAttribute ReporteFiltrosDTO filtros, Authentication auth) {
         return ResponseEntity.ok(reporteService.getClientesChurn(filtros, getUsername(auth), getRol(auth)));
     }

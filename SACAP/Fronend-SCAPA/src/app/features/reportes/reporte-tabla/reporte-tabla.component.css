@@ -55,3 +55,29 @@
   color: var(--c-mid-green, #2F5D45);
   font-style: italic;
 }
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  font-size: 0.875rem;
+}
+
+.pagination-btn {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--c-sage-border, #8FAE9B);
+  background: var(--c-bone-bg, #F6F5F0);
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--c-warm-black, #1A1A16);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-text {
+  color: var(--c-warm-black, #1A1A16);
+}

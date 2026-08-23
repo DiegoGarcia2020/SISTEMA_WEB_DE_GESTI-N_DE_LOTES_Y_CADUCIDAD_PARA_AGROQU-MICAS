@@ -22,6 +22,12 @@ public class DespachoController {
         return ResponseEntity.ok(despachoService.listarPendientesPreparar(busqueda));
     }
 
+    @GetMapping("/pendientes-entrega")
+    public ResponseEntity<List<OrdenPendienteDespachoDTO>> listarListasParaEntrega(
+            @RequestParam(required = false) String busqueda) {
+        return ResponseEntity.ok(despachoService.listarListasParaEntrega(busqueda));
+    }
+
     @GetMapping("/{idVenta}/lotes-a-despachar")
     public ResponseEntity<List<DesgloseLoteDespachoDTO>> lotesADespachar(@PathVariable Integer idVenta) {
         return ResponseEntity.ok(despachoService.obtenerLotesADespachar(idVenta));

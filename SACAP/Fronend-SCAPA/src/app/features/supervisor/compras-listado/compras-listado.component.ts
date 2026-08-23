@@ -477,13 +477,7 @@ export class ComprasListadoComponent implements OnInit, OnDestroy {
     this.operacionesService['http'].get<any[]>(`${this.operacionesService['apiUrl']}/proveedores`).subscribe({
       next: (data) => this.proveedores.set(data),
       error: () => {
-        // Mock fallback
-        this.proveedores.set([
-          { idProveedor: 1, nombre: 'Agroquímicos del Pacífico' },
-          { idProveedor: 2, nombre: 'Bayer CropScience' },
-          { idProveedor: 3, nombre: 'Syngenta Ecuador' },
-          { idProveedor: 4, nombre: 'Semillas Certificadas S.A.' }
-        ]);
+        this.toast.error('Error', 'No se pudieron cargar los proveedores');
       }
     });
   }

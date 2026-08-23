@@ -15,6 +15,11 @@
   flex-shrink: 0;
   user-select: none;
   z-index: 30;
+  transition: width 180ms ease;
+}
+
+.sidebar--collapsed {
+  width: 64px;
 }
 
 /* Cabecera / Logo */
@@ -24,6 +29,13 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  transition: padding 180ms ease;
+}
+
+.sidebar--collapsed .sidebar-header {
+  padding: 1.25rem 0.5rem;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .sidebar-logo {
@@ -57,6 +69,27 @@
   display: block;
 }
 
+.btn-collapse {
+  background: none;
+  border: none;
+  color: var(--c-sage-border);
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s;
+  margin-left: auto;
+}
+
+.sidebar--collapsed .btn-collapse {
+  margin-left: 0;
+}
+
+.btn-collapse:hover {
+  color: var(--c-bone-bg);
+}
+
 /* Navegación */
 .sidebar-nav {
   flex: 1;
@@ -65,6 +98,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  overflow-x: hidden;
 }
 
 .nav-section-title {
@@ -74,6 +108,7 @@
   color: var(--c-sage-border);
   text-transform: uppercase;
   letter-spacing: 0.1em;
+  white-space: nowrap;
 }
 
 .nav-item {
@@ -85,7 +120,14 @@
   text-decoration: none;
   font-size: 0.8125rem;
   border-left: 3px solid transparent;
-  transition: background-color 0.15s, border-color 0.15s;
+  transition: background-color 0.15s, border-color 0.15s, padding 180ms ease;
+  white-space: nowrap;
+}
+
+.sidebar--collapsed .nav-item {
+  padding: 0.625rem;
+  justify-content: center;
+  border-left: none; /* Mejor sin borde en modo icono */
 }
 
 .nav-item:hover {
@@ -96,6 +138,11 @@
   border-left-color: var(--c-cacao-accent);
   background-color: var(--c-mid-green);
   font-weight: 600;
+}
+
+.sidebar--collapsed .nav-item.active {
+  border-left-color: transparent;
+  color: var(--c-cacao-accent);
 }
 
 .nav-item__icon {
@@ -149,7 +196,6 @@
 
 .nav-item--sub {
   padding-left: 2.5rem;
-
 }
 
 /* Pie del Sidebar / Usuario */
@@ -159,8 +205,14 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  transition: padding 180ms ease;
+}
 
-
+.sidebar--collapsed .sidebar-footer {
+  padding: 1rem 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .user-info {

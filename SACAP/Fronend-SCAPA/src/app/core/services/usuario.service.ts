@@ -13,36 +13,9 @@ export class UsuarioService {
   private apiUrl = `${environment.apiUrl}/usuarios`;
 
   // --- MOCK OFFLINE FALLBACK ---
-  private mockUsuarios: UsuarioDTO[] = [
-    {
-      idUsuario: 1, correo: 'admin@agro.com', idEstado: 1,
-      roles: ['ADMINISTRADOR'], idRoles: [1],
-      nombre: 'Administrador SACPA',
-      cedula: '1700000000'
-    } as any,
-    {
-      idUsuario: 2, correo: 'bodeguero@agro.com', idEstado: 1,
-      roles: ['BODEGUERO'], idRoles: [3],
-      nombre: 'Bodeguero SACPA',
-      cedula: '1700000001'
-    } as any,
-    {
-      idUsuario: 3, correo: 'tecnico@agro.com', idEstado: 2,
-      roles: ['TÉCNICO DE CAMPO'], idRoles: [4],
-      nombre: 'Técnico SACPA',
-      cedula: '1700000002'
-    } as any
-  ];
 
   listar(): Observable<UsuarioDTO[]> {
-    return this.http.get<UsuarioDTO[]>(this.apiUrl).pipe(
-      catchError(err => {
-        if (err.status === 0 || err.status === 404) {
-          return of([...this.mockUsuarios]);
-        }
-        return throwError(() => err);
-      })
-    );
+    return this.http.get<UsuarioDTO[]>(this.apiUrl);
   }
 
   obtenerPorId(id: number): Observable<UsuarioDTO> {

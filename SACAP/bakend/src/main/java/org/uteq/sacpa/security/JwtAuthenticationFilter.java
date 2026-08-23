@@ -60,7 +60,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         } catch (Exception e) {
-            logger.error("Error al procesar token JWT: " + e.getMessage(), e);
+            logger.warn("Token JWT inválido o expirado: " + e.getMessage());
         }
 
         try {

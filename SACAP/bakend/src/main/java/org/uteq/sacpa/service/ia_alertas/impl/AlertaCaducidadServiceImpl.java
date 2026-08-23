@@ -9,6 +9,8 @@ import org.uteq.sacpa.dto.ia_alertas.AlertaCaducidadResponseDTO;
 import org.uteq.sacpa.dto.ia_alertas.AlertaRequestDTO;
 import org.uteq.sacpa.dto.ia_alertas.SugerenciaComboDTO;
 import org.uteq.sacpa.dto.ia_modelos.PromocionResponseDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.uteq.sacpa.entity.catalogos.CatEstadoAlerta;
 import org.uteq.sacpa.entity.catalogos.CatEstadoAprobacion;
 import org.uteq.sacpa.entity.catalogos.CatEstadoLote;
@@ -90,11 +92,10 @@ public class AlertaCaducidadServiceImpl implements IAlertaCaducidadService {
 
     @Override
     @Transactional
-    public List<AlertaCaducidadResponseDTO> listarAlertasActivas(Integer idEstadoActivo) {
+    public Page<AlertaCaducidadResponseDTO> listarAlertasActivas(Integer idEstadoActivo, Pageable pageable) {
         sincronizarAlertasAutomaticas();
-        return alertaRepository.findAlertasActivas(idEstadoActivo).stream()
-                .map(a -> AlertaCaducidadResponseDTO.from(a, sugerenciaDescuentoEstimado(a)))
-                .toList();
+        return alertaRepository.findAlertasActivas(idEstadoActivo, pageable)
+                .map(a -> AlertaCaducidadResponseDTO.from(a, sugerenciaDescuentoEstimado(a)));
     }
 
     /**
