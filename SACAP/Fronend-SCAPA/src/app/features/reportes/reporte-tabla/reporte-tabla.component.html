@@ -38,9 +38,9 @@
     </tbody>
   </table>
 
-  <div *ngIf="!loading && totalPages > 1" class="pagination-controls" style="display: flex; justify-content: center; align-items: center; gap: 1rem; padding: 1rem 0; font-size: 0.875rem;">
-    <button class="btn btn-sm btn-secondary" [disabled]="currentPage === 1" (click)="prevPage()" style="padding: 0.25rem 0.75rem; border: 1px solid var(--border-color); background: var(--bg-card); border-radius: 4px; cursor: pointer;">← Anterior</button>
-    <span>Página {{ currentPage }} de {{ totalPages }} ({{ data.length }} registros)</span>
-    <button class="btn btn-sm btn-secondary" [disabled]="currentPage === totalPages" (click)="nextPage()" style="padding: 0.25rem 0.75rem; border: 1px solid var(--border-color); background: var(--bg-card); border-radius: 4px; cursor: pointer;">Siguiente →</button>
+  <div *ngIf="!loading && totalPaginas > 1" class="pagination-controls">
+    <button class="btn btn-sm btn-secondary pagination-btn" [disabled]="paginaActual === 0" (click)="prevPage()">← Anterior</button>
+    <span class="pagination-text">Página {{ paginaActual + 1 }} de {{ totalPaginas }} ({{ totalRegistros }} registros)</span>
+    <button class="btn btn-sm btn-secondary pagination-btn" [disabled]="paginaActual >= totalPaginas - 1" (click)="nextPage()">Siguiente →</button>
   </div>
 </div>

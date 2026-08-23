@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 
 @Component({
@@ -13,31 +13,17 @@ export class ReporteTablaComponent {
   @Input() data: any[] = [];
   @Input() loading: boolean = false;
 
-  currentPage: number = 1;
-  pageSize: number = 50;
-
-  get totalPages(): number {
-    return Math.ceil((this.data?.length || 0) / this.pageSize);
-  }
+  @Input() paginaActual: number = 0;
+  @Input() totalPaginas: number = 1;
+  @Input() totalRegistros: number = 0;
+  @Output() cambiarPagina = new EventEmitter<number>();
 
   get paginatedData(): any[] {
-    if (!this.data || this.data.length === 0) return [];
-    const start = (this.currentPage - 1) * this.pageSize;
-    const end = start + this.pageSize;
-    return this.data.slice(start, end);
+    return this.data || [];
   }
 
-  nextPage(): void {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-    }
-  }
-
-  prevPage(): void {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-    }
-  }
+  nextPage(): void { this.cambiarPagina.emit(this.paginaActual + 1); }
+  prevPage(): void { this.cambiarPagina.emit(this.paginaActual - 1); }
 
   get columns(): string[] {
     if (this.data && this.data.length > 0) {

@@ -70,7 +70,11 @@
   <div class="table-panel" *ngIf="!errorMsg && reporteData && reporteData.data.length > 0">
     <app-reporte-tabla 
       [data]="reporteData.data" 
-      [loading]="loading">
+      [loading]="loading"
+      [paginaActual]="paginaActual"
+      [totalPaginas]="totalPaginas"
+      [totalRegistros]="totalRegistros"
+      (cambiarPagina)="irPagina($event)">
     </app-reporte-tabla>
   </div>
 </div>

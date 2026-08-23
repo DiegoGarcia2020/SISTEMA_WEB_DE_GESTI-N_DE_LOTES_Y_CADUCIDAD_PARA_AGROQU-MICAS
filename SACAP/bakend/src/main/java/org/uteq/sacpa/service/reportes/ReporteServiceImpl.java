@@ -41,6 +41,36 @@ public class ReporteServiceImpl implements IReporteService {
     private final JdbcTemplate jdbcTemplate;
     private final IUsuarioRepository usuarioRepository;
 
+    /**
+     * Resolucion del nombre real de la persona detras de un seguridad.usuario.
+     *
+     * El esquema NO tiene una tabla unica de empleados: cada rol guarda su
+     * ficha en su propia tabla (gerencia.administrador, inventario.supervisor,
+     * inventario.bodeguero, operaciones.tecnico_campo), todas con las columnas
+     * id_usuario / nombres / apellidos.
+     *
+     * Este subquery las unifica y garantiza UNA sola fila por id_usuario
+     * (DISTINCT ON + prioridad), de modo que el LEFT JOIN nunca multiplique
+     * filas si un usuario llegara a tener ficha en dos tablas.
+     *
+     * Uso: el alias externo debe ser "u" (seguridad.usuario) y el subquery
+     * expone el alias "e" con e.nombres y e.apellidos.
+     */
+    private static final String JOIN_PERSONA =
+        "LEFT JOIN ( " +
+        "    SELECT DISTINCT ON (id_usuario) id_usuario, nombres, apellidos " +
+        "    FROM ( " +
+        "        SELECT id_usuario, nombres, apellidos, 1 AS prio FROM gerencia.administrador    WHERE id_usuario IS NOT NULL " +
+        "        UNION ALL " +
+        "        SELECT id_usuario, nombres, apellidos, 2 AS prio FROM inventario.supervisor     WHERE id_usuario IS NOT NULL " +
+        "        UNION ALL " +
+        "        SELECT id_usuario, nombres, apellidos, 3 AS prio FROM inventario.bodeguero      WHERE id_usuario IS NOT NULL " +
+        "        UNION ALL " +
+        "        SELECT id_usuario, nombres, apellidos, 4 AS prio FROM operaciones.tecnico_campo WHERE id_usuario IS NOT NULL " +
+        "    ) fichas " +
+        "    ORDER BY id_usuario, prio " +
+        ") e ON e.id_usuario = u.id_usuario ";
+
     // ------------------------------------------------------------------
     // Helpers
     // ------------------------------------------------------------------
@@ -272,9 +302,10 @@ public class ReporteServiceImpl implements IReporteService {
     }
 
     /**
-     * CORREGIDO: el JOIN directo contra gerencia.empleado descartaba a los
-     * supervisores que no tienen ficha de empleado. Ahora se une por
-     * seguridad.usuario y empleado queda como LEFT JOIN opcional.
+     * CORREGIDO: gerencia.empleado NO existe en el esquema. El nombre de la
+     * persona se resuelve con JOIN_PERSONA, que unifica administrador /
+     * supervisor / bodeguero / tecnico_campo. Si el usuario no tiene ficha,
+     * cae al correo por el COALESCE.
      */
     @Override
     @Transactional(readOnly = true)
@@ -286,7 +317,7 @@ public class ReporteServiceImpl implements IReporteService {
             "       COALESCE(SUM(dv.subtotal), 0)                       AS total_generado " +
             "FROM ia_alertas.promociones pr " +
             "JOIN seguridad.usuario u ON pr.id_usuario_aprueba = u.id_usuario " +
-            "LEFT JOIN gerencia.empleado e ON e.id_usuario = u.id_usuario " +
+            JOIN_PERSONA +
             "LEFT JOIN operaciones.detalle_ventas dv ON dv.id_promocion = pr.id_promocion " +
             "LEFT JOIN operaciones.ventas v ON v.id = dv.id_venta AND v.estado <> 'ANULADA' " +
             "WHERE 1=1 "
@@ -418,7 +449,7 @@ public class ReporteServiceImpl implements IReporteService {
             "JOIN inventario.lotes l ON m.id_lote = l.id_lote " +
             "JOIN inventario.producto p ON l.id_producto = p.id_producto " +
             "LEFT JOIN seguridad.usuario u ON m.id_usuario = u.id_usuario " +
-            "LEFT JOIN gerencia.empleado e ON e.id_usuario = u.id_usuario " +
+            JOIN_PERSONA +
             "WHERE 1=1 "
         );
         List<Object> params = new ArrayList<>();
@@ -529,7 +560,7 @@ public class ReporteServiceImpl implements IReporteService {
             "FROM operaciones.movimientos_inventario m " +
             "JOIN catalogos.cat_tipo_movimiento tm ON m.id_tipo_movimiento = tm.id_tipo_movimiento " +
             "JOIN seguridad.usuario u ON m.id_usuario = u.id_usuario " +
-            "LEFT JOIN gerencia.empleado e ON e.id_usuario = u.id_usuario " +
+            JOIN_PERSONA +
             "WHERE tm.naturaleza = 'SALIDA' "
         );
         List<Object> params = new ArrayList<>();
@@ -657,7 +688,7 @@ public class ReporteServiceImpl implements IReporteService {
             "       a.descripcion                                       AS descripcion " +
             "FROM seguridad.auditoria a " +
             "LEFT JOIN seguridad.usuario u ON a.id_usuario = u.id_usuario " +
-            "LEFT JOIN gerencia.empleado e ON e.id_usuario = u.id_usuario " +
+            JOIN_PERSONA +
             "WHERE (COALESCE(a.operacion, a.accion) ILIKE '%ANUL%' " +
             "    OR COALESCE(a.operacion, a.accion) ILIKE '%AJUST%' " +
             "    OR COALESCE(a.operacion, a.accion) ILIKE '%DELETE%' " +
@@ -674,7 +705,7 @@ public class ReporteServiceImpl implements IReporteService {
                 params.add(f.getFechaFin());
             }
         }
-        sql.append(" ORDER BY fecha DESC");
+        sql.append(" ORDER BY 1 DESC");
 
         List<Map<String, Object>> data = jdbcTemplate.queryForList(sql.toString(), params.toArray());
         return new ReporteRespuestaDTO("Log de Anulaciones", data);
