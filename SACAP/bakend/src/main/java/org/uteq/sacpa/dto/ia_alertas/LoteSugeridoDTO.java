@@ -20,4 +20,6 @@ public class LoteSugeridoDTO {
     private BigDecimal precioUnitario;
     private Integer scoreUrgencia;
     private String instruccionesAplicacion;
+    private Integer idCategoria;
+    private String nombreCategoria;
 }

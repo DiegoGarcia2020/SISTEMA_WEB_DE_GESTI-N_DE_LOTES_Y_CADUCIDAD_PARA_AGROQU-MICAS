@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { TemporadaDTO, AlertaCaducidadDTO, PromocionIADTO, ReglaNegocioIADTO } from '../models/operaciones.model';
 
@@ -220,8 +220,11 @@ export class OperacionesService {
   }
 
   // ================= ENDPOINTS DE COMBOS / KITTING =================
-  listarCombosActivos(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/promociones/activas`);
+  listarCombosActivos(): Observable<PromocionIADTO[]> {
+    const params = new HttpParams().set('page', 0).set('size', 200);
+    return this.http
+      .get<PageResponse<PromocionIADTO>>(`${this.apiUrl}/promociones/activas`, { params })
+      .pipe(map(r => r?.content ?? []));
   }
 
   crearComboKit(payload: any): Observable<any> {
