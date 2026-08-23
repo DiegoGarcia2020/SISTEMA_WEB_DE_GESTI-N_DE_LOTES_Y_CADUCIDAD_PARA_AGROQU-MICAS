@@ -78,16 +78,14 @@ public class VentaIAServiceImpl implements IVentaIAService {
 
         List<PromocionResponseDTO> promociones = catEstadoPromocionRepository.findByNombreIgnoreCase("ACTIVA")
                 .map(CatEstadoPromocion::getIdEstadoPromocion)
-                .map(id -> promocionRepository.findByEstado_IdEstadoPromocion(id, org.springframework.data.domain.Pageable.unpaged()).getContent())
+                .map(id -> promocionRepository.findByEstado_IdEstadoPromocion(id, org.springframework.data.domain.PageRequest.of(0, 20)).getContent())
                 .orElse(List.of())
                 .stream().map(PromocionResponseDTO::from).toList();
 
         // Consultar ventas directamente por id_usuario (tabla unificada)
         LocalDate hoy = LocalDate.now();
-        List<Venta> ventasHoy = ventaRepository.findByTecnico_IdUsuarioOrderByFechaDesc(idUsuarioAutenticado)
-                .stream()
-                .filter(v -> v.getFecha() != null && v.getFecha().toLocalDate().equals(hoy))
-                .toList();
+        List<Venta> ventasHoy = ventaRepository.findPorTecnicoEnRango(
+                idUsuarioAutenticado, hoy.atStartOfDay(), hoy.plusDays(1).atStartOfDay());
         int cantidadHoy = ventasHoy.size();
         BigDecimal totalHoy = ventasHoy.stream().map(Venta::getTotal).filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);

@@ -6,9 +6,10 @@
 .vt-cta-btn { background: transparent; border: 1px solid var(--c-sage-border); color: var(--c-bone-bg); border-radius: var(--radius-card); padding: .7rem 1.4rem; font-size: .85rem; font-weight: 700; cursor: pointer; font-family: inherit; text-transform: uppercase; }
 .vt-cta-btn:hover { background: var(--c-mid-green); border-color: var(--c-mid-green); }
 
-.vt-checkout-grid { display: grid; grid-template-columns: 1fr 320px; gap: 1.5rem; align-items: start; }
+.vt-checkout-grid { display: grid; grid-template-columns: 1fr 380px; gap: 1.5rem; align-items: start; }
 @media (max-width: 900px) { .vt-checkout-grid { grid-template-columns: 1fr; } }
 .vt-col-main { display: flex; flex-direction: column; gap: 1.5rem; }
+.vt-col-side { display: flex; flex-direction: column; gap: 1.5rem; }
 
 .vt-section { background: var(--c-bone-bg); border: 1px solid var(--c-sage-border); border-radius: var(--radius-card); padding: 1.5rem; }
 .vt-section-title { font-family: var(--font-slab); font-size: 1.05rem; font-weight: 700; color: var(--c-warm-black); margin: 0 0 1rem; }

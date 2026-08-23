@@ -51,7 +51,7 @@
     </div>
   } @else if (sugerencias().length > 0) {
     <div class="vt-sugerencias-grid">
-      @for (s of sugerencias(); track s.titulo) {
+      @for (s of sugerencias(); track $index) {
         <div class="vt-sug-card" [class.combo]="s.esCombo">
           <div class="vt-sug-header">
             @if (s.esCombo) { <span class="vt-sug-tag">COMBO IA</span> }

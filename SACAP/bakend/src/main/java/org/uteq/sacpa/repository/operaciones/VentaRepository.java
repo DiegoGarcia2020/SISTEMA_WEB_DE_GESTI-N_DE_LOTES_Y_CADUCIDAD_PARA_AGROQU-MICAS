@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.uteq.sacpa.entity.operaciones.Venta;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,6 +19,17 @@ public interface VentaRepository extends JpaRepository<Venta, Integer> {
     /** Historial del técnico, más recientes primero. */
     List<Venta> findByTecnico_IdUsuarioOrderByFechaDesc(Integer idUsuario);
     List<Venta> findTop100ByTecnico_IdUsuarioOrderByFechaDesc(Integer idUsuario);
+
+    /**
+     * Ventas del técnico dentro de un rango de fechas. Reemplaza el patrón de
+     * traer TODO el histórico y filtrar el día en memoria, que con ~167k filas
+     * de prueba dejaba el dashboard colgado en "Cargando panel...".
+     */
+    @Query("SELECT v FROM Venta v WHERE v.tecnico.idUsuario = :idUsuario " +
+           "AND v.fecha >= :desde AND v.fecha < :hasta ORDER BY v.fecha DESC")
+    List<Venta> findPorTecnicoEnRango(@Param("idUsuario") Integer idUsuario,
+                                      @Param("desde") LocalDateTime desde,
+                                      @Param("hasta") LocalDateTime hasta);
 
     Optional<Venta> findByNumeroComprobante(String numeroComprobante);
 
