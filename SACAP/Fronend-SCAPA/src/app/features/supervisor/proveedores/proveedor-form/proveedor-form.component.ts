@@ -61,11 +61,11 @@ export class ProveedorFormComponent implements OnInit {
     // Mock endpoints for now, assuming these exist or will be created
     this.http.get<any[]>(`${environment.apiUrl}/catalogos/empresas`).subscribe({
       next: (res) => this.empresas.set(res),
-      error: () => this.empresas.set([{ idEmpresa: 1, nombre: 'Empresa Matriz' }]) // Mock fallback
+      error: () => this.toast.error('Error', 'No se pudieron cargar las empresas')
     });
     this.http.get<any[]>(`${environment.apiUrl}/catalogos/ciudades`).subscribe({
       next: (res) => this.ciudades.set(res),
-      error: () => this.ciudades.set([{ idCiudad: 1, nombre: 'Quevedo' }]) // Mock fallback
+      error: () => this.toast.error('Error', 'No se pudieron cargar las ciudades')
     });
   }
 

@@ -19,7 +19,8 @@ import {
   ArrowRightCircle, CalendarClock, CheckCircle2, ClipboardCheck, ClipboardList, ClipboardX,
   Edit2, Flame, Inbox, ListOrdered, PackageCheck, XCircle,
   Network, ArrowRightLeft, QrCode, CornerUpLeft, Undo2,
-  Sun, RefreshCcw, Archive, Star, CornerDownLeft, UserMinus
+  Sun, RefreshCcw, Archive, Star, CornerDownLeft, UserMinus,
+  PanelLeftClose, PanelLeftOpen, Box
 } from 'lucide-angular';
 
 const pickedIcons = {
@@ -38,7 +39,8 @@ const pickedIcons = {
   ArrowRightCircle, CalendarClock, CheckCircle2, ClipboardCheck, ClipboardList, ClipboardX,
   Edit2, Flame, Inbox, ListOrdered, PackageCheck, XCircle,
   Network, ArrowRightLeft, QrCode, CornerUpLeft, Undo2,
-  Sun, RefreshCcw, Archive, Star, CornerDownLeft, UserMinus
+  Sun, RefreshCcw, Archive, Star, CornerDownLeft, UserMinus,
+  PanelLeftClose, PanelLeftOpen, Box
 };
 
 export const appConfig: ApplicationConfig = {

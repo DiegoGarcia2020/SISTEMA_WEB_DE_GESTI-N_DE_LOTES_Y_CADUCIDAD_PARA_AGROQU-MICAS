@@ -1,4 +1,4 @@
-export type UserRole = 'Administrador' | 'Supervisor' | 'Bodeguero' | 'Técnico de Campo' | 'Proveedor' | 'Gerente' | string;
+export type UserRole = 'Administrador' | 'Supervisor' | 'Bodeguero' | 'Técnico de Campo' | 'Proveedor' | string;
 
 export interface UsuarioDTO {
   idUsuario: number;

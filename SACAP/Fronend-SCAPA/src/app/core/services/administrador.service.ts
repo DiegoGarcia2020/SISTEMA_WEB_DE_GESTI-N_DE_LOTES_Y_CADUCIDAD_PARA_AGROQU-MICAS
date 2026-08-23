@@ -22,50 +22,15 @@ export class AdministradorService {
   private apiUrl = `${environment.apiUrl}/administrador`;
 
   obtenerPerfil(idUsuario: number): Observable<AdministradorDTO> {
-    return this.http.get<AdministradorDTO>(`${this.apiUrl}/perfil/${idUsuario}`).pipe(
-      catchError(err => {
-        if (err.status === 0 || err.status === 404) {
-          const fotoLocal = localStorage.getItem('sacpa_admin_foto') || undefined;
-          return of({
-            idAdministrador: 1,
-            cedula: '1700000000',
-            nombres: 'Administrador',
-            apellidos: 'SACPA',
-            telefono: '0999999999',
-            fotoPerfil: fotoLocal
-          });
-        }
-        return throwError(() => err);
-      })
-    );
+    return this.http.get<AdministradorDTO>(`${this.apiUrl}/perfil/${idUsuario}`);
   }
 
   actualizarPerfil(idUsuario: number, datos: Partial<AdministradorDTO>): Observable<AdministradorDTO> {
-    return this.http.put<AdministradorDTO>(`${this.apiUrl}/perfil/${idUsuario}`, datos).pipe(
-      catchError(err => {
-        if (err.status === 0 || err.status === 404) {
-          if (datos.fotoPerfil) {
-            localStorage.setItem('sacpa_admin_foto', datos.fotoPerfil);
-          }
-          return of({
-            idAdministrador: 1,
-            ...datos
-          });
-        }
-        return throwError(() => err);
-      })
-    );
+    return this.http.put<AdministradorDTO>(`${this.apiUrl}/perfil/${idUsuario}`, datos);
   }
 
   actualizarFoto(idUsuario: number, fotoPerfil: string): Observable<void> {
     localStorage.setItem('sacpa_admin_foto', fotoPerfil);
-    return this.http.patch<void>(`${this.apiUrl}/perfil/${idUsuario}/foto`, { fotoPerfil }).pipe(
-      catchError(err => {
-        if (err.status === 0 || err.status === 404) {
-          return of(undefined);
-        }
-        return throwError(() => err);
-      })
-    );
+    return this.http.patch<void>(`${this.apiUrl}/perfil/${idUsuario}/foto`, { fotoPerfil });
   }
 }

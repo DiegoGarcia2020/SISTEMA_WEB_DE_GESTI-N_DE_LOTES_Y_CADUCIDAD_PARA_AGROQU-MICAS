@@ -358,7 +358,7 @@ export class BodegaDashboardComponent implements OnInit {
 
   loadAll(): void {
     this.operacionesService.listarLotesDisponiblesFefo().subscribe(data => this.lotes.set(data));
-    this.operacionesService.listarAlertas().subscribe(data => this.alertasKitting.set(data));
+    this.operacionesService.listarAlertas().subscribe(res => this.alertasKitting.set(res.content));
     this.operacionesService.listarDevolucionesPendientesBodega(0, 1).subscribe(page => this.devolucionesPendientesCount.set(page.totalElements));
   }
 

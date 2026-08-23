@@ -513,9 +513,8 @@ export class GestionPrivilegiosComponent implements OnInit {
 
   getRolesDefault(): RolDTO[] {
     return [
-      { idRol: 1, nombre: 'Administrador General', descripcion: 'Perfil con acceso total a gerencia, operaciones, inventario y seguridad en SACPA.', idEstado: 1, rolBD: { idRolBd: 1, nombreRolBd: 'rol_admin_sacpa', activo: true } },
-      { idRol: 2, nombre: 'Gerente de Operaciones', descripcion: 'Gestión y supervisión de reportes, alertas IA y logística de almacenes.', idEstado: 1, rolBD: { idRolBd: 2, nombreRolBd: 'rol_gerente_sacpa', activo: true } },
-      { idRol: 3, nombre: 'Supervisor de Inventario', descripcion: 'Administración de lotes, bodegas, estanterías y fechas de caducidad.', idEstado: 1, rolBD: { idRolBd: 3, nombreRolBd: 'rol_supervisor_inv_sacpa', activo: true } },
+      { idRol: 1, nombre: 'Administrador del Sistema', descripcion: 'Control total de módulos operativos, reportes estratégicos y configuraciones globales.', idEstado: 1, rolBD: { idRolBd: 1, nombreRolBd: 'rol_admin_sacpa', activo: true } },
+      { idRol: 3, nombre: 'Bodeguero Central', descripcion: 'Recepción, despacho y auditoría física de inventario.', idEstado: 1, rolBD: { idRolBd: 3, nombreRolBd: 'rol_bodeguero_sacpa', activo: true } },
       { idRol: 4, nombre: 'Auditor Externo', descripcion: 'Acceso de solo lectura al historial de auditoría y reportes gerenciales.', idEstado: 1, rolBD: { idRolBd: 4, nombreRolBd: 'rol_auditor_sacpa', activo: true } },
       { idRol: 5, nombre: 'Asistente de Logística', descripcion: 'Registro y recepción de inventario agrícola en almacenes.', idEstado: 1, rolBD: { idRolBd: 5, nombreRolBd: 'rol_logistica_sacpa', activo: true } }
     ];
@@ -606,11 +605,11 @@ export class GestionPrivilegiosComponent implements OnInit {
 
   elementosPorEsquemaYCategoria(esquema: string): string[] {
     const mapa: { [key: string]: string[] } = {
-      'seguridad': ['usuario', 'rol', 'rol_bd', 'privilegio', 'rol_privilegio', 'usuario_rol', 'tipo_objeto_seguridad', 'solicitud_registro', 'historial_sesion', 'auditoria'],
+      'seguridad': ['usuario', 'rol', 'rol_bd', 'privilegio', 'rol_privilegio', 'usuario_rol', 'tipo_objeto_seguridad', 'solicitud_registro', 'historial_sesion', 'auditoria', 'administrador'],
       'inventario': ['producto', 'categoria', 'lote', 'historial_estado_lote', 'registro_sanitario', 'documento_lote', 'almacen', 'zona_almacen', 'estanteria', 'ubicacion_interna', 'bodeguero', 'supervisor'],
       'ia_alertas': ['alertas_caducidad', 'configuracion_alerta', 'sugerencia_ia', 'temporada_agricola', 'promocion', 'promocion_detalle', 'regla_negocio_ia', 'modelo_ia', 'ejecucion_ia', 'notificacion'],
       'operaciones': ['movimiento_inventario', 'devolucion', 'tecnico_campo', 'uso_campo'],
-      'gerencia': ['empleado', 'administrador', 'gerente'],
+      'gerencia': ['empleado'],
       'catalogos': ['cat_estado_general', 'cat_estado_lote', 'cat_estado_aprobacion', 'cat_nivel_alerta', 'cat_tipo_movimiento'],
       'entidades': ['empresa', 'proveedor'],
       'geografia': ['pais', 'provincia', 'ciudad']

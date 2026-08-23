@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.uteq.sacpa.entity.ia_alertas.AlertaCaducidad;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 /**
@@ -15,8 +17,9 @@ import java.util.List;
 public interface IAlertaCaducidadRepository extends JpaRepository<AlertaCaducidad, Integer> {
 
     /** Alertas activas (no descartadas) */
-    @Query("SELECT a FROM AlertaCaducidad a JOIN FETCH a.lote l JOIN FETCH a.nivelAlerta n WHERE a.estado.idEstadoAlerta = :idEstadoActivo ORDER BY l.fechaVencimiento ASC")
-    List<AlertaCaducidad> findAlertasActivas(@Param("idEstadoActivo") Integer idEstadoActivo);
+    @Query(value = "SELECT a FROM AlertaCaducidad a JOIN FETCH a.lote l JOIN FETCH a.nivelAlerta n WHERE a.estado.idEstadoAlerta = :idEstadoActivo ORDER BY l.fechaVencimiento ASC",
+           countQuery = "SELECT count(a) FROM AlertaCaducidad a WHERE a.estado.idEstadoAlerta = :idEstadoActivo")
+    Page<AlertaCaducidad> findAlertasActivas(@Param("idEstadoActivo") Integer idEstadoActivo, Pageable pageable);
 
     /** Alertas por nivel */
     @Query("SELECT a FROM AlertaCaducidad a WHERE a.nivelAlerta.idNivelAlerta = :idNivel AND a.estado.idEstadoAlerta = :idEstado")

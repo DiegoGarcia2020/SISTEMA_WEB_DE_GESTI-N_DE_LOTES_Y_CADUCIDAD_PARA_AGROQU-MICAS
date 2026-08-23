@@ -343,18 +343,16 @@ export class GestionRolesComponent implements OnInit {
 
   getRolesSistemaDefault(): RolDTO[] {
     return [
-      { idRol: 1, nombre: 'Administrador General', descripcion: 'Perfil con acceso total a gerencia, operaciones, inventario y seguridad en SACPA.', idEstado: 1, rolBD: { idRolBd: 1, nombreRolBd: 'rol_admin_sacpa', activo: true } },
-      { idRol: 2, nombre: 'Gerente de Operaciones', descripcion: 'Gestión y supervisión de reportes, alertas IA y logística de almacenes.', idEstado: 1, rolBD: { idRolBd: 2, nombreRolBd: 'rol_gerente_sacpa', activo: true } },
-      { idRol: 3, nombre: 'Supervisor de Inventario', descripcion: 'Administración de lotes, bodegas, estanterías y fechas de caducidad.', idEstado: 1, rolBD: { idRolBd: 3, nombreRolBd: 'rol_supervisor_inv_sacpa', activo: true } },
+      { idRol: 1, nombre: 'Administrador del Sistema', descripcion: 'Control total de módulos operativos, reportes estratégicos y configuraciones globales.', idEstado: 1, rolBD: { idRolBd: 1, nombreRolBd: 'rol_admin_sacpa', activo: true } },
+      { idRol: 3, nombre: 'Bodeguero Central', descripcion: 'Recepción, despacho y auditoría física de inventario.', idEstado: 1, rolBD: { idRolBd: 3, nombreRolBd: 'rol_bodeguero_sacpa', activo: true } },
       { idRol: 4, nombre: 'Auditor Externo', descripcion: 'Acceso de solo lectura al historial de auditoría y reportes gerenciales.', idEstado: 1, rolBD: { idRolBd: 4, nombreRolBd: 'rol_auditor_sacpa', activo: true } }
     ];
   }
 
   getRolesBdDefault(): RolBDDTO[] {
     return [
-      { idRolBd: 1, nombreRolBd: 'rol_admin_sacpa', descripcion: 'Rol nativo PostgreSQL super-acceso SACPA', activo: true },
-      { idRolBd: 2, nombreRolBd: 'rol_gerente_sacpa', descripcion: 'Rol nativo PostgreSQL con RLS en gerencia y reportes', activo: true },
-      { idRolBd: 3, nombreRolBd: 'rol_supervisor_inv_sacpa', descripcion: 'Rol nativo PostgreSQL en esquema inventario', activo: true },
+      { idRolBd: 1, nombreRolBd: 'rol_admin_sacpa', descripcion: 'Rol nativo PostgreSQL con BYPASSRLS', activo: true },
+      { idRolBd: 3, nombreRolBd: 'rol_bodeguero_sacpa', descripcion: 'Rol nativo PostgreSQL con RLS en inventario', activo: true },
       { idRolBd: 4, nombreRolBd: 'rol_auditor_sacpa', descripcion: 'Rol nativo PostgreSQL solo lectura (SELECT)', activo: true }
     ];
   }

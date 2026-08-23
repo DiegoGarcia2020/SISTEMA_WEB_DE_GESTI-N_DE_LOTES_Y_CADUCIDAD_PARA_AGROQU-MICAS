@@ -32,8 +32,8 @@ import java.util.Arrays;
 
 /**
  * Configuracion de seguridad SACPA.
- * Roles del sistema: ADMINISTRADOR, GERENTE, BODEGUERO, SUPERVISOR, TECNICO_CAMPO
- * Roles BD: agro_administrador, agro_gerente, agro_bodeguero, agro_supervisor, agro_tecnico_campo
+ * Roles del sistema: ADMINISTRADOR, BODEGUERO, SUPERVISOR, TECNICO_CAMPO
+ * Roles BD: agro_administrador, agro_bodeguero, agro_supervisor, agro_tecnico_campo
  */
 @Configuration
 @EnableWebSecurity
@@ -122,10 +122,10 @@ public class SecurityConfig {
                     "/api/ia/reglas/**"
                 ).hasAnyAuthority("ADMINISTRADOR")
 
-                // ADMINISTRADOR y GERENTE — gerencia (reportes tiene @PreAuthorize por endpoint)
+                // ADMINISTRADOR — gerencia (reportes tiene @PreAuthorize por endpoint)
                 .requestMatchers(
                     "/api/gerencia/**"
-                ).hasAnyAuthority("ADMINISTRADOR", "GERENTE")
+                ).hasAnyAuthority("ADMINISTRADOR")
                 
                 .requestMatchers("/api/reportes/**").authenticated()
 

@@ -14,7 +14,6 @@ import org.uteq.sacpa.config.UserContext;
  * Mapeo de roles de aplicacion a roles de BD PostgreSQL del sistema SACPA:
  *
  *  ADMINISTRADOR  -> agro_administrador
- *  GERENTE        -> agro_gerente
  *  BODEGUERO      -> agro_bodeguero
  *  SUPERVISOR     -> agro_supervisor
  *  TECNICO_CAMPO  -> agro_tecnico_campo
@@ -53,7 +52,6 @@ public class DatabaseRoleAspect {
         if (rolApp == null) return null;
         return switch (rolApp.toUpperCase()) {
             case "ADMINISTRADOR"  -> "agro_administrador";
-            case "GERENTE"        -> "agro_gerente";
             case "BODEGUERO"      -> "agro_bodeguero";
             case "SUPERVISOR"     -> "agro_supervisor";
             case "TECNICO_CAMPO"  -> "agro_tecnico_campo";

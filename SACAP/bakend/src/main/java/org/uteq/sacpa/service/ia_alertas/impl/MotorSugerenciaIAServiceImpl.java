@@ -7,9 +7,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.uteq.sacpa.dto.ia_alertas.LoteSugeridoDTO;
 import org.uteq.sacpa.dto.ia_alertas.SugerenciaComboDTO;
 import org.uteq.sacpa.entity.ia_alertas.ReglaNegocioIA;
+import org.uteq.sacpa.entity.ia_alertas.TemporadaAgricola;
 import org.uteq.sacpa.entity.inventario.Lote;
 import org.uteq.sacpa.repository.ia_alertas.IReglaNegocioIARepository;
-import org.uteq.sacpa.repository.operaciones.ITemporadaRepository;
+import org.uteq.sacpa.repository.ia_alertas.ITemporadaAgricolaRepository;
 import org.uteq.sacpa.repository.inventario.ILoteRepository;
 import org.uteq.sacpa.service.ia_alertas.IMotorSugerenciaIAService;
 import org.uteq.sacpa.service.ia_externa.IGeminiIAService;
@@ -41,7 +42,7 @@ public class MotorSugerenciaIAServiceImpl implements IMotorSugerenciaIAService {
     private static final BigDecimal DESCUENTO_MAXIMO_DEFECTO = new BigDecimal("35.00");
 
     private final ILoteRepository loteRepository;
-    private final ITemporadaRepository temporadaRepository;
+    private final ITemporadaAgricolaRepository temporadaAgricolaRepository;
     private final IReglaNegocioIARepository reglaRepository;
     private final IGeminiIAService geminiIAService;
 
@@ -230,10 +231,11 @@ public class MotorSugerenciaIAServiceImpl implements IMotorSugerenciaIAService {
     }
 
     private boolean hayTemporadaActiva(Integer idCultivo) {
-        if (idCultivo != null && temporadaRepository.findByEstadoAndCultivo_IdCultivo("ACTIVO", idCultivo).isPresent()) {
-            return true;
-        }
-        return temporadaRepository.findByEstadoAndCultivoIsNull("ACTIVO").isPresent();
+        List<TemporadaAgricola> activas = temporadaAgricolaRepository.findActivasEnFecha(LocalDate.now(), 1); // 1 = ACTIVA
+        if (activas.isEmpty()) return false;
+        if (idCultivo == null) return true;
+        return activas.stream()
+            .anyMatch(t -> t.getCultivo() != null && t.getCultivo().toLowerCase().contains(idCultivo.toString()));
     }
 
     private BigDecimal obtenerDescuentoMaximo() {

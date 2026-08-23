@@ -2,6 +2,8 @@ package org.uteq.sacpa.service.ia_alertas.impl;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +22,6 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Types;
 import java.time.LocalDate;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -53,17 +54,26 @@ public class PromocionServiceImpl implements IPromocionService {
     }
 
     @Override
-
     @Transactional(readOnly = true)
-    public List<PromocionResponseDTO> listarTodas() {
-        return promocionRepository.findAll().stream().map(PromocionResponseDTO::from).toList();
+    public Page<PromocionResponseDTO> listarTodas(Pageable pageable) {
+        return promocionRepository.findAll(pageable)
+                .map(PromocionResponseDTO::from);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<PromocionResponseDTO> listarPorEstado(Integer idEstado) {
-        return promocionRepository.findByEstado_IdEstadoPromocion(idEstado).stream()
-                .map(PromocionResponseDTO::from).toList();
+    public Page<PromocionResponseDTO> listarPorEstado(Integer idEstado, Pageable pageable) {
+        return promocionRepository.findByEstado_IdEstadoPromocion(idEstado, pageable)
+                .map(PromocionResponseDTO::from);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<PromocionResponseDTO> listarPorEstadoNombre(String nombreEstado, Pageable pageable) {
+        Integer id = catEstadoPromocionRepository.findByNombreIgnoreCase(nombreEstado)
+                .map(CatEstadoPromocion::getIdEstadoPromocion)
+                .orElseThrow(() -> new IllegalStateException("Estado no válido: " + nombreEstado));
+        return listarPorEstado(id, pageable);
     }
 
     @Override

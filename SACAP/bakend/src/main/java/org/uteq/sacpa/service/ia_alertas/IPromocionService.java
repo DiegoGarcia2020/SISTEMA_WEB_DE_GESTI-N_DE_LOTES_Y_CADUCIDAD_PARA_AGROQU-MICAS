@@ -5,6 +5,8 @@ import org.uteq.sacpa.dto.ia_modelos.PromocionResponseDTO;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface IPromocionService {
@@ -16,12 +18,14 @@ public interface IPromocionService {
                                                BigDecimal descuentoGlobal, LocalDate fechaInicio, LocalDate fechaFin,
                                                Integer idUsuarioAprueba);
 
-    List<PromocionResponseDTO> listarTodas();
+    Page<PromocionResponseDTO> listarTodas(Pageable pageable);
 
     /** Transición SUGERIDA→APROBADA→ACTIVA o →RECHAZADA */
     void cambiarEstado(Integer idPromocion, String estado);
 
-    List<PromocionResponseDTO> listarPorEstado(Integer idEstado);
+    Page<PromocionResponseDTO> listarPorEstado(Integer idEstado, Pageable pageable);
+
+    Page<PromocionResponseDTO> listarPorEstadoNombre(String nombreEstado, Pageable pageable);
 
     void desactivarPromocion(Integer idPromocion, Integer idEstadoInactivo);
 

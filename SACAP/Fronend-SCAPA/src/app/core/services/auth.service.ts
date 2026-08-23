@@ -37,25 +37,6 @@ export class AuthService {
         } else if (res.tipoFase === 'FINAL') {
           this.setFinalSession(res.token, res.usuario, 'ADMINISTRADOR');
         }
-      }),
-      catchError(err => {
-        // Fallback para desarrollo UI si el servidor Java está apagado
-        if (err.status === 0 || err.status === 404) {
-          console.warn('Servidor SACPA no accesible. Usando sesión mock local para UI de AgroSense LMS.');
-          const mockUser: UsuarioInfo = { idUsuario: 1, correo: credentials.correo || 'c.mendoza@agrosense.ec' };
-          const mockRoles = ['ADMINISTRADOR', 'SUPERVISOR', 'BODEGUERO', 'TÉCNICO DE CAMPO'];
-          const mockRes: AuthResponse = {
-            token: 'mock-pre-auth-token-xyz',
-            tipoFase: 'PRE_AUTH',
-            rolesDisponibles: mockRoles,
-            usuario: mockUser
-          };
-          localStorage.setItem(this.PRE_AUTH_TOKEN_KEY, mockRes.token);
-          this.currentUser.set(mockUser);
-          localStorage.setItem(this.USER_KEY, JSON.stringify(mockUser));
-          return of(mockRes);
-        }
-        return throwError(() => err);
       })
     );
   }
@@ -68,19 +49,6 @@ export class AuthService {
     return this.http.post<AuthResponse>(`${this.apiUrl}/auth/select-role`, body, { headers }).pipe(
       tap(res => {
         this.setFinalSession(res.token, res.usuario || this.currentUser()!, rolSeleccionado);
-      }),
-      catchError(err => {
-        if (err.status === 0 || err.status === 404) {
-          console.warn('Servidor SACPA no accesible. Auto-aprobando selección de rol mock: ' + rolSeleccionado);
-          const mockRes: AuthResponse = {
-            token: 'mock-final-jwt-token-999',
-            tipoFase: 'FINAL',
-            usuario: this.currentUser() || { idUsuario: 1, correo: 'c.mendoza@agrosense.ec' }
-          };
-          this.setFinalSession(mockRes.token, mockRes.usuario, rolSeleccionado);
-          return of(mockRes);
-        }
-        return throwError(() => err);
       })
     );
   }
@@ -132,19 +100,6 @@ export class AuthService {
           this.currentUser.set(updated);
           localStorage.setItem(this.USER_KEY, JSON.stringify(updated));
         }
-      }),
-      catchError(err => {
-        if (err.status === 0 || err.status === 404) {
-          console.warn('Servidor SACPA no accesible. Simulando cambio de contraseña local.');
-          const user = this.currentUser();
-          if (user) {
-            const updated = { ...user, requiereCambioClave: false };
-            this.currentUser.set(updated);
-            localStorage.setItem(this.USER_KEY, JSON.stringify(updated));
-          }
-          return of({});
-        }
-        return throwError(() => err);
       })
     );
   }

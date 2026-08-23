@@ -28,7 +28,7 @@ public class PromocionResponseDTO {
 
     public static PromocionResponseDTO from(Promocion p) {
         SugerenciaIA sug = p.getSugerencia();
-        Lote lote = sug != null ? sug.getLote() : null;
+        Lote lote = p.getLote() != null ? p.getLote() : (sug != null ? sug.getLote() : null);
 
         BigDecimal precioOriginal = (lote != null && lote.getProducto() != null) ? lote.getProducto().getPrecio() : null;
         BigDecimal precioPromocion = null;

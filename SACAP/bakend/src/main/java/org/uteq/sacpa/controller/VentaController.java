@@ -31,7 +31,7 @@ public class VentaController {
         if (esOperativo) {
             return principal.getIdUsuario(); // Ignora el parámetro recibido
         }
-        return idRecibido; // ADMINISTRADOR/GERENTE/SUPERVISOR conservan acceso completo
+        return idRecibido; // ADMINISTRADOR/SUPERVISOR conservan acceso completo
     }
 
     @PostMapping

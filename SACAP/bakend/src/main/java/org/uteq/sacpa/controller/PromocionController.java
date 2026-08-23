@@ -11,6 +11,9 @@ import org.uteq.sacpa.dto.ia_modelos.PromocionResponseDTO;
 import org.uteq.sacpa.security.UsuarioPrincipal;
 import org.uteq.sacpa.service.ia_alertas.IPromocionService;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import java.util.List;
 import java.util.Map;
 
@@ -27,20 +30,19 @@ public class PromocionController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PromocionResponseDTO>> listarPromociones() {
-        return ResponseEntity.ok(promocionService.listarTodas());
+    public ResponseEntity<Page<PromocionResponseDTO>> listarPromociones(@PageableDefault(size = 10) Pageable pageable) {
+        return ResponseEntity.ok(promocionService.listarTodas(pageable));
     }
 
 
     @GetMapping({"/activas", "/combos/activos"})
-    public ResponseEntity<List<PromocionResponseDTO>> listarActivas() {
-        return ResponseEntity.ok(promocionService.listarPorEstado(1)); // 1: Activo/Aprobado
+    public ResponseEntity<Page<PromocionResponseDTO>> listarActivas(@PageableDefault(size = 10) Pageable pageable) {
+        return ResponseEntity.ok(promocionService.listarPorEstadoNombre("ACTIVA", pageable));
     }
 
     @GetMapping("/pendientes")
-    public ResponseEntity<List<PromocionResponseDTO>> listarPendientes() {
-        return ResponseEntity.ok(promocionService.listarPorEstado(2)); // 2: Sugerido/Pendiente de aprobación
-
+    public ResponseEntity<Page<PromocionResponseDTO>> listarPendientes(@PageableDefault(size = 10) Pageable pageable) {
+        return ResponseEntity.ok(promocionService.listarPorEstadoNombre("SUGERIDA", pageable));
     }
 
     @PutMapping("/{idPromocion}/desactivar")
@@ -59,6 +61,19 @@ public class PromocionController {
         promocionService.cambiarEstadoPromocion(idPromocion, idEstado);
         return ResponseEntity.ok(Map.of("mensaje", "Estado de combo/promoción actualizado exitosamente"));
 
+    }
+
+    /** Cambia el estado de una promoción resolviendo el nombre contra catalogos.cat_estado_promocion */
+    @PatchMapping("/{idPromocion}/estado")
+    public ResponseEntity<Map<String, String>> cambiarEstadoPorNombre(
+            @PathVariable Integer idPromocion,
+            @RequestBody Map<String, String> body) {
+        String estado = body.get("estado");
+        if (estado == null || estado.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("mensaje", "El campo 'estado' es obligatorio"));
+        }
+        promocionService.cambiarEstado(idPromocion, estado);
+        return ResponseEntity.ok(Map.of("mensaje", "Estado actualizado a " + estado.toUpperCase()));
     }
 
     private Integer idUsuarioAutenticado() {
