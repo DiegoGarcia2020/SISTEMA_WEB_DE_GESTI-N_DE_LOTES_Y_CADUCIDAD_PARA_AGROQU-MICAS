@@ -29,6 +29,14 @@ public class ProductoServiceImpl implements IProductoService {
                 dto.getIdToxicidad(),
                 dto.getIdFormulacion()
         );
+
+        // Actualizar campos IVA del producto recién creado
+        Integer nuevoId = productoRepository.findMaxIdProducto();
+        if (nuevoId != null) {
+            Boolean aplicaIva = dto.getAplicaIva() != null ? dto.getAplicaIva() : false;
+            java.math.BigDecimal porcentajeIva = dto.getPorcentajeIva() != null ? dto.getPorcentajeIva() : java.math.BigDecimal.ZERO;
+            productoRepository.actualizarCamposIva(nuevoId, aplicaIva, porcentajeIva);
+        }
     }
     
     @Override
@@ -46,6 +54,11 @@ public class ProductoServiceImpl implements IProductoService {
                 dto.getIdToxicidad(),
                 dto.getIdFormulacion()
         );
+
+        // Actualizar campos IVA
+        Boolean aplicaIva = dto.getAplicaIva() != null ? dto.getAplicaIva() : false;
+        java.math.BigDecimal porcentajeIva = dto.getPorcentajeIva() != null ? dto.getPorcentajeIva() : java.math.BigDecimal.ZERO;
+        productoRepository.actualizarCamposIva(id, aplicaIva, porcentajeIva);
     }
 
     @Override

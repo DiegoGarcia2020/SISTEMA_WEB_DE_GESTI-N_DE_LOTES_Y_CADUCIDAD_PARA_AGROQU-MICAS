@@ -89,6 +89,38 @@ import { ToastService } from '../../../shared/components/toast/toast.service';
           </div>
         </div>
 
+        <!-- Parámetros Tributarios (IVA Global) -->
+        <div class="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-6">
+          <div class="flex items-center gap-2.5 mb-5 pb-3 border-b border-gray-100">
+            <lucide-icon name="percent" class="w-5 h-5 text-[#0B4628]"></lucide-icon>
+            <h3 class="font-bold text-base text-gray-900">Parámetros Tributarios</h3>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Porcentaje IVA Global del Sistema (%)</label>
+              <div class="flex items-center gap-3">
+                <input type="number" [(ngModel)]="config.porcentajeIvaGlobal" step="0.01" min="0" max="100"
+                       class="w-32 px-3.5 py-2 border border-gray-300 rounded-xl text-lg font-black text-[#0B4628] focus:border-[#0B4628] outline-none text-center">
+                <span class="text-2xl font-black text-[#0B4628]">%</span>
+              </div>
+              <p class="text-[11px] text-gray-500 mt-1.5">Este valor es el techo máximo de IVA que puede aplicarse a cualquier producto. Al modificarlo, los productos cuyo IVA supere el nuevo valor se ajustarán automáticamente.</p>
+            </div>
+
+            <div class="flex items-center">
+              <div class="p-3.5 bg-amber-50/60 rounded-xl border border-amber-200/60">
+                <div class="flex items-start gap-2">
+                  <lucide-icon name="alert-triangle" class="w-4 h-4 text-amber-600 mt-0.5 shrink-0"></lucide-icon>
+                  <div>
+                    <span class="text-xs font-bold text-amber-800 block">Propagación Automática</span>
+                    <span class="text-[11px] text-amber-700 mt-0.5 block">Si reduce el porcentaje (ej. de 15% a 12%), los productos que tenían un IVA mayor al nuevo valor se ajustarán al nuevo tope. Los que tenían un IVA menor se mantendrán sin cambios.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Canales de Notificación y Alerta -->
         <div class="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-6">
           <div class="flex items-center gap-2.5 mb-5 pb-3 border-b border-gray-100">
@@ -199,7 +231,8 @@ export class ConfiguracionComponent implements OnInit {
     notificarPorSms: true,
     modoMantenimiento: false,
     intervaloSincronizacionMinutos: 15,
-    versionSistema: 'v2.4.0-PROD (Enterprise LMS)'
+    versionSistema: 'v2.4.0-PROD (Enterprise LMS)',
+    porcentajeIvaGlobal: 15
   };
 
   ngOnInit(): void {
