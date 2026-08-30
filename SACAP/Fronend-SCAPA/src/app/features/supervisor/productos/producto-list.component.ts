@@ -170,13 +170,13 @@ export class ProductoListComponent implements OnInit {
 
   desasociarProducto(producto: ProductoDTO) {
     if (!this.idProveedorSeleccionado) return;
-    if (confirm(`¿Estás seguro de desasociar el producto "${producto.nombre}" de este proveedor?`)) {
+    if (confirm(`¿Estás seguro de eliminar/desvincular el producto "${producto.nombre}" de este proveedor?`)) {
       this.proveedorService.desasociarProducto(this.idProveedorSeleccionado, producto.idProducto).subscribe({
         next: () => {
-          this.toast.success('Éxito', 'Producto desasociado del proveedor');
+          this.toast.success('Éxito', 'Producto eliminado del proveedor correctamente');
           this.cargarProductosDeProveedor(this.idProveedorSeleccionado!);
         },
-        error: () => this.toast.error('Error', 'No se pudo desasociar el producto')
+        error: () => this.toast.error('Error', 'No se pudo eliminar el producto del proveedor')
       });
     }
   }

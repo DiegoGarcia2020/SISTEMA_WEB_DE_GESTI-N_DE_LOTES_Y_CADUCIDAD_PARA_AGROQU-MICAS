@@ -138,10 +138,20 @@ public class ProveedorServiceImpl implements IProveedorService {
     }
 
     @Override
+    @Transactional
     public void desasociarProducto(Integer idProveedor, Integer idProducto) {
-        org.uteq.sacpa.entity.entidades.ProveedorProducto pp = proveedorProductoRepository.findByProveedor_IdProveedorAndProducto_IdProducto(idProveedor, idProducto)
-            .orElseThrow(() -> new RuntimeException("Asociación no encontrada"));
-        proveedorProductoRepository.delete(pp);
+        proveedorProductoRepository.findByProveedor_IdProveedorAndProducto_IdProducto(idProveedor, idProducto)
+            .ifPresent(proveedorProductoRepository::delete);
+
+        // Si ya no quedan proveedores activos para este producto, desactivarlo en el catálogo general
+        List<org.uteq.sacpa.entity.entidades.ProveedorProducto> restantes = 
+            proveedorProductoRepository.findByProducto_IdProducto(idProducto);
+        if (restantes.isEmpty()) {
+            productoRepository.findById(idProducto).ifPresent(p -> {
+                p.setIdEstado(2); // Inactivo
+                productoRepository.save(p);
+            });
+        }
     }
 
     @Override
