@@ -213,10 +213,11 @@ export class OperacionesService {
     return this.http.get<any[]>(`${this.apiUrl}/operaciones/devoluciones-venta/mis-devoluciones`);
   }
 
-  recibirDevolucionFisicaVenta(idDevolucion: number, estadoInventario: string): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/operaciones/devoluciones-venta/${idDevolucion}/recibir-fisica`, {}, {
-      params: { estadoInventario }
-    });
+  recibirDevolucionFisicaVenta(idDevolucion: number, payloadOrEstado: any): Observable<any> {
+    const body = typeof payloadOrEstado === 'string'
+      ? { estadoInventario: payloadOrEstado }
+      : payloadOrEstado;
+    return this.http.put<any>(`${this.apiUrl}/operaciones/devoluciones-venta/${idDevolucion}/recibir-fisica`, body);
   }
 
   // ================= ENDPOINTS DE COMBOS / KITTING =================

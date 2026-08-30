@@ -127,20 +127,22 @@ export class ProductoFormModalComponent implements OnInit {
           this.guardando = false;
           this.close.emit(true);
         },
-        error: () => {
-          this.toast.error('Error', 'No se pudo actualizar el producto');
+        error: (err) => {
+          const msg = err?.error?.message || err?.error?.error || 'No se pudo actualizar el producto';
+          this.toast.error('Error', msg);
           this.guardando = false;
         }
       });
     } else {
       this.productoService.crearProducto(datos).subscribe({
-        next: (res) => {
-          if (this.idProveedor) {
+        next: (res: any) => {
+          const nuevoId = res?.idProducto || res?.id;
+          if (this.idProveedor && nuevoId) {
             // Asociar al proveedor
             this.proveedorService.asociarProducto(this.idProveedor, {
               idProveedor: this.idProveedor,
-              idProducto: res.idProducto,
-              precioReferencial: 0,
+              idProducto: nuevoId,
+              precioReferencial: datos.precioSugerido || 0,
               codigoProductoProveedor: ''
             }).subscribe({
               next: () => {
@@ -160,8 +162,9 @@ export class ProductoFormModalComponent implements OnInit {
             this.close.emit(true);
           }
         },
-        error: () => {
-          this.toast.error('Error', 'No se pudo crear el producto');
+        error: (err) => {
+          const msg = err?.error?.message || err?.error?.error || (typeof err?.error === 'string' ? err.error : 'No se pudo crear el producto');
+          this.toast.error('Error', msg);
           this.guardando = false;
         }
       });

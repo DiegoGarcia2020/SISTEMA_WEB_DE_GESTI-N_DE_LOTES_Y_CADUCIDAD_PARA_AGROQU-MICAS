@@ -19,9 +19,9 @@ public class ProductoController {
     private IProductoService productoService;
 
     @PostMapping
-    public ResponseEntity<Map<String, String>> crearProducto(@Valid @RequestBody ProductoRequestDTO request) {
-        productoService.crearProducto(request);
-        return ResponseEntity.ok(Map.of("mensaje", "Producto creado exitosamente"));
+    public ResponseEntity<Producto> crearProducto(@Valid @RequestBody ProductoRequestDTO request) {
+        Producto creado = productoService.crearProducto(request);
+        return ResponseEntity.ok(creado);
     }
 
     @GetMapping("/{id}")
@@ -30,9 +30,9 @@ public class ProductoController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Map<String, String>> actualizarProducto(@PathVariable Integer id, @Valid @RequestBody ProductoRequestDTO request) {
-        productoService.actualizarProducto(id, request);
-        return ResponseEntity.ok(Map.of("mensaje", "Producto actualizado exitosamente"));
+    public ResponseEntity<Producto> actualizarProducto(@PathVariable Integer id, @Valid @RequestBody ProductoRequestDTO request) {
+        Producto actualizado = productoService.actualizarProducto(id, request);
+        return ResponseEntity.ok(actualizado);
     }
 
     @GetMapping
