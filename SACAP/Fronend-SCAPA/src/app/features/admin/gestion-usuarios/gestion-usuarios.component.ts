@@ -309,6 +309,10 @@ import { UserAssignRoleModalComponent } from './user-assign-role-modal.component
                         <lucide-icon name="power" [size]="18"></lucide-icon>
                       </button>
 
+                      <button type="button" class="btn-icon" (click)="confirmLogout(user)" title="Forzar cierre de sesión remoto">
+                        <lucide-icon name="log-out" [size]="18"></lucide-icon>
+                      </button>
+
                       <button type="button" class="btn-icon" (click)="openEditModal(user)" title="Editar datos del usuario">
                         <lucide-icon name="edit-3" [size]="18"></lucide-icon>
                       </button>
@@ -611,8 +615,16 @@ export class GestionUsuariosComponent implements OnInit {
         }
       });
     } else if (action === 'LOGOUT') {
-      this.toast.info('Sesión Terminada', `Se cerraron remotamente las sesiones de ${u.correo}.`);
-      this.isConfirmOpen.set(false);
+      this.usuarioService.forzarCierre(u.correo).subscribe({
+        next: () => {
+          this.toast.info('Sesión Terminada', `Se forzó el cierre de sesión de ${u.correo}.`);
+          this.isConfirmOpen.set(false);
+        },
+        error: () => {
+          this.toast.error('Error', 'No se pudo cerrar la sesión remota.');
+          this.isConfirmOpen.set(false);
+        }
+      });
     }
   }
 }

@@ -11,6 +11,8 @@ import org.uteq.sacpa.dto.seguridad.UsuarioResponseDTO;
 import org.uteq.sacpa.service.seguridad.IUsuarioService;
 
 import java.util.List;
+import java.util.Map;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -18,6 +20,7 @@ import java.util.List;
 public class UsuarioController {
 
     private final IUsuarioService usuarioService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @GetMapping
     public ResponseEntity<List<UsuarioResponseDTO>> listarTodos() {
@@ -67,6 +70,13 @@ public class UsuarioController {
     public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
         usuarioService.eliminar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/forzar-cierre/{username}")
+    public ResponseEntity<Void> forzarCierreSesion(@PathVariable String username) {
+        messagingTemplate.convertAndSend("/topic/logout/" + username, 
+            (Object) Map.of("mensaje", "Tu sesión ha sido cerrada por un administrador."));
+        return ResponseEntity.ok().build();
     }
 }
 

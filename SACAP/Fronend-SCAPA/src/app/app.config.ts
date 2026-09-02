@@ -20,7 +20,7 @@ import {
   Edit2, Flame, Inbox, ListOrdered, PackageCheck, XCircle,
   Network, ArrowRightLeft, QrCode, CornerUpLeft, Undo2,
   Sun, RefreshCcw, Archive, Star, CornerDownLeft, UserMinus,
-  PanelLeftClose, PanelLeftOpen, Box
+  PanelLeftClose, PanelLeftOpen, Box, DatabaseBackup, DownloadCloud, Server
 } from 'lucide-angular';
 
 const pickedIcons = {
@@ -40,7 +40,7 @@ const pickedIcons = {
   Edit2, Flame, Inbox, ListOrdered, PackageCheck, XCircle,
   Network, ArrowRightLeft, QrCode, CornerUpLeft, Undo2,
   Sun, RefreshCcw, Archive, Star, CornerDownLeft, UserMinus,
-  PanelLeftClose, PanelLeftOpen, Box
+  PanelLeftClose, PanelLeftOpen, Box, DatabaseBackup, DownloadCloud, Server
 };
 
 export const appConfig: ApplicationConfig = {

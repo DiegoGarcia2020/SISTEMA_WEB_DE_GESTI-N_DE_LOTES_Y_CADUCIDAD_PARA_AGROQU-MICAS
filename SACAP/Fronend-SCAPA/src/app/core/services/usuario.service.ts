@@ -49,5 +49,9 @@ export class UsuarioService {
   resetPassword(id: number): Observable<UsuarioDTO> {
     return this.http.post<UsuarioDTO>(`${this.apiUrl}/${id}/reset-password`, {});
   }
+
+  forzarCierre(username: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/forzar-cierre/${username}`, {});
+  }
 }
 

@@ -230,6 +230,10 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
                 <lucide-icon name="settings" class="nav-item__icon"></lucide-icon>
                 <span>Configuración general</span>
               </a>
+              <a routerLink="/admin/respaldos" routerLinkActive="active" class="nav-item nav-item--sub" title="Gestión de Respaldos">
+                <lucide-icon name="database-backup" class="nav-item__icon"></lucide-icon>
+                <span>Gestión de Respaldos</span>
+              </a>
             </div>
           </div>
 

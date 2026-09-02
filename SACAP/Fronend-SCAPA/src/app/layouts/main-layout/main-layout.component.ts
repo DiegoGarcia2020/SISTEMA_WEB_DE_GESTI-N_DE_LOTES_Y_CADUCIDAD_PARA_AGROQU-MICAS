@@ -1,9 +1,12 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { SidebarComponent } from './sidebar.component';
 import { TopbarComponent } from './topbar.component';
 import { ToastComponent } from '../../shared/components/toast/toast.component';
+import { WebsocketService } from '../../core/services/websocket.service';
+import { AuthService } from '../../core/services/auth.service';
+import { ToastService } from '../../shared/components/toast/toast.service';
 
 @Component({
   selector: 'app-main-layout',
@@ -31,8 +34,23 @@ import { ToastComponent } from '../../shared/components/toast/toast.component';
     </div>
   `
 })
-export class MainLayoutComponent {
+export class MainLayoutComponent implements OnInit {
   sidebarColapsado = signal(false);
+  
+  private wsService = inject(WebsocketService);
+  private authService = inject(AuthService);
+  private toast = inject(ToastService);
+
+  ngOnInit(): void {
+    const user = this.authService.currentUser();
+    if (user?.correo) {
+      this.wsService.subscribe(`/topic/logout/${user.correo}`, (msg: any) => {
+        this.toast.warning('Sesión Cerrada', msg?.mensaje || 'Tu sesión ha sido cerrada por un administrador.');
+        this.wsService.disconnect();
+        this.authService.logout();
+      });
+    }
+  }
 
   toggleSidebar() {
     this.sidebarColapsado.set(!this.sidebarColapsado());

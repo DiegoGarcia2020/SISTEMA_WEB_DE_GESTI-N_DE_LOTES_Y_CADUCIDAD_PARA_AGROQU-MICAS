@@ -40,6 +40,18 @@ public class AuditoriaServiceImpl implements IAuditoriaService {
         Usuario usuario = null;
         if (idUsuario != null) {
             usuario = usuarioRepository.findById(idUsuario).orElse(null);
+        } else {
+            // Obtener del contexto de seguridad si está disponible
+            org.springframework.security.core.Authentication authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.getPrincipal() instanceof org.springframework.security.core.userdetails.UserDetails) {
+                String username = ((org.springframework.security.core.userdetails.UserDetails) authentication.getPrincipal()).getUsername();
+                usuario = usuarioRepository.findByCorreo(username).orElse(null);
+            } else if (authentication != null && authentication.getPrincipal() instanceof String) {
+                String username = (String) authentication.getPrincipal();
+                if (!username.equals("anonymousUser")) {
+                    usuario = usuarioRepository.findByCorreo(username).orElse(null);
+                }
+            }
         }
 
         Auditoria aud = Auditoria.builder()

@@ -17,6 +17,7 @@ import { PromocionesIAComponent } from './features/admin/promociones-ia/promocio
 import { GestionCatalogosComponent } from './features/admin/gestion-catalogos/gestion-catalogos.component';
 import { AuditoriaComponent } from './features/admin/auditoria/auditoria.component';
 import { ConfiguracionComponent } from './features/admin/configuracion/configuracion.component';
+import { GestionRespaldosComponent } from './features/admin/gestion-respaldos/gestion-respaldos.component';
 
 
 // Componentes por Rol (Bodega, Campo, Supervisor)
@@ -167,6 +168,12 @@ export const routes: Routes = [
       {
         path: 'configuracion',
         component: ConfiguracionComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['Administrador'] }
+      },
+      {
+        path: 'respaldos',
+        component: GestionRespaldosComponent,
         canActivate: [roleGuard],
         data: { roles: ['Administrador'] }
       },
