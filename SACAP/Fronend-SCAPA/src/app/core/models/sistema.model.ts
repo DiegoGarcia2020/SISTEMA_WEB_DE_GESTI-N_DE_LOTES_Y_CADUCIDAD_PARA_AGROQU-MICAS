@@ -41,4 +41,5 @@ export interface ConfiguracionGlobalDTO {
   modoMantenimiento: boolean;
   intervaloSincronizacionMinutos: number;
   versionSistema: string;
+  porcentajeIvaGlobal: number;
 }

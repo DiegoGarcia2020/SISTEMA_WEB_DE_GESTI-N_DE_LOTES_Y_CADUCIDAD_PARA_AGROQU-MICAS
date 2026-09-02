@@ -20,7 +20,11 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -39,6 +43,7 @@ public class MotorSugerenciaIAServiceImpl implements IMotorSugerenciaIAService {
     private static final int ID_ESTADO_LOTE_ACTIVO = 1;
     private static final int SCORE_MIN_SUGERENCIA = 15;
     private static final int SCORE_MIN_COMBO = 35;
+    private static final int MAX_LOTES_POR_COMBO = 3;
     private static final BigDecimal DESCUENTO_MAXIMO_DEFECTO = new BigDecimal("35.00");
 
     private final ILoteRepository loteRepository;
@@ -64,15 +69,11 @@ public class MotorSugerenciaIAServiceImpl implements IMotorSugerenciaIAService {
         if (candidatos.isEmpty()) return List.of();
 
         BigDecimal descuentoMaximo = obtenerDescuentoMaximo();
+        // Se evalúa UNA sola vez, no una por lote como antes.
+        boolean tempActiva = hayTemporadaActiva(null);
 
         List<LoteSugeridoDTO> puntuados = candidatos.stream()
-                .map(l -> {
-                    Integer idCultivo = null;
-                    // Lote -> Producto -> id_categoria podria usarse, pero no tenemos Cultivo en Producto facilmente.
-                    // Se asume sugerencia general si no hay cultivo
-                    boolean tempActiva = hayTemporadaActiva(null);
-                    return puntuarLote(l, tempActiva);
-                })
+                .map(l -> puntuarLote(l, tempActiva))
                 .sorted(Comparator.comparing(LoteSugeridoDTO::getScoreUrgencia).reversed())
                 .toList();
 
@@ -81,36 +82,69 @@ public class MotorSugerenciaIAServiceImpl implements IMotorSugerenciaIAService {
                 .toList();
         if (relevantes.isEmpty()) return List.of();
 
-        List<LoteSugeridoDTO> paraCombo = relevantes.stream()
-                .filter(l -> l.getScoreUrgencia() >= SCORE_MIN_COMBO)
-                .toList();
-
         List<SugerenciaComboDTO> resultado = new ArrayList<>();
         List<String> prompts = new ArrayList<>();
-        if (paraCombo.size() >= 2) {
-            int scoreCombo = (int) Math.round(paraCombo.stream().mapToInt(LoteSugeridoDTO::getScoreUrgencia).average().orElse(0));
-            BigDecimal descuento = mapearDescuento(scoreCombo, descuentoMaximo);
-            resultado.add(SugerenciaComboDTO.builder()
-                    .titulo("Combo " + paraCombo.size() + " productos")
-                    .esCombo(true)
-                    .score(scoreCombo)
-                    .descuentoSugerido(descuento)
-                    .justificacionIA(construirJustificacionCombo(paraCombo, true, scoreCombo, descuento))
-                    .lotes(paraCombo)
-                    .build());
-            prompts.add(promptCombo(paraCombo, true, scoreCombo, descuento));
-            relevantes.stream()
-                    .filter(l -> !paraCombo.contains(l))
-                    .forEach(l -> {
-                        resultado.add(individual(l, true, descuentoMaximo));
-                        prompts.add(promptIndividual(l, true, mapearDescuento(l.getScoreUrgencia(), descuentoMaximo)));
-                    });
-        } else {
-            relevantes.forEach(l -> {
-                resultado.add(individual(l, true, descuentoMaximo));
-                prompts.add(promptIndividual(l, true, mapearDescuento(l.getScoreUrgencia(), descuentoMaximo)));
-            });
+
+        // Elegibles para combo, agrupados por categoría. LinkedHashMap preserva
+        // el orden de aparición, que ya viene ordenado por score descendente.
+        Map<Integer, List<LoteSugeridoDTO>> porCategoria = relevantes.stream()
+                .filter(l -> l.getScoreUrgencia() >= SCORE_MIN_COMBO)
+                .collect(Collectors.groupingBy(
+                        l -> l.getIdCategoria() != null ? l.getIdCategoria() : -1,
+                        LinkedHashMap::new,
+                        Collectors.toList()));
+
+        Set<Integer> lotesYaEnCombo = new HashSet<>();
+
+        for (List<LoteSugeridoDTO> grupo : porCategoria.values()) {
+            // Un solo lote por producto dentro del combo: evita que CarritoService
+            // los sume en una línea con cantidad inflada. Se queda el de mayor score.
+            List<LoteSugeridoDTO> unicosPorProducto = new ArrayList<>();
+            Set<Integer> productosVistos = new HashSet<>();
+            for (LoteSugeridoDTO l : grupo) {
+                if (l.getIdProducto() == null || productosVistos.add(l.getIdProducto())) {
+                    unicosPorProducto.add(l);
+                }
+            }
+
+            int numeroCombo = 0;
+            for (int i = 0; i < unicosPorProducto.size(); i += MAX_LOTES_POR_COMBO) {
+                List<LoteSugeridoDTO> bloque = List.copyOf(unicosPorProducto.subList(
+                        i, Math.min(i + MAX_LOTES_POR_COMBO, unicosPorProducto.size())));
+                // Un solo lote no es combo: cae a sugerencia individual más abajo.
+                if (bloque.size() < 2) break;
+
+                numeroCombo++;
+                int scoreCombo = (int) Math.round(bloque.stream()
+                        .mapToInt(LoteSugeridoDTO::getScoreUrgencia).average().orElse(0));
+                BigDecimal descuento = mapearDescuento(scoreCombo, descuentoMaximo);
+                String nombreCat = bloque.get(0).getNombreCategoria() != null
+                        ? bloque.get(0).getNombreCategoria() : "Varios";
+                String titulo = "Combo " + nombreCat + " · " + bloque.size() + " lotes"
+                        + (numeroCombo > 1 ? " (" + numeroCombo + ")" : "");
+
+                resultado.add(SugerenciaComboDTO.builder()
+                        .titulo(titulo)
+                        .esCombo(true)
+                        .score(scoreCombo)
+                        .descuentoSugerido(descuento)
+                        .justificacionIA(construirJustificacionCombo(bloque, tempActiva, scoreCombo, descuento))
+                        .lotes(bloque)
+                        .build());
+                prompts.add(promptCombo(bloque, tempActiva, scoreCombo, descuento));
+                bloque.forEach(l -> lotesYaEnCombo.add(l.getIdLote()));
+            }
         }
+
+        // Todo lo que no entró en un combo sale como sugerencia individual.
+        relevantes.stream()
+                .filter(l -> !lotesYaEnCombo.contains(l.getIdLote()))
+                .forEach(l -> {
+                    resultado.add(individual(l, tempActiva, descuentoMaximo));
+                    prompts.add(promptIndividual(l, tempActiva,
+                            mapearDescuento(l.getScoreUrgencia(), descuentoMaximo)));
+                });
+
         enriquecerConIA(resultado, prompts);
         return resultado;
     }
@@ -218,6 +252,10 @@ public class MotorSugerenciaIAServiceImpl implements IMotorSugerenciaIAService {
                 .precioUnitario(lote.getProducto() != null ? lote.getProducto().getPrecio() : null)
                 .scoreUrgencia(score)
                 .instruccionesAplicacion(lote.getProducto() != null ? lote.getProducto().getInstruccionesAplicacion() : null)
+                .idCategoria(lote.getProducto() != null && lote.getProducto().getCategoria() != null
+                        ? lote.getProducto().getCategoria().getIdCategoria() : null)
+                .nombreCategoria(lote.getProducto() != null && lote.getProducto().getCategoria() != null
+                        ? lote.getProducto().getCategoria().getNombre() : null)
                 .build();
     }
 

@@ -99,7 +99,8 @@ public class DevolucionVentaServiceImpl implements IDevolucionVentaService {
         devolucion.setFechaRecepcion(LocalDateTime.now());
 
         // Reintegro de stock y trazabilidad
-        if (EstadoInventarioDevolucion.DISPONIBLE.name().equals(estadoInventario)) {
+        if (EstadoInventarioDevolucion.DISPONIBLE.name().equals(estadoInventario) ||
+            EstadoInventarioDevolucion.EMPAQUE_DANADO.name().equals(estadoInventario)) {
             org.uteq.sacpa.entity.inventario.Lote loteReintegro;
             
             if (request.getIdLoteDestino() != null) {
@@ -131,7 +132,8 @@ public class DevolucionVentaServiceImpl implements IDevolucionVentaService {
                 int disponible = Math.max(0, capacidadMaxima - capacidadOcupada);
                 
                 if (devolucion.getCantidadDevuelta() > disponible) {
-                    throw new RuntimeException("La ubicación " + nuevaUbicacion.getNivel() + 
+                    String nombreUbicacion = (nuevaUbicacion.getEstanteria() != null ? nuevaUbicacion.getEstanteria().getCodigo() + " - " : "") + nuevaUbicacion.getNivel();
+                    throw new RuntimeException("La ubicación " + nombreUbicacion + 
                         " no tiene capacidad suficiente. Disponible: " + disponible + 
                         ", requerido: " + devolucion.getCantidadDevuelta() + ".");
                 }

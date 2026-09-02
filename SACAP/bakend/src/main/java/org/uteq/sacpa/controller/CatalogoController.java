@@ -6,7 +6,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.uteq.sacpa.dto.catalogos.CatalogoRequestDTO;
 import org.uteq.sacpa.entity.catalogos.*;
+import org.uteq.sacpa.entity.inventario.Categoria;
 import org.uteq.sacpa.service.catalogos.ICatalogoService;
+import org.uteq.sacpa.repository.catalogos.IFormulacionRepository;
+import org.uteq.sacpa.repository.catalogos.IToxicidadRepository;
+import org.uteq.sacpa.repository.inventario.ICategoriaRepository;
 import org.uteq.sacpa.repository.geografia.ICiudadRepository;
 import org.uteq.sacpa.repository.entidades.IEmpresaRepository;
 
@@ -25,6 +29,15 @@ public class CatalogoController {
 
     @Autowired
     private IEmpresaRepository empresaRepository;
+
+    @Autowired
+    private ICategoriaRepository categoriaRepository;
+
+    @Autowired
+    private IFormulacionRepository formulacionRepository;
+
+    @Autowired
+    private IToxicidadRepository toxicidadRepository;
 
     // Endpoint unificado para el frontend (gestión de catálogos)
     @GetMapping
@@ -168,5 +181,23 @@ public class CatalogoController {
                     "ruc", e.getRuc() != null ? e.getRuc() : ""))
                 .toList();
         return ResponseEntity.ok(lista);
+    }
+
+    /** Categorías de productos para el formulario de crear/editar producto */
+    @GetMapping("/categorias")
+    public ResponseEntity<List<Categoria>> listarCategorias() {
+        return ResponseEntity.ok(categoriaRepository.findAll());
+    }
+
+    /** Formulaciones de productos para el formulario de crear/editar producto */
+    @GetMapping("/formulaciones")
+    public ResponseEntity<List<Formulacion>> listarFormulaciones() {
+        return ResponseEntity.ok(formulacionRepository.findAll());
+    }
+
+    /** Toxicidades de productos para el formulario de crear/editar producto */
+    @GetMapping("/toxicidades")
+    public ResponseEntity<List<Toxicidad>> listarToxicidades() {
+        return ResponseEntity.ok(toxicidadRepository.findAll());
     }
 }

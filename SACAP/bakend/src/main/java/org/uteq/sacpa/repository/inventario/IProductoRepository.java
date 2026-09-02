@@ -47,4 +47,22 @@ public interface IProductoRepository extends JpaRepository<Producto, Integer> {
     @Transactional
     @Query(value = "SELECT inventario.fn_desactivar_producto(:idProducto, :idEstadoInactivo)", nativeQuery = true)
     void desactivarProducto(@Param("idProducto") Integer idProducto, @Param("idEstadoInactivo") Integer idEstadoInactivo);
+
+    /** Actualiza los campos IVA de un producto específico */
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE inventario.producto SET aplica_iva = :aplicaIva, porcentaje_iva = :porcentajeIva WHERE id_producto = :idProducto", nativeQuery = true)
+    void actualizarCamposIva(@Param("idProducto") Integer idProducto,
+                             @Param("aplicaIva") Boolean aplicaIva,
+                             @Param("porcentajeIva") BigDecimal porcentajeIva);
+
+    /** Obtiene el ID del último producto creado (para actualizar IVA post-creación) */
+    @Query(value = "SELECT MAX(id_producto) FROM inventario.producto", nativeQuery = true)
+    Integer findMaxIdProducto();
+
+    /** Propaga un cambio de IVA global: los productos con aplica_iva=true cuyo porcentaje excede el nuevo global se ajustan al nuevo valor */
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE inventario.producto SET porcentaje_iva = :nuevoIva WHERE aplica_iva = true AND porcentaje_iva > :nuevoIva", nativeQuery = true)
+    void ajustarIvaGlobal(@Param("nuevoIva") BigDecimal nuevoIva);
 }

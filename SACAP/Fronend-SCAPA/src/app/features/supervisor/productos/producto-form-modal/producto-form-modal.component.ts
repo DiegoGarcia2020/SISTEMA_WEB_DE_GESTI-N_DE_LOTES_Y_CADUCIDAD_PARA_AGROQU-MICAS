@@ -7,6 +7,7 @@ import { environment } from '../../../../../environments/environment';
 import { ProductoService, ProductoDTO } from '../../../../core/services/producto.service';
 import { ProveedorService } from '../../../../core/services/proveedor.service';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
+import { SistemaService } from '../../../../core/services/sistema.service';
 
 @Component({
   selector: 'app-producto-form-modal',
@@ -30,11 +31,14 @@ export class ProductoFormModalComponent implements OnInit {
   isEditing = false;
   guardando = false;
 
+  private sistemaService = inject(SistemaService);
+
   // Catálogos
   categorias = signal<any[]>([]);
   formulaciones = signal<any[]>([]);
   toxicidades = signal<any[]>([]);
   estados = signal<any[]>([]);
+  ivaGlobal = signal<number>(15);
 
   ngOnInit(): void {
     this.isEditing = !!this.producto;
@@ -49,7 +53,9 @@ export class ProductoFormModalComponent implements OnInit {
       idFormulacion: [this.producto?.formulacion?.idFormulacion || null],
       idToxicidad: [this.producto?.toxicidad?.idToxicidad || null],
       ingredienteActivo: [this.producto?.ingredienteActivo || ''],
-      periodoCarenciaDias: [this.producto?.periodoCarenciaDias || 0, [Validators.min(0)]]
+      periodoCarenciaDias: [this.producto?.periodoCarenciaDias || 0, [Validators.min(0)]],
+      aplicaIva: [this.producto?.aplicaIva ?? false],
+      porcentajeIva: [this.producto?.porcentajeIva ?? 0, [Validators.min(0)]]
     });
 
     this.cargarCatalogos();
@@ -65,6 +71,37 @@ export class ProductoFormModalComponent implements OnInit {
       { idEstado: 1, nombre: 'Activo' },
       { idEstado: 2, nombre: 'Inactivo' }
     ]);
+
+    // Cargar IVA global del sistema
+    this.http.get<any>(`${environment.apiUrl}/configuracion/iva-global`).subscribe({
+      next: (res) => {
+        const iva = res?.porcentajeIvaGlobal ?? 15;
+        this.ivaGlobal.set(iva);
+        // Si es producto nuevo y no tiene porcentaje, poner el global
+        if (!this.isEditing && this.form.get('aplicaIva')?.value && !this.form.get('porcentajeIva')?.value) {
+          this.form.patchValue({ porcentajeIva: iva });
+        }
+      }
+    });
+  }
+
+  onToggleIva() {
+    const aplica = this.form.get('aplicaIva')?.value;
+    if (aplica) {
+      // Al activar IVA, autocompletar con el porcentaje global
+      this.form.patchValue({ porcentajeIva: this.ivaGlobal() });
+    } else {
+      // Al desactivar, poner en 0
+      this.form.patchValue({ porcentajeIva: 0 });
+    }
+  }
+
+  validarMaxIva() {
+    const valor = this.form.get('porcentajeIva')?.value || 0;
+    if (valor > this.ivaGlobal()) {
+      this.form.patchValue({ porcentajeIva: this.ivaGlobal() });
+      this.toast.warning('Límite de IVA', `El porcentaje no puede superar el IVA global del sistema (${this.ivaGlobal()}%).`);
+    }
   }
 
   guardar() {
@@ -74,7 +111,14 @@ export class ProductoFormModalComponent implements OnInit {
     }
 
     this.guardando = true;
-    const datos = this.form.value;
+    const formValue = this.form.value;
+    // Mapear al DTO del backend (precioSugerido en vez de precio)
+    const datos: any = {
+      ...formValue,
+      precioSugerido: formValue.precio,
+      aplicaIva: formValue.aplicaIva ?? false,
+      porcentajeIva: formValue.aplicaIva ? (formValue.porcentajeIva || 0) : 0
+    };
 
     if (this.isEditing && this.producto) {
       this.productoService.actualizarProducto(this.producto.idProducto, datos).subscribe({
@@ -83,20 +127,22 @@ export class ProductoFormModalComponent implements OnInit {
           this.guardando = false;
           this.close.emit(true);
         },
-        error: () => {
-          this.toast.error('Error', 'No se pudo actualizar el producto');
+        error: (err) => {
+          const msg = err?.error?.message || err?.error?.error || 'No se pudo actualizar el producto';
+          this.toast.error('Error', msg);
           this.guardando = false;
         }
       });
     } else {
       this.productoService.crearProducto(datos).subscribe({
-        next: (res) => {
-          if (this.idProveedor) {
+        next: (res: any) => {
+          const nuevoId = res?.idProducto || res?.id;
+          if (this.idProveedor && nuevoId) {
             // Asociar al proveedor
             this.proveedorService.asociarProducto(this.idProveedor, {
               idProveedor: this.idProveedor,
-              idProducto: res.idProducto,
-              precioReferencial: 0,
+              idProducto: nuevoId,
+              precioReferencial: datos.precioSugerido || 0,
               codigoProductoProveedor: ''
             }).subscribe({
               next: () => {
@@ -116,8 +162,9 @@ export class ProductoFormModalComponent implements OnInit {
             this.close.emit(true);
           }
         },
-        error: () => {
-          this.toast.error('Error', 'No se pudo crear el producto');
+        error: (err) => {
+          const msg = err?.error?.message || err?.error?.error || (typeof err?.error === 'string' ? err.error : 'No se pudo crear el producto');
+          this.toast.error('Error', msg);
           this.guardando = false;
         }
       });

@@ -41,4 +41,8 @@ public class ProductoRequestDTO {
     private Integer idToxicidad;
     
     private Integer idFormulacion;
+
+    private Boolean aplicaIva;
+
+    private BigDecimal porcentajeIva;
 }

@@ -74,10 +74,15 @@ public interface ILoteRepository extends JpaRepository<Lote, Integer> {
     Optional<Lote> findByIdForUpdate(@Param("idLote") Integer idLote);
 
     /** Todos los lotes con stock realmente disponible (cantidad_actual - cantidad_reservada > 0), orden FEFO */
-    @Query("SELECT l FROM Lote l WHERE (l.cantidadActual - COALESCE(l.cantidadReservada, 0)) > 0 ORDER BY l.fechaVencimiento ASC")
+    @Query("SELECT l FROM Lote l WHERE l.producto.idEstado = 1 AND l.idEstadoLote = 1 AND l.fechaVencimiento > CURRENT_DATE AND (l.cantidadActual - COALESCE(l.cantidadReservada, 0)) > 0 " +
+           "AND EXISTS (SELECT 1 FROM org.uteq.sacpa.entity.entidades.ProveedorProducto pp WHERE pp.producto.idProducto = l.producto.idProducto AND pp.idEstado = 1) " +
+           "ORDER BY l.fechaVencimiento ASC")
     List<Lote> findLotesDisponiblesFefo();
 
-    @Query("SELECT l FROM Lote l JOIN l.producto p WHERE l.idEstadoLote = 1 AND l.fechaVencimiento > CURRENT_DATE AND (l.cantidadActual - COALESCE(l.cantidadReservada, 0)) > 0 AND (:busqueda IS NULL OR LOWER(p.nombre) LIKE LOWER(CONCAT('%', :busqueda, '%')) OR LOWER(l.numeroLote) LIKE LOWER(CONCAT('%', :busqueda, '%'))) ORDER BY l.fechaVencimiento ASC")
+    @Query("SELECT l FROM Lote l JOIN l.producto p WHERE l.producto.idEstado = 1 AND l.idEstadoLote = 1 AND l.fechaVencimiento > CURRENT_DATE AND (l.cantidadActual - COALESCE(l.cantidadReservada, 0)) > 0 " +
+           "AND EXISTS (SELECT 1 FROM org.uteq.sacpa.entity.entidades.ProveedorProducto pp WHERE pp.producto.idProducto = l.producto.idProducto AND pp.idEstado = 1) " +
+           "AND (:busqueda IS NULL OR LOWER(p.nombre) LIKE LOWER(CONCAT('%', :busqueda, '%')) OR LOWER(l.numeroLote) LIKE LOWER(CONCAT('%', :busqueda, '%'))) " +
+           "ORDER BY l.fechaVencimiento ASC")
     List<Lote> findLotesDisponibles(@Param("busqueda") String busqueda);
 
 

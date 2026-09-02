@@ -12,6 +12,8 @@ export interface ProductoDTO {
   idEstado: number;
   ingredienteActivo?: string;
   periodoCarenciaDias?: number;
+  aplicaIva?: boolean;
+  porcentajeIva?: number;
   toxicidad?: {
     idToxicidad: number;
     nombre: string;
