@@ -88,7 +88,7 @@ public class AuthServiceImpl implements IAuthService {
             throw new RuntimeException("El usuario no posee el rol seleccionado: " + rolSeleccionado);
         }
 
-        String finalJwtToken = jwtService.generateToken(usuarioPrincipal.getUsername(), rolSeleccionado);
+        String finalJwtToken = jwtService.generateToken(usuarioPrincipal.getUsername(), rolSeleccionado, usuarioPrincipal.getIdUsuario());
         Boolean requiere = usuarioPrincipal.getUsuario().getRequiereCambioClave() != null && usuarioPrincipal.getUsuario().getRequiereCambioClave();
 
         return AuthResponseDTO.builder()

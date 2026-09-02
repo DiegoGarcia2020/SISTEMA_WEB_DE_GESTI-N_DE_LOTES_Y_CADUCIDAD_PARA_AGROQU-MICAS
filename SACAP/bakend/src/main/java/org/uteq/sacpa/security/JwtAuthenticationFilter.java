@@ -57,6 +57,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     UserContext.setUsername(username);
                     UserContext.setAppRole(appRole);
+                    UserContext.setUserId(jwtService.extractIdUsuario(jwt));
                 }
             }
         } catch (Exception e) {

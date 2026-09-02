@@ -1,5 +1,6 @@
 package org.uteq.sacpa.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -8,6 +9,7 @@ import org.uteq.sacpa.entity.seguridad.Auditoria;
 import org.uteq.sacpa.entity.seguridad.HistorialSesion;
 import org.uteq.sacpa.service.seguridad.IAuditoriaService;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,24 +19,36 @@ import java.util.Map;
 public class AuditoriaController {
 
     private final IAuditoriaService auditoriaService;
+    private final ObjectMapper objectMapper;
 
     // --- AUDITORÍA ---
     @GetMapping("/auditoria")
     public ResponseEntity<List<Map<String, Object>>> listarAuditoria() {
         List<Map<String, Object>> res = new java.util.ArrayList<>();
         for (Auditoria a : auditoriaService.listarAuditoria()) {
-            res.add(Map.of(
-                "idAuditoria", a.getIdAuditoria(),
-                "fechaHora", a.getFechaHora() != null ? a.getFechaHora().toString().replace("T", " ").substring(0, Math.min(19, a.getFechaHora().toString().length())) : "",
-                "usuario", a.getUsuario() != null ? a.getUsuario().getCorreo() : "SISTEMA",
-                "rol", "ADMINISTRADOR",
-                "accion", a.getOperacion() != null ? a.getOperacion() : "UPDATE",
-                "tablaAfectada", a.getTablaAfectada() != null ? a.getTablaAfectada() : "SACPA",
-                "detalleCambio", a.getDescripcion() != null ? a.getDescripcion() : "Modificación de registro",
-                "direccionIp", "127.0.0.1"
-            ));
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("idAuditoria", a.getIdAuditoria());
+            item.put("fechaHora", a.getFechaHora() != null ? a.getFechaHora().toString().replace("T", " ").substring(0, Math.min(19, a.getFechaHora().toString().length())) : "");
+            item.put("usuario", a.getUsuario() != null ? a.getUsuario().getCorreo() : "SISTEMA");
+            item.put("rol", a.getOperacion() != null ? a.getOperacion() : "SISTEMA");
+            item.put("accion", a.getAccion() != null ? a.getAccion() : "UPDATE");
+            item.put("tablaAfectada", a.getTablaAfectada() != null ? a.getTablaAfectada() : "SACPA");
+            item.put("detalleCambio", a.getDescripcion() != null ? a.getDescripcion() : "Modificación de registro");
+            item.put("direccionIp", "127.0.0.1");
+            item.put("valorAnterior", parseJson(a.getValorAnterior()));
+            item.put("valorNuevo", parseJson(a.getValorNuevo()));
+            res.add(item);
         }
         return ResponseEntity.ok(res);
+    }
+
+    private Object parseJson(String texto) {
+        if (texto == null || texto.isBlank()) return null;
+        try {
+            return objectMapper.readValue(texto, Object.class);
+        } catch (Exception e) {
+            return texto;
+        }
     }
 
     @PostMapping("/auditoria")

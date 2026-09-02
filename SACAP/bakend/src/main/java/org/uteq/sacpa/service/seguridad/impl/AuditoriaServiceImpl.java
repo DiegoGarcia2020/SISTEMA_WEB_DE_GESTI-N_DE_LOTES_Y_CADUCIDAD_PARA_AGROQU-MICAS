@@ -26,13 +26,14 @@ public class AuditoriaServiceImpl implements IAuditoriaService {
 
     @Override
     public List<Auditoria> listarAuditoria() {
-        return auditoriaRepository.findAll();
+        return auditoriaRepository.findAllByOrderByFechaHoraDesc(org.springframework.data.domain.PageRequest.of(0, 500));
     }
 
     @Override
     @Transactional
     public Auditoria registrarAuditoria(Map<String, Object> datos) {
         String tabla = (String) datos.get("tablaAfectada");
+        String accion = (String) datos.get("accion");
         String operacion = (String) datos.get("operacion");
         String descripcion = (String) datos.get("descripcion");
         Integer idUsuario = datos.get("idUsuario") != null ? ((Number) datos.get("idUsuario")).intValue() : null;
@@ -56,6 +57,7 @@ public class AuditoriaServiceImpl implements IAuditoriaService {
 
         Auditoria aud = Auditoria.builder()
                 .tablaAfectada(tabla)
+                .accion(accion != null ? accion : operacion)
                 .operacion(operacion)
                 .descripcion(descripcion)
                 .fechaHora(LocalDateTime.now())
