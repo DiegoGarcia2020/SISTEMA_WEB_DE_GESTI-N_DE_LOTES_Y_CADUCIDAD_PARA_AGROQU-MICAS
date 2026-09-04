@@ -121,6 +121,38 @@ import { ToastService } from '../../../shared/components/toast/toast.service';
           </div>
         </div>
 
+        <!-- Proveedor de IA (Motor de Sugerencias) -->
+        <div class="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-6">
+          <div class="flex items-center gap-2.5 mb-5 pb-3 border-b border-gray-100">
+            <lucide-icon name="cpu" class="w-5 h-5 text-[#0B4628]"></lucide-icon>
+            <h3 class="font-bold text-base text-gray-900">Proveedor de Inteligencia Artificial</h3>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-700 uppercase mb-1">IA que redacta las sugerencias y combos</label>
+              <select [(ngModel)]="config.proveedorIaActivo"
+                      class="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-sm font-bold text-[#0B4628] focus:border-[#0B4628] outline-none bg-white">
+                <option value="GEMINI">Google Gemini</option>
+                <option value="GROQ">Groq (Llama)</option>
+              </select>
+              <p class="text-[11px] text-gray-500 mt-1.5">Decide qué texto redacta las justificaciones de las sugerencias y combos del Motor de Ventas IA. El puntaje, el descuento y las reglas de negocio siempre los calcula el sistema, nunca la IA externa.</p>
+            </div>
+
+            <div class="flex items-center">
+              <div class="p-3.5 bg-blue-50/60 rounded-xl border border-blue-200/60">
+                <div class="flex items-start gap-2">
+                  <lucide-icon name="info" class="w-4 h-4 text-blue-600 mt-0.5 shrink-0"></lucide-icon>
+                  <div>
+                    <span class="text-xs font-bold text-blue-800 block">Respaldo automático</span>
+                    <span class="text-[11px] text-blue-700 mt-0.5 block">Si el proveedor elegido falla o no tiene una API key configurada, el sistema usa automáticamente un texto genérico en su lugar — las sugerencias nunca se caen.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Canales de Notificación y Alerta -->
         <div class="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-6">
           <div class="flex items-center gap-2.5 mb-5 pb-3 border-b border-gray-100">
@@ -232,7 +264,8 @@ export class ConfiguracionComponent implements OnInit {
     modoMantenimiento: false,
     intervaloSincronizacionMinutos: 15,
     versionSistema: 'v2.4.0-PROD (Enterprise LMS)',
-    porcentajeIvaGlobal: 15
+    porcentajeIvaGlobal: 15,
+    proveedorIaActivo: 'GEMINI'
   };
 
   ngOnInit(): void {

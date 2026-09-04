@@ -359,7 +359,8 @@ export class InventarioService {
   }
 
   getProveedores(): Observable<ProveedorDTO[]> {
-    return this.http.get<ProveedorDTO[]>(`${this.apiUrl}/proveedores`).pipe(
+    // /proveedores (sin sufijo) devuelve paginado — el listado plano vive en /proveedores/todos.
+    return this.http.get<ProveedorDTO[]>(`${this.apiUrl}/proveedores/todos`).pipe(
       catchError(e => e.status === 0 || e.status === 404 ? of([]) : throwError(() => e))
     );
   }

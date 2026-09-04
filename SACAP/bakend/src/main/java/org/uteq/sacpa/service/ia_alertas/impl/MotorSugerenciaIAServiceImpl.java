@@ -13,7 +13,7 @@ import org.uteq.sacpa.repository.ia_alertas.IReglaNegocioIARepository;
 import org.uteq.sacpa.repository.ia_alertas.ITemporadaAgricolaRepository;
 import org.uteq.sacpa.repository.inventario.ILoteRepository;
 import org.uteq.sacpa.service.ia_alertas.IMotorSugerenciaIAService;
-import org.uteq.sacpa.service.ia_externa.IGeminiIAService;
+import org.uteq.sacpa.service.ia_externa.ProveedorIAFactory;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -31,9 +31,10 @@ import java.util.stream.Collectors;
  * Score 0-100 pts determinístico (nunca delegado a la IA externa):
  *   Variable A (urgencia FEFO, 0-70 pts) + Variable B (temporada agrícola activa, 0-30 pts)
  *   Variable C (categoría del producto) es un filtro duro, no un puntaje.
- * La API de Gemini ({@link IGeminiIAService}) solo redacta el texto de la justificación
- * a partir de ese score ya calculado; si falla o no hay key configurada, se usa el
- * texto determinístico de siempre como fallback.
+ * El proveedor de IA externa activo (Gemini, Groq, ... elegido por el admin en
+ * Configuración General, ver {@link ProveedorIAFactory}) solo redacta el texto de la
+ * justificación a partir de ese score ya calculado; si falla o no hay key configurada,
+ * se usa el texto determinístico de siempre como fallback.
  */
 @Slf4j
 @Service
@@ -49,7 +50,7 @@ public class MotorSugerenciaIAServiceImpl implements IMotorSugerenciaIAService {
     private final ILoteRepository loteRepository;
     private final ITemporadaAgricolaRepository temporadaAgricolaRepository;
     private final IReglaNegocioIARepository reglaRepository;
-    private final IGeminiIAService geminiIAService;
+    private final ProveedorIAFactory proveedorIAFactory;
 
     @Override
     @Transactional(readOnly = true)
@@ -180,9 +181,9 @@ public class MotorSugerenciaIAServiceImpl implements IMotorSugerenciaIAService {
      */
     private void enriquecerConIA(List<SugerenciaComboDTO> resultado, List<String> prompts) {
         try {
-            List<String> textos = geminiIAService.generarJustificaciones(prompts);
+            List<String> textos = proveedorIAFactory.obtenerActivo().generarJustificaciones(prompts);
             if (textos == null || textos.size() != resultado.size()) {
-                throw new IllegalStateException("Gemini devolvió " + (textos == null ? 0 : textos.size())
+                throw new IllegalStateException("El proveedor de IA devolvió " + (textos == null ? 0 : textos.size())
                         + " justificaciones, se esperaban " + resultado.size());
             }
             for (int i = 0; i < resultado.size(); i++) {
@@ -192,7 +193,7 @@ public class MotorSugerenciaIAServiceImpl implements IMotorSugerenciaIAService {
                 }
             }
         } catch (Exception e) {
-            log.warn("Gemini no disponible, usando justificaciones determinísticas: {}", e.getMessage());
+            log.warn("Proveedor de IA no disponible, usando justificaciones determinísticas: {}", e.getMessage());
         }
     }
 

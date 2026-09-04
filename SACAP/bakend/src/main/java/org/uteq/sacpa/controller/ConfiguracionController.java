@@ -3,10 +3,12 @@ package org.uteq.sacpa.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.uteq.sacpa.config.ConfiguracionIA;
 import org.uteq.sacpa.repository.inventario.IProductoRepository;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -16,6 +18,12 @@ public class ConfiguracionController {
 
     @Autowired
     private IProductoRepository productoRepository;
+
+    @Autowired
+    private ConfiguracionIA configuracionIA;
+
+    /** Proveedores de IA externa disponibles para el selector del admin (ver ProveedorIAFactory). */
+    private static final List<String> PROVEEDORES_IA_DISPONIBLES = List.of("GEMINI", "GROQ");
 
     private final Map<String, Object> configGlobal = new HashMap<>();
 
@@ -31,6 +39,7 @@ public class ConfiguracionController {
         configGlobal.put("intervaloSincronizacionMinutos", 15);
         configGlobal.put("versionSistema", "v2.4.0-PROD");
         configGlobal.put("porcentajeIvaGlobal", 15.00);
+        configGlobal.put("proveedorIaActivo", "GEMINI");
     }
 
     @GetMapping
@@ -43,6 +52,12 @@ public class ConfiguracionController {
     public ResponseEntity<Map<String, Object>> obtenerIvaGlobal() {
         Object iva = configGlobal.getOrDefault("porcentajeIvaGlobal", 15.00);
         return ResponseEntity.ok(Map.of("porcentajeIvaGlobal", iva));
+    }
+
+    /** Proveedores de IA externa que el admin puede elegir para el Motor de Sugerencias */
+    @GetMapping("/proveedores-ia")
+    public ResponseEntity<List<String>> listarProveedoresIA() {
+        return ResponseEntity.ok(PROVEEDORES_IA_DISPONIBLES);
     }
 
     @PutMapping
@@ -63,6 +78,12 @@ public class ConfiguracionController {
                     // Productos con porcentaje >= nuevo global: bajarlos al nuevo global
                     productoRepository.ajustarIvaGlobal(nuevoIva);
                 }
+            }
+
+            // Sincronizar el proveedor de IA activo con el que usará ProveedorIAFactory
+            Object proveedorIa = nuevaConfig.get("proveedorIaActivo");
+            if (proveedorIa != null) {
+                configuracionIA.setProveedorActivo(proveedorIa.toString());
             }
         }
         return ResponseEntity.ok(configGlobal);

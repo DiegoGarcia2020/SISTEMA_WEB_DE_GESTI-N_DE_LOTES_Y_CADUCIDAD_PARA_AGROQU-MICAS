@@ -42,4 +42,5 @@ export interface ConfiguracionGlobalDTO {
   intervaloSincronizacionMinutos: number;
   versionSistema: string;
   porcentajeIvaGlobal: number;
+  proveedorIaActivo: string;
 }

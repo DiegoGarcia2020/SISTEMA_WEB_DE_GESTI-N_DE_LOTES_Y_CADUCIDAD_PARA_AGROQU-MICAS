@@ -473,8 +473,9 @@ export class ComprasListadoComponent implements OnInit, OnDestroy {
   }
 
   cargarProveedores(): void {
-    // Reutiliza el endpoint existente de proveedores
-    this.operacionesService['http'].get<any[]>(`${this.operacionesService['apiUrl']}/proveedores`).subscribe({
+    // /proveedores (sin sufijo) devuelve paginado desde hace varios commits — el listado
+    // plano para selects/filtros vive en /proveedores/todos.
+    this.operacionesService['http'].get<any[]>(`${this.operacionesService['apiUrl']}/proveedores/todos`).subscribe({
       next: (data) => this.proveedores.set(data),
       error: () => {
         this.toast.error('Error', 'No se pudieron cargar los proveedores');
