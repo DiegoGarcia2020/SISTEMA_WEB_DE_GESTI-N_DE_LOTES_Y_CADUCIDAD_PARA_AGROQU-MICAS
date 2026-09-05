@@ -178,6 +178,11 @@ public class UsuarioServiceImpl implements IUsuarioService {
                 .requiereCambioClave(true)
                 .fechaCreacion(LocalDateTime.now())
                 .fechaActualizacion(LocalDateTime.now())
+                .nombres(request.getNombres())
+                .apellidos(request.getApellidos())
+                .cedula(request.getCedula())
+                .telefono(request.getTelefono())
+                .ocupacion(request.getOcupacion())
                 .roles(new ArrayList<>())
                 .build();
 
@@ -201,9 +206,10 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
         if (asignaRolSupervisor) {
             org.uteq.sacpa.entity.inventario.Supervisor supervisor = org.uteq.sacpa.entity.inventario.Supervisor.builder()
-                    .cedula("CED-" + guardado.getIdUsuario())
-                    .nombres("Supervisor")
-                    .apellidos("SACPA")
+                    .cedula(guardado.getCedula() != null ? guardado.getCedula() : "CED-" + guardado.getIdUsuario())
+                    .nombres(guardado.getNombres() != null ? guardado.getNombres() : "Supervisor")
+                    .apellidos(guardado.getApellidos() != null ? guardado.getApellidos() : "SACPA")
+                    .telefono(guardado.getTelefono())
                     .idEstado(1)
                     .usuario(guardado)
                     .build();

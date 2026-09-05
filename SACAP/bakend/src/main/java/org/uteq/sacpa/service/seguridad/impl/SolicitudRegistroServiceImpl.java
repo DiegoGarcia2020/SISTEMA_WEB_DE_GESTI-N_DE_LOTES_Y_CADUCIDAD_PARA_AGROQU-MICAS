@@ -6,18 +6,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.uteq.sacpa.dto.seguridad.ProcesarSolicitudDTO;
 import org.uteq.sacpa.dto.seguridad.SolicitudRegistroDTO;
-import org.uteq.sacpa.entity.gerencia.Empleado;
 import org.uteq.sacpa.entity.seguridad.Rol;
 import org.uteq.sacpa.entity.seguridad.SolicitudRegistro;
 import org.uteq.sacpa.entity.seguridad.Usuario;
 import org.uteq.sacpa.entity.seguridad.UsuarioRol;
-import org.uteq.sacpa.repository.gerencia.IEmpleadoRepository;
+import org.uteq.sacpa.entity.inventario.Supervisor;
+import org.uteq.sacpa.repository.inventario.ISupervisorRepository;
 import org.uteq.sacpa.repository.seguridad.IRolRepository;
 import org.uteq.sacpa.repository.seguridad.ISolicitudRegistroRepository;
 import org.uteq.sacpa.repository.seguridad.IUsuarioRepository;
 import org.uteq.sacpa.service.seguridad.ISolicitudRegistroService;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,8 +30,8 @@ public class SolicitudRegistroServiceImpl implements ISolicitudRegistroService {
 
     private final ISolicitudRegistroRepository solicitudRepository;
     private final IUsuarioRepository usuarioRepository;
-    private final IEmpleadoRepository empleadoRepository;
     private final IRolRepository rolRepository;
+    private final ISupervisorRepository supervisorRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
 
@@ -88,12 +87,18 @@ public class SolicitudRegistroServiceImpl implements ISolicitudRegistroService {
                     .idEstado(1)
                     .fechaCreacion(LocalDateTime.now())
                     .fechaActualizacion(LocalDateTime.now())
+                    .nombres(solicitud.getNombres())
+                    .apellidos(solicitud.getApellidos())
+                    .cedula(solicitud.getCedula())
+                    .telefono(solicitud.getTelefono())
+                    .ocupacion(solicitud.getCargo())
                     .roles(new ArrayList<>())
                     .build();
 
             Usuario savedUsuario = usuarioRepository.save(usuario);
 
             // Asignar roles elegidos por el admin
+            boolean asignaRolSupervisor = false;
             if (dto.getIdRoles() != null) {
                 for (Integer idRol : dto.getIdRoles()) {
                     Rol rol = rolRepository.findById(idRol).orElse(null);
@@ -103,23 +108,28 @@ public class SolicitudRegistroServiceImpl implements ISolicitudRegistroService {
                                 .rol(rol)
                                 .build();
                         savedUsuario.getRoles().add(ur);
+                        if (rol.getNombre() != null && rol.getNombre().toLowerCase().contains("supervis")) {
+                            asignaRolSupervisor = true;
+                        }
                     }
                 }
                 usuarioRepository.save(savedUsuario);
             }
 
-            // Crear registro de Empleado
-            Empleado empleado = Empleado.builder()
-                    .cedula(solicitud.getCedula())
-                    .nombres(solicitud.getNombres())
-                    .apellidos(solicitud.getApellidos())
-                    .telefono(solicitud.getTelefono())
-                    .departamento(solicitud.getDepartamento())
-                    .cargo(solicitud.getCargo())
-                    .fechaIngreso(LocalDate.now())
-                    .activo(true)
-                    .build();
-            empleadoRepository.save(empleado);
+            // Formalizar en la tabla especifica del rol (hoy solo Supervisor;
+            // Tecnico de Campo requiere licencia PDF y se formaliza aparte
+            // desde Gestion de Usuarios).
+            if (asignaRolSupervisor) {
+                Supervisor supervisor = Supervisor.builder()
+                        .cedula(solicitud.getCedula())
+                        .nombres(solicitud.getNombres())
+                        .apellidos(solicitud.getApellidos())
+                        .telefono(solicitud.getTelefono())
+                        .idEstado(1)
+                        .usuario(savedUsuario)
+                        .build();
+                supervisorRepository.save(supervisor);
+            }
 
             // Envío real de correo electrónico con contraseña temporal
             emailService.enviarCredencialesUsuario(solicitud.getCorreo(), claveTemp);

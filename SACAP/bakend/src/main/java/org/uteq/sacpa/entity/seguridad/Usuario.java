@@ -35,19 +35,19 @@ public class Usuario {
     @Transient
     private LocalDateTime fechaActualizacion;
 
-    @Transient
+    @Column(name = "nombres", length = 150)
     private String nombres;
 
-    @Transient
+    @Column(name = "apellidos", length = 150)
     private String apellidos;
 
-    @Transient
+    @Column(name = "cedula", length = 20)
     private String cedula;
 
-    @Transient
+    @Column(name = "telefono", length = 30)
     private String telefono;
 
-    @Transient
+    @Column(name = "ocupacion", length = 150)
     private String ocupacion;
 
     @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
