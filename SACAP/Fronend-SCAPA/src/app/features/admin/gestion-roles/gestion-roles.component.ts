@@ -443,6 +443,10 @@ export class GestionRolesComponent implements OnInit {
         this.toast.success('Rol eliminado', `El rol "${r.nombre}" fue eliminado.`);
         this.isConfirmOpen.set(false);
         this.loadData();
+      },
+      error: () => {
+        this.toast.error('Error al eliminar', `No se pudo eliminar el rol "${r.nombre}".`);
+        this.isConfirmOpen.set(false);
       }
     });
   }

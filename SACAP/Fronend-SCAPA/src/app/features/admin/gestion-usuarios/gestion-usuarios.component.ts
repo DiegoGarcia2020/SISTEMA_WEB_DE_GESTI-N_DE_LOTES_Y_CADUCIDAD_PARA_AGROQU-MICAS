@@ -321,7 +321,7 @@ import { UserAssignRoleModalComponent } from './user-assign-role-modal.component
                         <lucide-icon name="key" [size]="18"></lucide-icon>
                       </button>
 
-                      <button type="button" class="btn-icon" style="color: #DC2626;" (click)="confirmDelete(user)" title="Eliminar definitivamente">
+                      <button type="button" class="btn-icon" style="color: #DC2626;" (click)="confirmDelete(user)" title="Eliminar usuario (desactivación permanente)">
                         <lucide-icon name="trash-2" [size]="18"></lucide-icon>
                       </button>
                     </div>
@@ -565,9 +565,9 @@ export class GestionUsuariosComponent implements OnInit {
   confirmDelete(u: UsuarioDTO): void {
     this.userTarget.set(u);
     this.confirmActionType.set('DELETE');
-    this.confirmTitle.set('Eliminar Usuario Definitivamente');
-    this.confirmMessage.set(`¿Estás completamente seguro de ELIMINAR a ${u.correo}? Esta acción es irreversible y borrará la cuenta del sistema.`);
-    this.confirmText.set('Eliminar definitivamente');
+    this.confirmTitle.set('Eliminar Usuario');
+    this.confirmMessage.set(`¿Estás completamente seguro de ELIMINAR a ${u.correo}? La cuenta quedará inactiva y sin acceso al sistema de forma permanente (se conserva su historial de auditoría).`);
+    this.confirmText.set('Eliminar usuario');
     this.isConfirmDanger.set(true);
     this.isConfirmReasonRequired.set(false);
     this.isConfirmOpen.set(true);
@@ -605,7 +605,7 @@ export class GestionUsuariosComponent implements OnInit {
     } else if (action === 'DELETE') {
       this.usuarioService.eliminar(u.idUsuario).subscribe({
         next: () => {
-          this.toast.success('Usuario eliminado', `La cuenta ${u.correo} fue eliminada permanentemente.`);
+          this.toast.success('Usuario eliminado', `La cuenta ${u.correo} quedó inactiva y sin acceso al sistema.`);
           this.isConfirmOpen.set(false);
           this.loadUsers();
         },

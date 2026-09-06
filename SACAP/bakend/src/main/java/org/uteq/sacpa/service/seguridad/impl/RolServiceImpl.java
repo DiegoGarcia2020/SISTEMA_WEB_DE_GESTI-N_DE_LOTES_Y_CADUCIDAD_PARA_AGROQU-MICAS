@@ -6,7 +6,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.uteq.sacpa.entity.seguridad.Rol;
 import org.uteq.sacpa.entity.seguridad.RolBD;
 import org.uteq.sacpa.repository.seguridad.IRolBDRepository;
+import org.uteq.sacpa.repository.seguridad.IRolPrivilegioRepository;
 import org.uteq.sacpa.repository.seguridad.IRolRepository;
+import org.uteq.sacpa.repository.seguridad.IUsuarioRolRepository;
 import org.uteq.sacpa.service.seguridad.IRolService;
 
 import java.util.List;
@@ -18,10 +20,14 @@ public class RolServiceImpl implements IRolService {
 
     private final IRolRepository rolRepository;
     private final IRolBDRepository rolBDRepository;
+    private final IUsuarioRolRepository usuarioRolRepository;
+    private final IRolPrivilegioRepository rolPrivilegioRepository;
 
     @Override
     public List<Rol> listarRoles() {
-        return rolRepository.findAll();
+        List<Rol> roles = rolRepository.findAll();
+        roles.forEach(r -> r.setTotalUsuarios(usuarioRolRepository.countByRol_IdRol(r.getIdRol())));
+        return roles;
     }
 
     @Override
@@ -79,6 +85,10 @@ public class RolServiceImpl implements IRolService {
     @Override
     @Transactional
     public void eliminarRol(Integer id) {
+        // usuario_rol y rol_privilegio son tablas de asignación/configuración (no historial de auditoría),
+        // así que sí se pueden limpiar en cascada: si no, el DELETE choca con esas FK sin ON DELETE CASCADE.
+        usuarioRolRepository.deleteByRol_IdRol(id);
+        rolPrivilegioRepository.deleteByRol_IdRol(id);
         rolRepository.deleteById(id);
     }
 

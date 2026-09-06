@@ -22,9 +22,9 @@
   </div>
 
   @if (cargandoBodegas()) {
-    <div class="sd-bodegas-grid">
-      <div class="sd-shimmer-card"></div>
-      <div class="sd-shimmer-card"></div>
+    <div class="sd-loading">
+      <span class="sd-spin"></span>
+      Cargando bodegas...
     </div>
   } @else if (bodegas().length === 0) {
     <div class="sd-empty">
@@ -110,9 +110,9 @@
       </div>
 
       @if (cargandoLotes()) {
-        <div class="sd-loading-list">
-          <div class="sd-shimmer-row"></div>
-          <div class="sd-shimmer-row"></div>
+        <div class="sd-loading">
+          <span class="sd-spin"></span>
+          Cargando lotes...
         </div>
       } @else if (lotes().length === 0) {
         <div class="sd-empty">

@@ -39,14 +39,14 @@ import { DiffModalComponent } from '../../../shared/components/diff-modal/diff-m
         <div class="flex items-center gap-3 flex-1 min-w-[280px]">
           <div class="relative w-full max-w-md">
             <lucide-icon name="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-3"></lucide-icon>
-            <input type="text" [(ngModel)]="searchQuery" placeholder="Buscar por usuario, IP, tabla o detalle..."
+            <input type="text" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" placeholder="Buscar por usuario, IP, tabla o detalle..."
                    class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-300 rounded-xl text-sm focus:bg-white focus:border-[#0B4628] outline-none transition-all">
           </div>
         </div>
 
         <div class="flex items-center gap-2">
           <span class="text-xs font-bold text-gray-500 uppercase">Acción SQL:</span>
-          <select [(ngModel)]="filterAccion" class="px-3 py-1.5 border border-gray-300 rounded-xl text-xs font-bold bg-white outline-none focus:border-[#0B4628]">
+          <select [ngModel]="filterAccion()" (ngModelChange)="filterAccion.set($event)" class="px-3 py-1.5 border border-gray-300 rounded-xl text-xs font-bold bg-white outline-none focus:border-[#0B4628]">
             <option value="TODAS">Ver Todas</option>
             <option value="INSERT">INSERT (Creaciones)</option>
             <option value="UPDATE">UPDATE (Ediciones)</option>
@@ -127,8 +127,8 @@ export class AuditoriaComponent implements OnInit {
   isDiffModalOpen = signal<boolean>(false);
   selectedEntry = signal<RegistroAuditoriaDTO | null>(null);
 
-  searchQuery = '';
-  filterAccion = 'TODAS';
+  searchQuery = signal('');
+  filterAccion = signal('TODAS');
 
   ngOnInit(): void {
     this.sisService.listarAuditoria().subscribe(a => this.auditoria.set(a));
@@ -141,9 +141,9 @@ export class AuditoriaComponent implements OnInit {
 
   filteredAuditoria = computed(() => {
     return this.auditoria().filter(r => {
-      const q = this.searchQuery.toLowerCase();
+      const q = this.searchQuery().toLowerCase();
       const matchQ = !q || r.usuario.toLowerCase().includes(q) || r.tablaAfectada.toLowerCase().includes(q) || r.detalleCambio.toLowerCase().includes(q) || r.direccionIp.includes(q);
-      const matchA = this.filterAccion === 'TODAS' || r.accion === this.filterAccion;
+      const matchA = this.filterAccion() === 'TODAS' || r.accion === this.filterAccion();
       return matchQ && matchA;
     });
   });

@@ -269,13 +269,21 @@ public class UsuarioServiceImpl implements IUsuarioService {
         usuarioRepository.save(usuario);
     }
 
+    private static final Integer ID_ESTADO_INACTIVO = 2; // catalogos.cat_estado_general → INACTIVO (mismo id que usa cambiarEstado)
+
     @Override
     @Transactional
     public void eliminar(Integer id) {
-        if (!usuarioRepository.existsById(id)) {
-            throw new RuntimeException("Usuario no encontrado con ID: " + id);
-        }
-        usuarioRepository.deleteById(id);
+        // Eliminación lógica: un DELETE físico choca con las FK de auditoria/historial_sesion/usuario_rol
+        // (sin ON DELETE CASCADE, a propósito, porque el log de auditoría es inmutable).
+        // Se hace vía JPA (igual que cambiarEstado) en vez de eliminarLogicamente/fn_eliminacion_logica_usuario:
+        // esa función SQL, invocada como "SELECT fn(...)" nativo con @Modifying, hace que Postgres/JDBC
+        // reclame "se retornó un resultado cuando no se esperaba ninguno" (executeUpdate() sobre un SELECT).
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
+        usuario.setIdEstado(ID_ESTADO_INACTIVO);
+        usuario.setFechaActualizacion(LocalDateTime.now());
+        usuarioRepository.save(usuario);
     }
 
     @Override

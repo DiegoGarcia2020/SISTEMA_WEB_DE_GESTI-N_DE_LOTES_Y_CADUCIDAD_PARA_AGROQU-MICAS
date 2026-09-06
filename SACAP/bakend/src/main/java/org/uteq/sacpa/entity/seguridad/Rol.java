@@ -32,4 +32,8 @@ public class Rol {
     @OneToMany(mappedBy = "rol", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<RolPrivilegio> privilegios;
+
+    /** No persistido: cantidad de usuarios con este rol asignado, calculado al listar (ver RolServiceImpl.listarRoles). */
+    @Transient
+    private Long totalUsuarios;
 }
