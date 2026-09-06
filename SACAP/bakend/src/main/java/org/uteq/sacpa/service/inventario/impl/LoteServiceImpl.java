@@ -249,6 +249,13 @@ public class LoteServiceImpl implements ILoteService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<LoteResponseDTO> listarPendientesValidacionPorAlmacen(Integer idEstadoPendiente, Integer idAlmacen) {
+        return loteRepository.findLotesPendientesValidacionPorAlmacen(idEstadoPendiente, idAlmacen)
+                .stream().map(LoteResponseDTO::from).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<LoteResponseDTO> listarLotesDisponibles(String busqueda) {
         // Con busqueda=null, Postgres no logra inferir el tipo del parámetro dentro de
         // LOWER(CONCAT('%', :busqueda, '%')) y falla con "function lower(bytea) does not exist".

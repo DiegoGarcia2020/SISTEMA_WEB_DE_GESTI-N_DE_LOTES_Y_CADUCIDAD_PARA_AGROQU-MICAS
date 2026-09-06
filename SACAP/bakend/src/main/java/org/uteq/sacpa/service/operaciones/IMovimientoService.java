@@ -25,4 +25,7 @@ public interface IMovimientoService {
     void rechazarDespacho(Integer idMovimiento, String observacion);
 
     List<org.uteq.sacpa.dto.operaciones.LoteDisponibleDTO> listarLotesDisponiblesFefo();
+
+    /** Igual que listarLotesDisponiblesFefo() pero acotado a la bodega del Bodeguero autenticado. */
+    List<org.uteq.sacpa.dto.operaciones.LoteDisponibleDTO> listarLotesDisponiblesFefoPorAlmacen(Integer idAlmacen);
 }

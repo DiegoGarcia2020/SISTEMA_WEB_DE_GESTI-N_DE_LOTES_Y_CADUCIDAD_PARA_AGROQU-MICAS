@@ -98,6 +98,14 @@ public class AlertaCaducidadServiceImpl implements IAlertaCaducidadService {
                 .map(a -> AlertaCaducidadResponseDTO.from(a, sugerenciaDescuentoEstimado(a)));
     }
 
+    @Override
+    @Transactional
+    public Page<AlertaCaducidadResponseDTO> listarAlertasActivasPorAlmacen(Integer idEstadoActivo, Integer idAlmacen, Pageable pageable) {
+        sincronizarAlertasAutomaticas();
+        return alertaRepository.findAlertasActivasPorAlmacen(idEstadoActivo, idAlmacen, pageable)
+                .map(a -> AlertaCaducidadResponseDTO.from(a, sugerenciaDescuentoEstimado(a)));
+    }
+
     /**
      * Detecta lotes DISPONIBLES próximos a vencer (según el umbral configurado en la Regla de
      * Negocio IA) y genera su alerta si todavía no tienen NINGUNA (en cualquier estado). No hay

@@ -152,6 +152,11 @@ public class SecurityConfig {
                     "/api/supervisor/**"
                 ).hasAnyAuthority("ADMINISTRADOR", "SUPERVISOR")
 
+                // ADMINISTRADOR y BODEGUERO — endpoints propios del bodeguero, acotados a su bodega
+                .requestMatchers(
+                    "/api/bodeguero/**"
+                ).hasAnyAuthority("ADMINISTRADOR", "BODEGUERO")
+
                 // Lectura de stock disponible para armar pedidos — también accesible al TECNICO
                 .requestMatchers(
                     "/api/movimientos/lotes-disponibles",

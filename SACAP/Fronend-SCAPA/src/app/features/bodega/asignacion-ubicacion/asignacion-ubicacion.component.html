@@ -95,13 +95,17 @@
 
         <!-- Selector en cascada -->
         <div class="au-form-group">
-          <label class="au-label">1. Seleccionar Almacén *</label>
-          <select class="au-select" (change)="onAlmacenChange($event)">
-            <option value="">— Seleccione Almacén —</option>
-            @for (alm of almacenes(); track alm.idAlmacen) {
-              <option [value]="alm.idAlmacen">{{ alm.nombre }} ({{ alm.ciudad }})</option>
-            }
-          </select>
+          <label class="au-label">1. Almacén</label>
+          @if (esBodeguero) {
+            <input class="au-select" type="text" [value]="miAlmacen()?.nombre || 'Sin bodega asignada'" disabled>
+          } @else {
+            <select class="au-select" (change)="onAlmacenChange($event)">
+              <option value="">— Seleccione Almacén —</option>
+              @for (alm of almacenes(); track alm.idAlmacen) {
+                <option [value]="alm.idAlmacen">{{ alm.nombre }} ({{ alm.ciudad }})</option>
+              }
+            </select>
+          }
         </div>
 
         <div class="au-form-group">

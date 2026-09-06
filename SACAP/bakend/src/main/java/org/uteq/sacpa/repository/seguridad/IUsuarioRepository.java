@@ -39,6 +39,15 @@ public interface IUsuarioRepository extends JpaRepository<Usuario, Integer> {
 
     Optional<Usuario> findByCorreo(String correo);
 
+    /** Usuarios con rol Bodeguero (activos o no), para que el Supervisor los pueda asignar a su bodega. */
+    @Query("""
+        SELECT DISTINCT u FROM Usuario u
+        JOIN u.roles ur JOIN ur.rol r
+        WHERE LOWER(r.nombre) LIKE '%bodegu%'
+        ORDER BY u.nombres, u.apellidos
+    """)
+    java.util.List<Usuario> findUsuariosConRolBodeguero();
+
     /**
      * Cambia la contrasena de un usuario usando la funcion PL/pgSQL.
      * Funcion BD: seguridad.fn_actualizar_contrasena(p_id_usuario, p_nueva_contrasena)

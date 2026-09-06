@@ -94,7 +94,7 @@ p {
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.2s ease-out forwards;
+  animation: fadeIn 0.2s ease-out;
 }
 
 /* Scrollbar personalizado, adaptado a la nueva paleta */

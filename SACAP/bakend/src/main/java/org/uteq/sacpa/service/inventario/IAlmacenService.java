@@ -28,6 +28,9 @@ public interface IAlmacenService {
     // ── Módulo 2: Topología & QR & Auditoría ────────────────
     List<NodoTopologiaDTO> obtenerArbolTopologia();
 
+    /** Igual que obtenerArbolTopologia() pero acotado a un solo almacén (Bodeguero: solo mi bodega). */
+    List<NodoTopologiaDTO> obtenerArbolTopologiaPorAlmacen(Integer idAlmacen);
+
     void crearZona(String nombre, String condicionClimatica, Integer idAlmacen);
     void crearEstanteria(String codigo, Integer idZona);
     void crearUbicacion(String nivel, String posicion, Integer capacidadMaxima, Integer idEstanteria);

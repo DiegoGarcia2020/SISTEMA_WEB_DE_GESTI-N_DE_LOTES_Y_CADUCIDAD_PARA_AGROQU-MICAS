@@ -7,10 +7,14 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 import org.uteq.sacpa.entity.inventario.Bodeguero;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface IBodegueroRepository extends JpaRepository<Bodeguero, Integer> {
     Optional<Bodeguero> findByUsuario_IdUsuario(Integer idUsuario);
+
+    /** Bodegueros asignados a una bodega específica (Supervisor: ver mi equipo). */
+    List<Bodeguero> findByAlmacen_IdAlmacen(Integer idAlmacen);
 
     @Modifying @Transactional
     @Query(value = "SELECT inventario.fn_crear_bodeguero(:correo, :contrasena, :idEstado, :cedula, :nombres, :apellidos, :telefono, :turno)", nativeQuery = true)

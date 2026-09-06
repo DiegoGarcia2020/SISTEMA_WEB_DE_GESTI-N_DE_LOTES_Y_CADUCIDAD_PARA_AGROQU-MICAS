@@ -6,6 +6,7 @@ import { OperacionesService } from '../../core/services/operaciones.service';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { AuthService } from '../../core/services/auth.service';
 import { WebsocketService } from '../../core/services/websocket.service';
+import { BodegueroService, MiBodegaDTO } from '../../core/services/bodeguero.service';
 
 @Component({
   selector: 'app-bodega-dashboard',
@@ -23,7 +24,13 @@ import { WebsocketService } from '../../core/services/websocket.service';
           <div>
             <span class="hero-card__badge">Rol: Bodeguero & Almacén</span>
             <h1 class="hero-card__title">Kitting Físico, Despachos FEFO & Devoluciones</h1>
-            <p class="hero-card__subtitle">Operador en Bodega: {{ authService.currentUser()?.correo || 'bodega@agrosense.ec' }}</p>
+            <p class="hero-card__subtitle">
+              @if (miAlmacen(); as bodega) {
+                Bodega asignada: {{ bodega.nombre }}
+              } @else {
+                Operador en Bodega: {{ authService.currentUser()?.correo || 'bodega@agrosense.ec' }}
+              }
+            </p>
           </div>
         </div>
         <div class="hero-card__actions">
@@ -50,6 +57,16 @@ import { WebsocketService } from '../../core/services/websocket.service';
           </button>
         </div>
       </div>
+
+      @if (miBodegaCargada() && !miAlmacen()) {
+        <div style="background: #FEF3C7; border: 1px solid #FCD34D; border-radius: 0.75rem; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 0.75rem;">
+          <lucide-icon name="alert-triangle" class="w-5 h-5" style="color: #92400E;"></lucide-icon>
+          <div>
+            <p style="font-weight: 700; color: #92400E; margin: 0;">Sin bodega asignada</p>
+            <p style="color: #78350F; margin: 0; font-size: 0.85rem;">Contacta a tu Supervisor para que te asigne una bodega desde "Mi Equipo". Mientras tanto no verás stock, alertas ni despachos.</p>
+          </div>
+        </div>
+      }
 
       <!-- Tarjetas KPI -->
       <div class="kpi-grid">
@@ -300,12 +317,16 @@ import { WebsocketService } from '../../core/services/websocket.service';
 export class BodegaDashboardComponent implements OnInit {
   authService = inject(AuthService);
   private operacionesService = inject(OperacionesService);
+  private bodegueroService = inject(BodegueroService);
   private toast = inject(ToastService);
   private fb = inject(FormBuilder);
   private wsService = inject(WebsocketService);
 
   Math = Math;
   activeTab = signal<'KITTING' | 'LOTES' | 'DEVOLUCION_CLIENTE'>('KITTING');
+
+  miAlmacen = signal<MiBodegaDTO | null>(null);
+  miBodegaCargada = signal<boolean>(false);
 
   lotes = signal<any[]>([]);
   alertasKitting = signal<any[]>([]);
@@ -357,8 +378,22 @@ export class BodegaDashboardComponent implements OnInit {
   }
 
   loadAll(): void {
-    this.operacionesService.listarLotesDisponiblesFefo().subscribe(data => this.lotes.set(data));
-    this.operacionesService.listarAlertas().subscribe(res => this.alertasKitting.set(res.content));
+    this.bodegueroService.miBodega().subscribe({
+      next: (bodega) => {
+        this.miAlmacen.set(bodega);
+        this.miBodegaCargada.set(true);
+        if (bodega) {
+          this.bodegueroService.listarLotesDisponiblesFefo().subscribe(data => this.lotes.set(data));
+          this.bodegueroService.listarAlertas().subscribe(res => this.alertasKitting.set(res.content));
+        } else {
+          this.lotes.set([]);
+          this.alertasKitting.set([]);
+        }
+      },
+      error: () => this.miBodegaCargada.set(true)
+    });
+    // Las devoluciones de cliente hoy no distinguen bodega de destino física
+    // (se identifica recién al recibir el paquete), así que se muestran a todos los bodegueros.
     this.operacionesService.listarDevolucionesPendientesBodega(0, 1).subscribe(page => this.devolucionesPendientesCount.set(page.totalElements));
   }
 

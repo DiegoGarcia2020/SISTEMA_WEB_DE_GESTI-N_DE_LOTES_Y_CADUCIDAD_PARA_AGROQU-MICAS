@@ -30,6 +30,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
     private final EmailService emailService;
     private final org.uteq.sacpa.repository.operaciones.ITecnicoCampoRepository tecnicoCampoRepository;
     private final org.uteq.sacpa.repository.inventario.ISupervisorRepository supervisorRepository;
+    private final org.uteq.sacpa.repository.inventario.IBodegueroRepository bodegueroRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -141,6 +142,21 @@ public class UsuarioServiceImpl implements IUsuarioService {
                     .usuario(usuario)
                     .build();
             supervisorRepository.save(supervisor);
+        }
+
+        boolean esRolBodeguero = rol.getNombre() != null && rol.getNombre().toLowerCase().contains("bodegu");
+
+        if (esRolBodeguero && bodegueroRepository.findByUsuario_IdUsuario(idUsuario).isEmpty()) {
+            org.uteq.sacpa.entity.inventario.Bodeguero bodeguero = org.uteq.sacpa.entity.inventario.Bodeguero.builder()
+                    .cedula(usuario.getCedula() != null ? usuario.getCedula() : "CED-" + idUsuario)
+                    .nombres(usuario.getNombres() != null ? usuario.getNombres() : "Bodeguero")
+                    .apellidos(usuario.getApellidos() != null ? usuario.getApellidos() : "SACPA")
+                    .telefono(usuario.getTelefono())
+                    .idEstado(1)
+                    .usuario(usuario)
+                    // almacen queda null: lo asigna el Supervisor desde "Mi Equipo"
+                    .build();
+            bodegueroRepository.save(bodeguero);
         }
 
         if (usuario.getRoles() == null) {

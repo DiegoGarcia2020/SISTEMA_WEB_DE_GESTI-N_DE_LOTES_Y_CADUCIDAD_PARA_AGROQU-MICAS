@@ -157,4 +157,22 @@ public class MovimientoServiceImpl implements IMovimientoService {
                         .build())
                 .collect(java.util.stream.Collectors.toList());
     }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public List<org.uteq.sacpa.dto.operaciones.LoteDisponibleDTO> listarLotesDisponiblesFefoPorAlmacen(Integer idAlmacen) {
+        return loteRepository.findLotesDisponiblesFefoPorAlmacen(idAlmacen).stream()
+                .limit(500)
+                .map(l -> org.uteq.sacpa.dto.operaciones.LoteDisponibleDTO.builder()
+                        .idLote(l.getIdLote())
+                        .numeroLote(l.getNumeroLote())
+                        .idProducto(l.getProducto() != null ? l.getProducto().getIdProducto() : null)
+                        .nombreProducto(l.getProducto() != null ? l.getProducto().getNombre() : "Producto Desconocido")
+                        .cantidadActual(l.getCantidadActual())
+                        .fechaVencimiento(l.getFechaVencimiento())
+                        .nombreProveedor(l.getProveedor() != null ? l.getProveedor().getNombreRepresentante() : "N/A")
+                        .ubicacionAlmacen(l.getUbicacion() != null ? "Est. " + (l.getUbicacion().getEstanteria() != null ? l.getUbicacion().getEstanteria().getCodigo() : "N/A") + " - Nivel " + l.getUbicacion().getNivel() + " (" + l.getUbicacion().getPosicion() + ")" : "Bodega General")
+                        .build())
+                .collect(java.util.stream.Collectors.toList());
+    }
 }

@@ -21,6 +21,18 @@ public interface IAlertaCaducidadRepository extends JpaRepository<AlertaCaducida
            countQuery = "SELECT count(a) FROM AlertaCaducidad a WHERE a.estado.idEstadoAlerta = :idEstadoActivo")
     Page<AlertaCaducidad> findAlertasActivas(@Param("idEstadoActivo") Integer idEstadoActivo, Pageable pageable);
 
+    /** Igual que findAlertasActivas pero acotado a un almacén (Bodeguero: solo mi bodega) */
+    @Query(value = "SELECT a FROM AlertaCaducidad a JOIN FETCH a.lote l JOIN FETCH a.nivelAlerta n " +
+           "LEFT JOIN l.ubicacion u LEFT JOIN u.estanteria e LEFT JOIN e.zona z LEFT JOIN z.almacen za " +
+           "WHERE a.estado.idEstadoAlerta = :idEstadoActivo " +
+           "AND ((u IS NOT NULL AND za.idAlmacen = :idAlmacen) OR (u IS NULL AND l.almacen.idAlmacen = :idAlmacen)) " +
+           "ORDER BY l.fechaVencimiento ASC",
+           countQuery = "SELECT count(a) FROM AlertaCaducidad a JOIN a.lote l " +
+           "LEFT JOIN l.ubicacion u LEFT JOIN u.estanteria e LEFT JOIN e.zona z LEFT JOIN z.almacen za " +
+           "WHERE a.estado.idEstadoAlerta = :idEstadoActivo " +
+           "AND ((u IS NOT NULL AND za.idAlmacen = :idAlmacen) OR (u IS NULL AND l.almacen.idAlmacen = :idAlmacen))")
+    Page<AlertaCaducidad> findAlertasActivasPorAlmacen(@Param("idEstadoActivo") Integer idEstadoActivo, @Param("idAlmacen") Integer idAlmacen, Pageable pageable);
+
     /** Alertas por nivel */
     @Query("SELECT a FROM AlertaCaducidad a WHERE a.nivelAlerta.idNivelAlerta = :idNivel AND a.estado.idEstadoAlerta = :idEstado")
     List<AlertaCaducidad> findByNivelYEstado(@Param("idNivel") Integer idNivel, @Param("idEstado") Integer idEstado);

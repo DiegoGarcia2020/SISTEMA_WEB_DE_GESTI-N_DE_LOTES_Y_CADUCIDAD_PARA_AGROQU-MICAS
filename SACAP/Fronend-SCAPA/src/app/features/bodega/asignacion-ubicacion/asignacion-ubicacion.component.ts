@@ -2,6 +2,8 @@ import { Component, signal, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InventarioService, LoteDTO, AlmacenDTO, ZonaDTO, EstanteriaDTO, UbicacionDTO } from '../../../core/services/inventario.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { BodegueroService, MiBodegaDTO } from '../../../core/services/bodeguero.service';
 
 @Component({
   selector: 'app-asignacion-ubicacion',
@@ -13,6 +15,14 @@ import { InventarioService, LoteDTO, AlmacenDTO, ZonaDTO, EstanteriaDTO, Ubicaci
 export class AsignacionUbicacionComponent implements OnInit {
 
   private inventario = inject(InventarioService);
+  private authService = inject(AuthService);
+  private bodegueroService = inject(BodegueroService);
+
+  get esBodeguero(): boolean {
+    return this.authService.currentRole()?.toUpperCase() === 'BODEGUERO';
+  }
+
+  miAlmacen = signal<MiBodegaDTO | null>(null);
 
   // Lotes Flotantes / Por ubicar
   lotesFlotantes = signal<LoteDTO[]>([]);
@@ -38,13 +48,24 @@ export class AsignacionUbicacionComponent implements OnInit {
   exito           = signal('');
 
   ngOnInit() {
+    if (this.esBodeguero) {
+      this.bodegueroService.miBodega().subscribe(bodega => {
+        this.miAlmacen.set(bodega);
+        if (bodega) {
+          this.idAlmacenSel.set(bodega.idAlmacen);
+          this.inventario.getZonas(bodega.idAlmacen).subscribe({ next: z => this.zonas.set(z) });
+        }
+      });
+    } else {
+      this.cargarAlmacenes();
+    }
     this.cargarLotesFlotantes();
-    this.cargarAlmacenes();
   }
 
   cargarLotesFlotantes() {
     this.cargandoLotes.set(true);
-    this.inventario.getLotesPendientes().subscribe({
+    const lotes$ = this.esBodeguero ? this.bodegueroService.listarLotesPendientes() : this.inventario.getLotesPendientes();
+    lotes$.subscribe({
       next: data => {
         this.lotesFlotantes.set(data || []);
         if (data?.length && !this.loteSeleccionado()) {

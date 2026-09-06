@@ -254,3 +254,110 @@
   background-color: var(--c-error);
   color: var(--c-bone-bg);
 }
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--c-warm-black);
+  border: 1px solid var(--c-sage-border);
+}
+
+/* =================================================================
+   MODAL DE REINTEGRO Y PREPARACIÓN — sin esto el modal no tenía
+   position:fixed/overlay y se insertaba sin verse en el flujo normal
+   de la página (aparecer "sin hacer nada" al presionar el botón).
+   ================================================================= */
+.vt-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1rem;
+}
+
+.vt-modal {
+  background: var(--c-bone-bg);
+  border: 1px solid var(--c-sage-border);
+  border-radius: var(--radius-card);
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: none;
+}
+
+.vt-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--c-sage-border);
+}
+
+.vt-modal-header h3 {
+  font-family: var(--font-slab);
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--c-warm-black);
+}
+
+.vt-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--c-sage-border);
+  cursor: pointer;
+}
+
+.vt-modal-close:hover {
+  color: var(--c-warm-black);
+}
+
+.vt-modal-body {
+  padding: 1.5rem;
+}
+
+.vt-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1.1rem 1.5rem;
+  border-top: 1px solid var(--c-sage-border);
+}
+
+.vt-modal-footer .btn {
+  width: auto;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--c-warm-black);
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--c-sage-border);
+  border-radius: var(--radius-btn);
+  background-color: var(--c-bone-bg);
+  color: var(--c-warm-black);
+  font-size: 0.875rem;
+}
+
+.form-control:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.mt-3 {
+  margin-top: 0.75rem;
+}

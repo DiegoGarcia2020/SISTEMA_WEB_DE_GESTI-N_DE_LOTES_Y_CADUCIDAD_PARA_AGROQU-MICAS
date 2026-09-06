@@ -41,6 +41,9 @@ public interface ILoteService {
     /** Lista lotes pendientes de validacion (estado EN_REVISION) */
     List<LoteResponseDTO> listarPendientesValidacion(Integer idEstadoPendiente);
 
+    /** Igual que listarPendientesValidacion pero acotado a un almacén (Bodeguero: solo mi bodega) */
+    List<LoteResponseDTO> listarPendientesValidacionPorAlmacen(Integer idEstadoPendiente, Integer idAlmacen);
+
     /** Lista lotes con stock disponible y vigentes para el catálogo general */
     List<LoteResponseDTO> listarLotesDisponibles(String busqueda);
 

@@ -51,6 +51,13 @@ public interface ILoteRepository extends JpaRepository<Lote, Integer> {
     @Query("SELECT l FROM Lote l WHERE l.idEstadoLote = :idEstadoPendiente ORDER BY l.fechaIngreso DESC")
     List<Lote> findLotesPendientesValidacion(@Param("idEstadoPendiente") Integer idEstadoPendiente);
 
+    /**
+     * Igual que findLotesPendientesValidacion pero acotado a un almacén (Bodeguero: solo mi bodega).
+     * Estos lotes son siempre "flotantes" (sin ubicación aún), por eso se filtra directo por l.almacen.
+     */
+    @Query("SELECT l FROM Lote l WHERE l.idEstadoLote = :idEstadoPendiente AND l.almacen.idAlmacen = :idAlmacen ORDER BY l.fechaIngreso DESC")
+    List<Lote> findLotesPendientesValidacionPorAlmacen(@Param("idEstadoPendiente") Integer idEstadoPendiente, @Param("idAlmacen") Integer idAlmacen);
+
     /** Lotes almacenados en una ubicación específica */
     List<Lote> findByUbicacion_IdUbicacion(Integer idUbicacion);
 
@@ -99,6 +106,19 @@ public interface ILoteRepository extends JpaRepository<Lote, Integer> {
            "(u IS NULL AND l.almacen.idAlmacen = :idAlmacen) " +
            "ORDER BY l.fechaVencimiento ASC")
     List<Lote> findByAlmacen(@Param("idAlmacen") Integer idAlmacen);
+
+    /**
+     * Igual que findLotesDisponiblesFefo() pero acotado a un almacén (Bodeguero: solo mi bodega).
+     * Mismo patrón de navegación lote → ubicacion → estanteria → zona → almacen que findByAlmacen.
+     */
+    @Query("SELECT l FROM Lote l " +
+           "LEFT JOIN l.ubicacion u LEFT JOIN u.estanteria e LEFT JOIN e.zona z LEFT JOIN z.almacen za " +
+           "WHERE l.producto.idEstado = 1 AND l.idEstadoLote = 1 AND l.fechaVencimiento > CURRENT_DATE " +
+           "AND (l.cantidadActual - COALESCE(l.cantidadReservada, 0)) > 0 " +
+           "AND EXISTS (SELECT 1 FROM org.uteq.sacpa.entity.entidades.ProveedorProducto pp WHERE pp.producto.idProducto = l.producto.idProducto AND pp.idEstado = 1) " +
+           "AND ((u IS NOT NULL AND za.idAlmacen = :idAlmacen) OR (u IS NULL AND l.almacen.idAlmacen = :idAlmacen)) " +
+           "ORDER BY l.fechaVencimiento ASC")
+    List<Lote> findLotesDisponiblesFefoPorAlmacen(@Param("idAlmacen") Integer idAlmacen);
 
     /** Lotes de un almacén (ubicados o flotantes) filtrados por categoría de producto */
     @Query("SELECT l FROM Lote l " +

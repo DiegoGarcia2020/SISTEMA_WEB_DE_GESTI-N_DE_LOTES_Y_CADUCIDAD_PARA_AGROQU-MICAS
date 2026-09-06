@@ -6,6 +6,7 @@ import {
   CiudadDTO, SupervisorOpcionDTO, AlmacenCompletoDTO
 } from '../../../core/services/inventario.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { BodegueroService } from '../../../core/services/bodeguero.service';
 
 @Component({
   selector: 'app-gestor-topologia',
@@ -18,6 +19,7 @@ export class GestorTopologiaComponent implements OnInit {
 
   private inventario = inject(InventarioService);
   private authService = inject(AuthService);
+  private bodegueroService = inject(BodegueroService);
 
   get esAdmin(): boolean {
     return this.authService.currentRole()?.toUpperCase() === 'ADMINISTRADOR';
@@ -63,14 +65,18 @@ export class GestorTopologiaComponent implements OnInit {
 
   ngOnInit() {
     this.cargarArbol();
-    this.inventario.getCiudades().subscribe({ next: c => this.ciudades.set(c || []) });
-    this.inventario.getSupervisoresDisponibles().subscribe({ next: s => this.supervisores.set(s || []) });
-    this.inventario.getAlmacenesCompletos().subscribe({ next: a => this.almacenesCompletos.set(a || []) });
+    if (this.esAdmin) {
+      this.inventario.getCiudades().subscribe({ next: c => this.ciudades.set(c || []) });
+      this.inventario.getSupervisoresDisponibles().subscribe({ next: s => this.supervisores.set(s || []) });
+      this.inventario.getAlmacenesCompletos().subscribe({ next: a => this.almacenesCompletos.set(a || []) });
+    }
   }
 
   cargarArbol() {
     this.cargando.set(true);
-    this.inventario.getArbolTopologia().subscribe({
+    // El Bodeguero solo debe ver la topología de SU bodega asignada, no la de todas.
+    const arbol$ = this.esBodeguero ? this.bodegueroService.getArbolTopologia() : this.inventario.getArbolTopologia();
+    arbol$.subscribe({
       next: data => {
         this.arbol.set(data || []);
         // Expandir por defecto el primer nivel de almacenes

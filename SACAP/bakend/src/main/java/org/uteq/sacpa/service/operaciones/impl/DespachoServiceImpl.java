@@ -50,6 +50,30 @@ public class DespachoServiceImpl implements IDespachoService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<OrdenPendienteDespachoDTO> listarPendientesPrepararPorAlmacen(String busqueda, Integer idAlmacen) {
+        List<Venta> ventas = (busqueda == null || busqueda.isBlank())
+                ? ventaRepository.findTop50ByEstadoYAlmacenOrderByFechaDesc(EstadoVenta.CONFIRMADA.name(), idAlmacen, PageRequest.of(0, 50))
+                : ventaRepository.buscarPendientesPrepararPorAlmacen(EstadoVenta.CONFIRMADA.name(), busqueda.trim(), idAlmacen, PageRequest.of(0, 50));
+
+        return ventas.stream()
+                .map(OrdenPendienteDespachoDTO::from)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrdenPendienteDespachoDTO> listarListasParaEntregaPorAlmacen(String busqueda, Integer idAlmacen) {
+        List<Venta> ventas = (busqueda == null || busqueda.isBlank())
+                ? ventaRepository.findTop50ByEstadoYAlmacenOrderByFechaDesc(EstadoVenta.PREPARADA.name(), idAlmacen, PageRequest.of(0, 50))
+                : ventaRepository.buscarPendientesPrepararPorAlmacen(EstadoVenta.PREPARADA.name(), busqueda.trim(), idAlmacen, PageRequest.of(0, 50));
+
+        return ventas.stream()
+                .map(OrdenPendienteDespachoDTO::from)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<DesgloseLoteDespachoDTO> obtenerLotesADespachar(Integer idVenta) {
         Venta venta = ventaRepository.findById(idVenta)
                 .orElseThrow(() -> new RuntimeException("Venta no encontrada con ID: " + idVenta));

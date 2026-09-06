@@ -125,6 +125,43 @@ public class ReporteServiceImpl implements IReporteService {
         }
     }
 
+    /**
+     * Ejecuta un reporte de DETALLE (una fila por movimiento/orden, no agregado)
+     * con paginación real en SQL (LIMIT/OFFSET) y el total verdadero via COUNT(*).
+     *
+     * Sin esto, jdbcTemplate.queryForList(sql) traía TODA la tabla a memoria e
+     * ignoraba pagina/tamanio del frontend — con los ~150k-1M filas sintéticas
+     * de prueba del proyecto, el navegador se quedaba colgado intentando bajar
+     * y renderizar la respuesta completa (visto en Kardex de Movimientos y
+     * Órdenes Pendientes). Los reportes agregados (GROUP BY producto/día/cliente)
+     * no lo necesitan porque ya devuelven pocas filas sin importar cuántas
+     * transacciones haya debajo.
+     */
+    private ReporteRespuestaDTO ejecutarPaginado(String titulo, StringBuilder sqlSinPaginar,
+                                                 List<Object> params, ReporteFiltrosDTO f) {
+        int tamanio = (f != null && f.getTamanio() != null && f.getTamanio() > 0)
+                ? Math.min(f.getTamanio(), 500) : 50;
+        int pagina = (f != null && f.getPagina() != null && f.getPagina() >= 0) ? f.getPagina() : 0;
+
+        Long total = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM (" + sqlSinPaginar + ") AS conteo",
+                Long.class, params.toArray());
+
+        List<Object> paramsPaginados = new ArrayList<>(params);
+        paramsPaginados.add(tamanio);
+        paramsPaginados.add(pagina * tamanio);
+        List<Map<String, Object>> data = jdbcTemplate.queryForList(
+                sqlSinPaginar + " LIMIT ? OFFSET ?", paramsPaginados.toArray());
+
+        return ReporteRespuestaDTO.builder()
+                .titulo(titulo)
+                .data(data)
+                .total(total != null ? total : 0L)
+                .pagina(pagina)
+                .tamanio(tamanio)
+                .build();
+    }
+
     // ==================================================================
     // A. VENTAS Y RENTABILIDAD
     // ==================================================================
@@ -459,8 +496,7 @@ public class ReporteServiceImpl implements IReporteService {
         }
         sql.append(" ORDER BY m.fecha_movimiento DESC");
 
-        List<Map<String, Object>> data = jdbcTemplate.queryForList(sql.toString(), params.toArray());
-        return new ReporteRespuestaDTO("Kardex de Movimientos", data);
+        return ejecutarPaginado("Kardex de Movimientos", sql, params, f);
     }
 
     @Override
@@ -546,8 +582,7 @@ public class ReporteServiceImpl implements IReporteService {
         }
         sql.append(" ORDER BY o.fecha_llegada_estimada ASC NULLS LAST");
 
-        List<Map<String, Object>> data = jdbcTemplate.queryForList(sql.toString(), params.toArray());
-        return new ReporteRespuestaDTO("Órdenes de Compra Pendientes de Recepción", data);
+        return ejecutarPaginado("Órdenes de Compra Pendientes de Recepción", sql, params, f);
     }
 
     @Override
@@ -707,7 +742,6 @@ public class ReporteServiceImpl implements IReporteService {
         }
         sql.append(" ORDER BY 1 DESC");
 
-        List<Map<String, Object>> data = jdbcTemplate.queryForList(sql.toString(), params.toArray());
-        return new ReporteRespuestaDTO("Log de Anulaciones", data);
+        return ejecutarPaginado("Log de Anulaciones", sql, params, f);
     }
 }

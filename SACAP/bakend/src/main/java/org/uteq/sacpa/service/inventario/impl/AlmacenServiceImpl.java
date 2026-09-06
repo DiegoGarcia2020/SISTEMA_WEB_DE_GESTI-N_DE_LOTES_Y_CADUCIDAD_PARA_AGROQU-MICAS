@@ -160,7 +160,18 @@ public class AlmacenServiceImpl implements IAlmacenService {
     @Override
     @Transactional(readOnly = true)
     public List<NodoTopologiaDTO> obtenerArbolTopologia() {
-        List<Almacen> almacenes = almacenRepository.findAll();
+        return construirArbol(almacenRepository.findAll());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<NodoTopologiaDTO> obtenerArbolTopologiaPorAlmacen(Integer idAlmacen) {
+        return almacenRepository.findById(idAlmacen)
+                .map(alm -> construirArbol(List.of(alm)))
+                .orElseGet(List::of);
+    }
+
+    private List<NodoTopologiaDTO> construirArbol(List<Almacen> almacenes) {
         java.util.Map<Integer, Integer> ocupacionReal = obtenerOcupacionRealPorUbicacion();
         List<NodoTopologiaDTO> arbol = new ArrayList<>();
 

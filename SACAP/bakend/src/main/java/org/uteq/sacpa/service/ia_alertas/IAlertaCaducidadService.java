@@ -16,6 +16,9 @@ public interface IAlertaCaducidadService {
     /** Obtiene todas las alertas activas */
     Page<AlertaCaducidadResponseDTO> listarAlertasActivas(Integer idEstadoActivo, Pageable pageable);
 
+    /** Igual que listarAlertasActivas pero acotado a la bodega del Bodeguero autenticado */
+    Page<AlertaCaducidadResponseDTO> listarAlertasActivasPorAlmacen(Integer idEstadoActivo, Integer idAlmacen, Pageable pageable);
+
     /** Obtiene alertas por lote */
     List<AlertaCaducidadResponseDTO> buscarPorLote(Integer idLote);
 

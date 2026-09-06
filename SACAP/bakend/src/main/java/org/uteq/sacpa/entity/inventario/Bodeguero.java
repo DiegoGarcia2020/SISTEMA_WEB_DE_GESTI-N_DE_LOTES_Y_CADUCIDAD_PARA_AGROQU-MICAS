@@ -19,4 +19,8 @@ public class Bodeguero {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario") private Usuario usuario;
+
+    /** Bodega a la que está asignado este bodeguero (una sola, asignada por su Supervisor). */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_almacen") private Almacen almacen;
 }

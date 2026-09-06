@@ -9,11 +9,13 @@ import org.uteq.sacpa.dto.operaciones.OrdenCompraRequestDTO;
 import org.uteq.sacpa.dto.operaciones.OrdenCompraResponseDTO;
 import org.uteq.sacpa.dto.operaciones.RecepcionLoteRequestDTO;
 import org.uteq.sacpa.entity.entidades.Proveedor;
+import org.uteq.sacpa.entity.inventario.Almacen;
 import org.uteq.sacpa.entity.inventario.Lote;
 import org.uteq.sacpa.entity.inventario.Producto;
 import org.uteq.sacpa.entity.operaciones.DetalleCompra;
 import org.uteq.sacpa.entity.operaciones.OrdenCompra;
 import org.uteq.sacpa.repository.entidades.IProveedorRepository;
+import org.uteq.sacpa.repository.inventario.IBodegueroRepository;
 import org.uteq.sacpa.repository.inventario.ILoteRepository;
 import org.uteq.sacpa.repository.inventario.IProductoRepository;
 import org.uteq.sacpa.repository.operaciones.IDetalleCompraRepository;
@@ -63,6 +65,9 @@ public class OrdenCompraServiceImpl implements IOrdenCompraService {
 
     @Autowired
     private ILoteRepository loteRepository;
+
+    @Autowired
+    private IBodegueroRepository bodegueroRepository;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
@@ -294,6 +299,13 @@ public class OrdenCompraServiceImpl implements IOrdenCompraService {
             }
         }
 
+        // 4.5. Bodega que recibe físicamente: la del Bodeguero autenticado que confirma
+        // la recepción. Sin esto, el lote flotante nace sin almacén y nunca aparece en
+        // "Asignar a Ubicación" filtrado por bodega (queda huérfano para todos).
+        Almacen almacenReceptor = bodegueroRepository.findByUsuario_IdUsuario(securityContextService.obtenerIdUsuario())
+                .map(org.uteq.sacpa.entity.inventario.Bodeguero::getAlmacen)
+                .orElse(null);
+
         // 5. Por cada lote recibido, crear la entidad Lote en estado FLOTANTE
         for (RecepcionLoteRequestDTO.LoteRecepcionItemDTO loteDTO : dto.getLotes()) {
 
@@ -315,6 +327,7 @@ public class OrdenCompraServiceImpl implements IOrdenCompraService {
                     .producto(detalle.getProducto())
                     .proveedor(orden.getProveedor())
                     .ordenCompra(orden)
+                    .almacen(almacenReceptor)
                     .build();
 
             loteRepository.save(lote);

@@ -142,6 +142,91 @@
         </div>
       }
     </div>
+
+    <!-- ── Mi Equipo de Bodegueros ────────────── -->
+    <div class="sd-section">
+      <div class="sd-section-header">
+        <h2 class="sd-section-title-inline">Mi Equipo — Bodegueros de {{ bodegaSeleccionada()!.nombre }}</h2>
+        <button class="sd-btn sd-btn--primary" (click)="abrirModalEquipo()">+ Asignar Bodeguero</button>
+      </div>
+
+      @if (cargandoBodegueros()) {
+        <div class="sd-loading">
+          <span class="sd-spin"></span>
+          Cargando equipo...
+        </div>
+      } @else if (bodegueros().length === 0) {
+        <div class="sd-empty">
+          <p class="sd-empty-title">Todavía no hay bodegueros asignados a esta bodega</p>
+          <button class="sd-btn sd-btn--primary" (click)="abrirModalEquipo()">+ Asignar el primero</button>
+        </div>
+      } @else {
+        <div class="sd-lote-list">
+          @for (b of bodegueros(); track b.idUsuario) {
+            <div class="sd-lote-item">
+              <div class="sd-lote-code">
+                <span class="sd-lote-num">{{ b.nombres }} {{ b.apellidos }}</span>
+                <span class="sd-lote-prod">{{ b.correo }}</span>
+              </div>
+              <button class="sd-btn sd-btn--ghost" (click)="quitarBodeguero(b)">Quitar</button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ── Modal Asignar Bodeguero ─────────────── -->
+  @if (modalEquipoAbierto()) {
+    <div class="sd-modal-overlay" (click)="cerrarModalEquipo()">
+      <div class="sd-modal" (click)="$event.stopPropagation()">
+        <div class="sd-modal-header">
+          <h3>Asignar Bodeguero — {{ bodegaSeleccionada()?.nombre }}</h3>
+          <button class="sd-modal-close" (click)="cerrarModalEquipo()">×</button>
+        </div>
+
+        <div class="sd-modal-body">
+          @if (cargandoDisponibles()) {
+            <div class="sd-loading">
+              <span class="sd-spin"></span>
+              Cargando bodegueros...
+            </div>
+          } @else if (bodegueroDisponibles().length === 0) {
+            <div class="sd-empty">
+              <p class="sd-empty-title">No hay usuarios con rol Bodeguero registrados</p>
+              <p class="sd-empty-sub">Pídele al Administrador que cree la cuenta y le asigne el rol desde Gestión de Usuarios.</p>
+            </div>
+          } @else {
+            <div class="sd-lote-list">
+              @for (b of bodegueroDisponibles(); track b.idUsuario) {
+                <div class="sd-lote-item">
+                  <div class="sd-lote-code">
+                    <span class="sd-lote-num">{{ b.nombres }} {{ b.apellidos }}</span>
+                    <span class="sd-lote-prod">
+                      {{ b.correo }}
+                      @if (b.nombreAlmacenAsignado) {
+                        · Actualmente en {{ b.nombreAlmacenAsignado }}
+                      } @else {
+                        · Sin bodega asignada
+                      }
+                    </span>
+                  </div>
+                  <button class="sd-btn sd-btn--primary"
+                          [disabled]="asignandoIdUsuario() === b.idUsuario || b.idAlmacenAsignado === bodegaSeleccionada()?.idAlmacen"
+                          (click)="asignarBodeguero(b)">
+                    {{ asignandoIdUsuario() === b.idUsuario ? 'Asignando...' : (b.idAlmacenAsignado === bodegaSeleccionada()?.idAlmacen ? 'Ya asignado' : 'Asignar aquí') }}
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="sd-modal-footer">
+          <button class="sd-btn sd-btn--ghost" (click)="cerrarModalEquipo()">Cerrar</button>
+        </div>
+      </div>
+    </div>
   }
 
   <!-- ── Modal Nuevo Lote ───────────────────── -->

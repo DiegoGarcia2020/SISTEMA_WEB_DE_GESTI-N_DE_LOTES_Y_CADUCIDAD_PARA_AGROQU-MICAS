@@ -13,6 +13,11 @@ public interface IDespachoService {
      */
     List<OrdenPendienteDespachoDTO> listarPendientesPreparar(String busqueda);
     List<OrdenPendienteDespachoDTO> listarListasParaEntrega(String busqueda);
+
+    /** Igual que las anteriores pero acotado a la bodega del Bodeguero autenticado. */
+    List<OrdenPendienteDespachoDTO> listarPendientesPrepararPorAlmacen(String busqueda, Integer idAlmacen);
+    List<OrdenPendienteDespachoDTO> listarListasParaEntregaPorAlmacen(String busqueda, Integer idAlmacen);
+
     List<DesgloseLoteDespachoDTO> obtenerLotesADespachar(Integer idVenta);
 
     VentaResponseDTO marcarComoPreparada(Integer idVenta);

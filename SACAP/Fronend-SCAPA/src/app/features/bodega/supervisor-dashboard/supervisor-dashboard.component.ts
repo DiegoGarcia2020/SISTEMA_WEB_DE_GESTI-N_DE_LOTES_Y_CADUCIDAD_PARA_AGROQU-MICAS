@@ -4,8 +4,9 @@ import { FormsModule } from '@angular/forms';
 import {
   InventarioService,
   MiBodegaDTO, CategoriaDTO, ProductoDTO, ProveedorDTO,
-  LoteDTO, LoteSupervisorRequest
+  LoteDTO, LoteSupervisorRequest, BodegueroDisponibleDTO
 } from '../../../core/services/inventario.service';
+import { ToastService } from '../../../shared/components/toast/toast.service';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -19,6 +20,7 @@ export class SupervisorDashboardComponent implements OnInit {
 
   private inventario = inject(InventarioService);
   private auth       = inject(AuthService);
+  private toast      = inject(ToastService);
 
   // Datos base
   bodegas    = signal<MiBodegaDTO[]>([]);
@@ -37,6 +39,14 @@ export class SupervisorDashboardComponent implements OnInit {
   modalAbierto = signal(false);
   guardando    = signal(false);
   errorModal   = signal('');
+
+  // Mi Equipo de Bodegueros
+  bodegueros         = signal<BodegueroDisponibleDTO[]>([]);
+  cargandoBodegueros = signal(false);
+  modalEquipoAbierto = signal(false);
+  bodegueroDisponibles = signal<BodegueroDisponibleDTO[]>([]);
+  cargandoDisponibles  = signal(false);
+  asignandoIdUsuario   = signal<number | null>(null);
 
   form: {
     numeroLote: string; idCategoria: number | null; idProducto: number | null;
@@ -93,6 +103,61 @@ export class SupervisorDashboardComponent implements OnInit {
     this.bodegaSeleccionada.set(bodega);
     this.filtroCategoria.set(null);
     this.cargarLotes();
+    this.cargarBodegueros();
+  }
+
+  // ── Mi Equipo de Bodegueros ──────────────────────────────
+  cargarBodegueros() {
+    const bodega = this.bodegaSeleccionada();
+    if (!bodega) return;
+    this.cargandoBodegueros.set(true);
+    this.inventario.getBodeguerosDeMiBodega(bodega.idAlmacen).subscribe({
+      next: data => { this.bodegueros.set(data || []); this.cargandoBodegueros.set(false); },
+      error: () => { this.bodegueros.set([]); this.cargandoBodegueros.set(false); }
+    });
+  }
+
+  abrirModalEquipo() {
+    this.modalEquipoAbierto.set(true);
+    this.cargandoDisponibles.set(true);
+    this.inventario.getBodeguerosDisponibles().subscribe({
+      next: data => { this.bodegueroDisponibles.set(data || []); this.cargandoDisponibles.set(false); },
+      error: () => { this.bodegueroDisponibles.set([]); this.cargandoDisponibles.set(false); }
+    });
+  }
+
+  cerrarModalEquipo() {
+    this.modalEquipoAbierto.set(false);
+  }
+
+  asignarBodeguero(b: BodegueroDisponibleDTO) {
+    const bodega = this.bodegaSeleccionada();
+    if (!bodega) return;
+    this.asignandoIdUsuario.set(b.idUsuario);
+    this.inventario.asignarBodeguero(bodega.idAlmacen, b.idUsuario).subscribe({
+      next: () => {
+        this.toast.success('Bodeguero asignado', `${b.nombres} ${b.apellidos} ahora forma parte de ${bodega.nombre}.`);
+        this.asignandoIdUsuario.set(null);
+        this.cargarBodegueros();
+        this.abrirModalEquipo(); // refresca la lista de disponibles (badges de bodega actualizados)
+      },
+      error: (err) => {
+        this.asignandoIdUsuario.set(null);
+        this.toast.error('Error', err.error?.message || 'No se pudo asignar el bodeguero.');
+      }
+    });
+  }
+
+  quitarBodeguero(b: BodegueroDisponibleDTO) {
+    const bodega = this.bodegaSeleccionada();
+    if (!bodega) return;
+    this.inventario.quitarBodeguero(bodega.idAlmacen, b.idUsuario).subscribe({
+      next: () => {
+        this.toast.success('Bodeguero removido', `${b.nombres} ${b.apellidos} ya no está en ${bodega.nombre}.`);
+        this.cargarBodegueros();
+      },
+      error: (err) => this.toast.error('Error', err.error?.message || 'No se pudo quitar el bodeguero.')
+    });
   }
 
   filtrarPorCategoria(idCategoria: number | null) {

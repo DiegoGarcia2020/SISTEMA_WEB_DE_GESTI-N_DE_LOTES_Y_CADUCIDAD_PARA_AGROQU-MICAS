@@ -51,7 +51,11 @@
     </div>
   } @else if (arbol().length === 0) {
     <div class="gt-empty">
-      <p>No se encontraron almacenes registrados en la base de datos.</p>
+      @if (esBodeguero) {
+        <p>Todavía no tienes una bodega asignada. Contacta a tu Supervisor para que te asigne una desde "Mi Equipo".</p>
+      } @else {
+        <p>No se encontraron almacenes registrados en la base de datos.</p>
+      }
     </div>
   } @else {
 

@@ -4,6 +4,13 @@
     <p>Gestión de órdenes para Técnicos de Campo y recepción de retornos.</p>
   </div>
 
+  @if (miBodegaCargada() && !miAlmacen()) {
+    <div style="background: #FEF3C7; border: 1px solid #FCD34D; border-radius: 0.75rem; padding: 1rem 1.25rem; margin-bottom: 1rem;">
+      <p style="font-weight: 700; color: #92400E; margin: 0;">Sin bodega asignada</p>
+      <p style="color: #78350F; margin: 0; font-size: 0.85rem;">Contacta a tu Supervisor para que te asigne una bodega desde "Mi Equipo". Mientras tanto no verás órdenes por preparar ni listas para entrega.</p>
+    </div>
+  }
+
   <!-- Pestañas CSS Puro -->
   <div class="tabs-container">
     <button class="tab-btn" [class.active]="activeTab() === 'preparar'" (click)="setActiveTab('preparar')">
@@ -269,14 +276,9 @@
               <div style="border-top: 1px solid var(--border-color); padding-top: 1rem;">
                 <div class="form-group">
                   <label>Almacén / Bodega</label>
-                  <select class="form-control" (change)="onAlmacenChange($event)">
-                    <option value="">-- Seleccione --</option>
-                    @for (a of almacenes(); track a.idAlmacen) {
-                      <option [value]="a.idAlmacen">{{ a.nombre }}</option>
-                    }
-                  </select>
+                  <input class="form-control" type="text" [value]="miAlmacen()?.nombre || 'Sin bodega asignada'" disabled>
                 </div>
-                
+
                 @if (zonas().length > 0) {
                   <div class="form-group mt-3">
                     <label>Zona</label>

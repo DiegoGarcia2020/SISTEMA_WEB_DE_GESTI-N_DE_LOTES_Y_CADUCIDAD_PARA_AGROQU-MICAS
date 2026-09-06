@@ -200,7 +200,7 @@ export class SolicitudesRegistroComponent implements OnInit {
   rolesDisponibles = signal<RolDTO[]>([]);
   filtroEstado = signal<number>(1);
   solicitudSeleccionada = signal<SolicitudRegistroDTO | null>(null);
-  rolesElegidos = signal<number[]>([4]); // Por defecto Técnico de Campo (4)
+  rolesElegidos = signal<number[]>([]);
 
   pendientesCount = computed(() => this.solicitudes().filter(s => s.idEstado === 1).length);
   aprobadasCount = computed(() => this.solicitudes().filter(s => s.idEstado === 2).length);
@@ -230,7 +230,7 @@ export class SolicitudesRegistroComponent implements OnInit {
 
   abrirModalAprobar(s: SolicitudRegistroDTO): void {
     this.solicitudSeleccionada.set(s);
-    this.rolesElegidos.set([4]); // 4 por defecto
+    this.rolesElegidos.set([]);
   }
 
   estaSeleccionado(idRol: number): boolean {
@@ -251,6 +251,11 @@ export class SolicitudesRegistroComponent implements OnInit {
   confirmarAprobacion(): void {
     const sol = this.solicitudSeleccionada();
     if (!sol || !sol.idSolicitud) return;
+
+    if (this.rolesElegidos().length === 0) {
+      this.toast.error('Falta seleccionar un rol', 'Debe marcar al menos un rol antes de confirmar.');
+      return;
+    }
 
     this.solicitudService.procesar(sol.idSolicitud, { aprobar: true, idRoles: this.rolesElegidos() }).subscribe({
       next: () => {

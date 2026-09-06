@@ -42,7 +42,8 @@ export interface DevolucionTransitoDTO {
 }
 
 import { ComprobanteService } from '../../../core/services/comprobante.service';
-import { InventarioService, AlmacenDTO, ZonaDTO, EstanteriaDTO, UbicacionDTO } from '../../../core/services/inventario.service';
+import { InventarioService, ZonaDTO, EstanteriaDTO, UbicacionDTO } from '../../../core/services/inventario.service';
+import { BodegueroService, MiBodegaDTO } from '../../../core/services/bodeguero.service';
 
 @Component({
   selector: 'app-bodega-despachos',
@@ -55,6 +56,10 @@ export class BodegaDespachosComponent implements OnInit {
   private http = inject(HttpClient);
   private toast = inject(ToastService);
   private comprobanteService = inject(ComprobanteService);
+  private bodegueroService = inject(BodegueroService);
+
+  miAlmacen = signal<MiBodegaDTO | null>(null);
+  miBodegaCargada = signal<boolean>(false);
 
   activeTab = signal<'preparar' | 'listas' | 'devoluciones'>('preparar');
   ordenesPendientes = signal<OrdenPendienteDTO[]>([]);
@@ -80,8 +85,7 @@ export class BodegaDespachosComponent implements OnInit {
   opcionReintegro = signal<'ORIGINAL' | 'NUEVA'>('ORIGINAL');
   isProcessingReintegro = signal(false);
 
-  // Cascada de ubicación (Reintegro)
-  almacenes = signal<AlmacenDTO[]>([]);
+  // Cascada de ubicación (Reintegro) — almacén fijo a mi bodega (miAlmacen)
   zonas = signal<ZonaDTO[]>([]);
   estanterias = signal<EstanteriaDTO[]>([]);
   ubicaciones = signal<UbicacionDTO[]>([]);
@@ -92,9 +96,18 @@ export class BodegaDespachosComponent implements OnInit {
   ubicacionSel = signal<UbicacionDTO | null>(null);
 
   ngOnInit(): void {
-    this.cargarOrdenesPendientes();
+    this.bodegueroService.miBodega().subscribe({
+      next: (bodega) => {
+        this.miAlmacen.set(bodega);
+        this.miBodegaCargada.set(true);
+        this.cargarOrdenesPendientes();
+      },
+      error: () => {
+        this.miBodegaCargada.set(true);
+        this.cargarOrdenesPendientes();
+      }
+    });
     this.cargarDevoluciones();
-    this.cargarAlmacenes();
   }
 
   setActiveTab(tab: 'preparar' | 'listas' | 'devoluciones') {
@@ -116,9 +129,9 @@ export class BodegaDespachosComponent implements OnInit {
   }
 
   cargarOrdenesPendientes() {
+    if (!this.miAlmacen()) { this.ordenesPendientes.set([]); return; }
     const texto = this.textoBusqueda().trim();
-    const params: Record<string, string> = texto ? { busqueda: texto } : {};
-    this.http.get<OrdenPendienteDTO[]>(`${environment.apiUrl}/operaciones/despachos/pendientes`, { params })
+    this.bodegueroService.listarDespachosPendientes(texto || undefined)
       .subscribe({
         next: (data) => this.ordenesPendientes.set(data || []),
         error: () => this.toast.error('Error', 'No se pudieron cargar las órdenes pendientes de preparación')
@@ -126,9 +139,9 @@ export class BodegaDespachosComponent implements OnInit {
   }
 
   cargarOrdenesListas() {
+    if (!this.miAlmacen()) { this.ordenesListas.set([]); return; }
     const texto = this.textoBusqueda().trim();
-    const params: Record<string, string> = texto ? { busqueda: texto } : {};
-    this.http.get<OrdenPendienteDTO[]>(`${environment.apiUrl}/operaciones/despachos/pendientes-entrega`, { params })
+    this.bodegueroService.listarDespachosPendientesEntrega(texto || undefined)
       .subscribe({
         next: (data) => this.ordenesListas.set(data || []),
         error: () => this.toast.error('Error', 'No se pudieron cargar las órdenes listas para entrega')
@@ -230,15 +243,20 @@ export class BodegaDespachosComponent implements OnInit {
     this.devolucionSeleccionada.set(dev);
     this.opcionReintegro.set('ORIGINAL');
     this.modalReintegroAbierto.set(true);
-    
-    // Reset cascada
-    this.idAlmacenSel.set(null);
+
+    // Reset cascada — el almacén queda fijo a mi bodega, solo se elige zona/estantería/ubicación
     this.idZonaSel.set(null);
     this.idEstanteriaSel.set(null);
     this.ubicacionSel.set(null);
     this.zonas.set([]);
     this.estanterias.set([]);
     this.ubicaciones.set([]);
+
+    const bodega = this.miAlmacen();
+    this.idAlmacenSel.set(bodega ? bodega.idAlmacen : null);
+    if (bodega) {
+      this.inventarioService.getZonas(bodega.idAlmacen).subscribe({ next: z => this.zonas.set(z) });
+    }
   }
 
   cerrarModalReintegro() {
@@ -286,26 +304,7 @@ export class BodegaDespachosComponent implements OnInit {
       });
   }
 
-  // Cascada de ubicaciones
-  cargarAlmacenes() {
-    this.inventarioService.getAlmacenes().subscribe({ next: a => this.almacenes.set(a) });
-  }
-
-  onAlmacenChange(event: Event) {
-    const id = Number((event.target as HTMLSelectElement).value);
-    this.idAlmacenSel.set(id || null);
-    this.idZonaSel.set(null);
-    this.idEstanteriaSel.set(null);
-    this.ubicacionSel.set(null);
-    this.zonas.set([]);
-    this.estanterias.set([]);
-    this.ubicaciones.set([]);
-
-    if (id) {
-      this.inventarioService.getZonas(id).subscribe({ next: z => this.zonas.set(z) });
-    }
-  }
-
+  // Cascada de ubicaciones (el almacén queda fijo a mi bodega, ver abrirModalReintegro)
   onZonaChange(event: Event) {
     const id = Number((event.target as HTMLSelectElement).value);
     this.idZonaSel.set(id || null);

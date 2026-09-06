@@ -175,6 +175,16 @@ export interface AlmacenGuardarRequest {
   idEstado?:        number;
 }
 
+export interface BodegueroDisponibleDTO {
+  idUsuario:             number;
+  correo:                string;
+  nombres:               string;
+  apellidos:             string;
+  telefono?:             string;
+  idAlmacenAsignado?:    number | null;
+  nombreAlmacenAsignado?: string | null;
+}
+
 export interface LoteSupervisorRequest {
   numeroLote:       string;
   idProducto:       number;
@@ -344,6 +354,28 @@ export class InventarioService {
 
   crearLoteSupervisor(data: LoteSupervisorRequest): Observable<LoteDTO> {
     return this.http.post<LoteDTO>(`${this.apiUrl}/supervisor/lotes`, data);
+  }
+
+  // ── Módulo 2: Mi Equipo de Bodegueros (Supervisor) ────────
+
+  getBodeguerosDeMiBodega(idAlmacen: number): Observable<BodegueroDisponibleDTO[]> {
+    return this.http.get<BodegueroDisponibleDTO[]>(`${this.apiUrl}/supervisor/bodegueros?idAlmacen=${idAlmacen}`).pipe(
+      catchError(e => e.status === 0 || e.status === 404 ? of([]) : throwError(() => e))
+    );
+  }
+
+  getBodeguerosDisponibles(): Observable<BodegueroDisponibleDTO[]> {
+    return this.http.get<BodegueroDisponibleDTO[]>(`${this.apiUrl}/supervisor/bodegueros-disponibles`).pipe(
+      catchError(e => e.status === 0 || e.status === 404 ? of([]) : throwError(() => e))
+    );
+  }
+
+  asignarBodeguero(idAlmacen: number, idUsuarioBodeguero: number): Observable<BodegueroDisponibleDTO> {
+    return this.http.post<BodegueroDisponibleDTO>(`${this.apiUrl}/supervisor/bodegueros/asignar`, { idAlmacen, idUsuarioBodeguero });
+  }
+
+  quitarBodeguero(idAlmacen: number, idUsuarioBodeguero: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/supervisor/bodegueros?idAlmacen=${idAlmacen}&idUsuarioBodeguero=${idUsuarioBodeguero}`);
   }
 
   getCategorias(): Observable<CategoriaDTO[]> {
