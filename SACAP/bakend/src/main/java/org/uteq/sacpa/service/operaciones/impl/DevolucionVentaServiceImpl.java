@@ -8,9 +8,11 @@ import org.uteq.sacpa.dto.operaciones.DevolucionVentaRequestDTO;
 import org.uteq.sacpa.entity.inventario.Producto;
 import org.uteq.sacpa.entity.operaciones.DevolucionVenta;
 import org.uteq.sacpa.entity.operaciones.Venta;
+import org.uteq.sacpa.entity.seguridad.Usuario;
 import org.uteq.sacpa.repository.inventario.IProductoRepository;
 import org.uteq.sacpa.repository.inventario.ILoteRepository;
 import org.uteq.sacpa.repository.operaciones.DevolucionVentaRepository;
+import org.uteq.sacpa.repository.operaciones.ITecnicoCampoRepository;
 import org.uteq.sacpa.repository.operaciones.VentaRepository;
 import org.uteq.sacpa.repository.inventario.IUbicacionInternaRepository;
 import org.uteq.sacpa.service.operaciones.IDevolucionVentaService;
@@ -31,6 +33,7 @@ public class DevolucionVentaServiceImpl implements IDevolucionVentaService {
     private final IProductoRepository productoRepository;
     private final ILoteRepository loteRepository;
     private final IUbicacionInternaRepository ubicacionRepository;
+    private final ITecnicoCampoRepository tecnicoCampoRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
     @Value("${sacpa.devolucion.plazo-dias:7}")
@@ -157,7 +160,7 @@ public class DevolucionVentaServiceImpl implements IDevolucionVentaService {
                 .idVenta(d.getVenta().getId())
                 .numeroComprobante(d.getVenta().getNumeroComprobante())
                 .nombreCliente(d.getVenta().getCliente().getNombreFinca())
-                .nombreTecnico(d.getVenta().getTecnico().getNombres() + " " + d.getVenta().getTecnico().getApellidos())
+                .nombreTecnico(resolverNombreTecnico(d.getVenta().getTecnico()))
                 .idProducto(d.getProducto().getIdProducto())
                 .nombreProducto(d.getProducto().getNombre())
                 .cantidadDevuelta(d.getCantidadDevuelta())
@@ -167,6 +170,34 @@ public class DevolucionVentaServiceImpl implements IDevolucionVentaService {
                 .estadoInventario(d.getEstadoInventario())
                 .fechaRecepcion(d.getFechaRecepcion())
                 .build();
+    }
+
+    /**
+     * Usuario.nombres/apellidos queda vacío para técnicos sembrados directo por SQL
+     * (solo se llena al pasar por el flujo de registro/aprobación). El nombre real
+     * vive en el perfil operaciones.tecnico_campo, así que se cae ahí antes de
+     * mostrar el correo como último recurso.
+     */
+    private String resolverNombreTecnico(Usuario tecnico) {
+        if (tecnico == null) return "Técnico no disponible";
+
+        String nombres = tecnico.getNombres();
+        String apellidos = tecnico.getApellidos();
+        if (nombres != null && !nombres.isBlank() && apellidos != null && !apellidos.isBlank()) {
+            return (nombres + " " + apellidos).trim();
+        }
+
+        String nombreCompleto = tecnicoCampoRepository.findByUsuario_IdUsuario(tecnico.getIdUsuario())
+                .map(t -> (safe(t.getNombres()) + " " + safe(t.getApellidos())).trim())
+                .filter(n -> !n.isBlank())
+                .orElse(null);
+        if (nombreCompleto != null) return nombreCompleto;
+
+        return tecnico.getCorreo();
+    }
+
+    private String safe(String valor) {
+        return valor != null ? valor : "";
     }
 
     @Override

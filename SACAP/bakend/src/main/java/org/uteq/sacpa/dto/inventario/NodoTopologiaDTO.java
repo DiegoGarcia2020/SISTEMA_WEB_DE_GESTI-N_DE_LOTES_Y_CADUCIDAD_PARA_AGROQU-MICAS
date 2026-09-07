@@ -19,7 +19,8 @@ public class NodoTopologiaDTO {
     private Integer capacidadActual;
     private Integer porcentajeOcupacion;
     private String codigoQr;
-    
+    private Boolean esCuarentena;   // heredado de la zona: true si es exclusiva para productos con empaque dañado
+
     @Builder.Default
     private List<NodoTopologiaDTO> hijos = new ArrayList<>();
 }

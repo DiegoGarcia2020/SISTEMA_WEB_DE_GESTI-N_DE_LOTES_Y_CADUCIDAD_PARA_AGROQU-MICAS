@@ -187,12 +187,14 @@ public class AlmacenServiceImpl implements IAlmacenService {
 
             List<ZonaAlmacen> zonas = zonaRepository.findByAlmacen_IdAlmacen(alm.getIdAlmacen());
             for (ZonaAlmacen zona : zonas) {
+                boolean esCuarentena = Boolean.TRUE.equals(zona.getEsCuarentena());
                 NodoTopologiaDTO nodoZona = NodoTopologiaDTO.builder()
                         .id("zona-" + zona.getIdZona())
                         .tipo("ZONA")
                         .idReal(zona.getIdZona())
                         .nombre(zona.getNombre())
                         .subtitulo(zona.getCondicionClimatica() != null ? zona.getCondicionClimatica() : "Estándar")
+                        .esCuarentena(esCuarentena)
                         .hijos(new ArrayList<>())
                         .build();
 
@@ -204,6 +206,7 @@ public class AlmacenServiceImpl implements IAlmacenService {
                             .idReal(est.getIdEstanteria())
                             .nombre("Estantería " + est.getCodigo())
                             .subtitulo("Código: " + est.getCodigo())
+                            .esCuarentena(esCuarentena)
                             .hijos(new ArrayList<>())
                             .build();
 
@@ -224,6 +227,7 @@ public class AlmacenServiceImpl implements IAlmacenService {
                                 .capacidadActual(capAct)
                                 .porcentajeOcupacion(pct)
                                 .codigoQr(qr)
+                                .esCuarentena(esCuarentena)
                                 .hijos(new ArrayList<>())
                                 .build();
 

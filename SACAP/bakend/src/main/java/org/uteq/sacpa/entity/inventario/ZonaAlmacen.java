@@ -12,6 +12,7 @@ public class ZonaAlmacen {
     @Column(name = "nombre", nullable = false, length = 150) private String nombre;
     @Column(name = "condicion_climatica", length = 100) private String condicionClimatica;
     @Column(name = "id_estado") private Integer idEstado;
+    @Column(name = "es_cuarentena", nullable = false) @Builder.Default private Boolean esCuarentena = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_almacen") private Almacen almacen;

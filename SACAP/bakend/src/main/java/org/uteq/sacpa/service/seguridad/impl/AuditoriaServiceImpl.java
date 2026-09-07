@@ -25,8 +25,10 @@ public class AuditoriaServiceImpl implements IAuditoriaService {
     private final IUsuarioRepository usuarioRepository;
 
     @Override
-    public List<Auditoria> listarAuditoria() {
-        return auditoriaRepository.findAllByOrderByFechaHoraDesc(org.springframework.data.domain.PageRequest.of(0, 500));
+    public org.springframework.data.domain.Page<Auditoria> listarAuditoria(String accion, String q, org.springframework.data.domain.Pageable pageable) {
+        String accionFiltro = (accion == null || accion.isBlank() || "TODAS".equalsIgnoreCase(accion)) ? null : accion;
+        String qFiltro = (q == null || q.isBlank()) ? null : "%" + q.toLowerCase() + "%";
+        return auditoriaRepository.buscar(accionFiltro, qFiltro, pageable);
     }
 
     @Override

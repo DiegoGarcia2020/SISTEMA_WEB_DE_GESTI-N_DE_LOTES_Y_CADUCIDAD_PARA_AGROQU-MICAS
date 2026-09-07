@@ -52,6 +52,7 @@ export interface NodoTopologiaDTO {
   capacidadActual?:    number;
   porcentajeOcupacion?: number;
   codigoQr?:           string;
+  esCuarentena?:       boolean;
   hijos:               NodoTopologiaDTO[];
 }
 

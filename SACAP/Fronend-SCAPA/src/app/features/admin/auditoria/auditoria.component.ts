@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
@@ -30,7 +30,7 @@ import { DiffModalComponent } from '../../../shared/components/diff-modal/diff-m
                 class="px-5 py-3 border-b-2 text-sm transition-all flex items-center gap-2 cursor-pointer rounded-t-xl">
           <lucide-icon name="database" class="w-4 h-4"></lucide-icon>
           <span>Auditoría</span>
-          <span class="bg-green-100 text-[#0B4628] text-xs px-2 py-0.5 rounded-full font-bold">{{ auditoria().length }}</span>
+          <span class="bg-green-100 text-[#0B4628] text-xs px-2 py-0.5 rounded-full font-bold">{{ totalElementos() }}</span>
         </button>
       </div>
 
@@ -39,14 +39,14 @@ import { DiffModalComponent } from '../../../shared/components/diff-modal/diff-m
         <div class="flex items-center gap-3 flex-1 min-w-[280px]">
           <div class="relative w-full max-w-md">
             <lucide-icon name="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-3"></lucide-icon>
-            <input type="text" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" placeholder="Buscar por usuario, IP, tabla o detalle..."
+            <input type="text" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event); onFiltroChange()" placeholder="Buscar por usuario, tabla o detalle..."
                    class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-300 rounded-xl text-sm focus:bg-white focus:border-[#0B4628] outline-none transition-all">
           </div>
         </div>
 
         <div class="flex items-center gap-2">
           <span class="text-xs font-bold text-gray-500 uppercase">Acción SQL:</span>
-          <select [ngModel]="filterAccion()" (ngModelChange)="filterAccion.set($event)" class="px-3 py-1.5 border border-gray-300 rounded-xl text-xs font-bold bg-white outline-none focus:border-[#0B4628]">
+          <select [ngModel]="filterAccion()" (ngModelChange)="filterAccion.set($event); onFiltroChange()" class="px-3 py-1.5 border border-gray-300 rounded-xl text-xs font-bold bg-white outline-none focus:border-[#0B4628]">
             <option value="TODAS">Ver Todas</option>
             <option value="INSERT">INSERT (Creaciones)</option>
             <option value="UPDATE">UPDATE (Ediciones)</option>
@@ -61,7 +61,7 @@ import { DiffModalComponent } from '../../../shared/components/diff-modal/diff-m
       <div class="bg-white rounded-2xl border border-gray-200/80 shadow-xs overflow-hidden">
           <div class="p-4 border-b border-gray-100 bg-gray-50/60 flex items-center justify-between text-xs text-gray-500">
             <span>Traza inmutable generada por triggers en PostgreSQL para auditar modificaciones de datos.</span>
-            <span class="font-bold text-[#0B4628]">● Mostrando {{ filteredAuditoria().length }} registros</span>
+            <span class="font-bold text-[#0B4628]">● Mostrando {{ auditoria().length }} de {{ totalElementos() }} registros</span>
           </div>
 
           <div class="overflow-x-auto">
@@ -78,7 +78,7 @@ import { DiffModalComponent } from '../../../shared/components/diff-modal/diff-m
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-100 text-sm font-mono">
-                @for (r of filteredAuditoria(); track r.idAuditoria) {
+                @for (r of auditoria(); track r.idAuditoria) {
                   <tr class="hover:bg-green-50/20 transition-colors group">
                     <td class="py-4 px-6 text-xs text-gray-500 whitespace-nowrap">{{ r.fechaHora }}</td>
                     <td class="py-4 px-6 font-sans">
@@ -109,6 +109,16 @@ import { DiffModalComponent } from '../../../shared/components/diff-modal/diff-m
               </tbody>
             </table>
           </div>
+
+          @if (totalPaginas() > 1) {
+            <div class="p-4 border-t border-gray-100 flex items-center justify-center gap-4 text-sm">
+              <button class="px-3 py-1.5 rounded-lg border border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50"
+                      [disabled]="paginaActual() === 0" (click)="irAPagina(paginaActual() - 1)">← Anterior</button>
+              <span class="font-semibold text-gray-600">Página {{ paginaActual() + 1 }} de {{ totalPaginas() }}</span>
+              <button class="px-3 py-1.5 rounded-lg border border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50"
+                      [disabled]="paginaActual() + 1 >= totalPaginas()" (click)="irAPagina(paginaActual() + 1)">Siguiente →</button>
+            </div>
+          }
         </div>
 
 
@@ -130,23 +140,42 @@ export class AuditoriaComponent implements OnInit {
   searchQuery = signal('');
   filterAccion = signal('TODAS');
 
+  paginaActual = signal(0);
+  totalPaginas = signal(0);
+  totalElementos = signal(0);
+  tamanoPagina = 20;
+  private buscarTimeout: any;
+
   ngOnInit(): void {
-    this.sisService.listarAuditoria().subscribe(a => this.auditoria.set(a));
+    this.cargarAuditoria();
+  }
+
+  cargarAuditoria(): void {
+    this.sisService.listarAuditoria(this.paginaActual(), this.tamanoPagina, this.filterAccion(), this.searchQuery()).subscribe({
+      next: (pagina) => {
+        this.auditoria.set(pagina.content);
+        this.totalPaginas.set(pagina.totalPages);
+        this.totalElementos.set(pagina.totalElements);
+      },
+      error: () => this.toast.error('Error', 'No se pudo cargar el log de auditoría.')
+    });
+  }
+
+  irAPagina(pagina: number): void {
+    this.paginaActual.set(pagina);
+    this.cargarAuditoria();
+  }
+
+  onFiltroChange(): void {
+    this.paginaActual.set(0);
+    clearTimeout(this.buscarTimeout);
+    this.buscarTimeout = setTimeout(() => this.cargarAuditoria(), 300);
   }
 
   openDiffModal(entry: RegistroAuditoriaDTO): void {
     this.selectedEntry.set(entry);
     this.isDiffModalOpen.set(true);
   }
-
-  filteredAuditoria = computed(() => {
-    return this.auditoria().filter(r => {
-      const q = this.searchQuery().toLowerCase();
-      const matchQ = !q || r.usuario.toLowerCase().includes(q) || r.tablaAfectada.toLowerCase().includes(q) || r.detalleCambio.toLowerCase().includes(q) || r.direccionIp.includes(q);
-      const matchA = this.filterAccion() === 'TODAS' || r.accion === this.filterAccion();
-      return matchQ && matchA;
-    });
-  });
 
 
 
@@ -163,7 +192,7 @@ export class AuditoriaComponent implements OnInit {
   exportCSV(): void {
     let csvContent = 'data:text/csv;charset=utf-8,';
     csvContent += 'ID,Fecha y Hora,Usuario,Rol,Accion SQL,Tabla Afectada,Detalle,Direccion IP\r\n';
-    this.filteredAuditoria().forEach(r => {
+    this.auditoria().forEach(r => {
       csvContent += `${r.idAuditoria},"${r.fechaHora}","${r.usuario}","${r.rol}","${r.accion}","${r.tablaAfectada}","${r.detalleCambio}","${r.direccionIp}"\r\n`;
     });
 

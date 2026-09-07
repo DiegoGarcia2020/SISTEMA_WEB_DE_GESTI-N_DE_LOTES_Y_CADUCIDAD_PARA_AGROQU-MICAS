@@ -135,7 +135,7 @@ import { ToastService } from '../../shared/components/toast/toast.service';
                   <p style="font-size: 0.8125rem; color: #713f12; margin: 0.25rem 0;">Cargando estanterías disponibles...</p>
                 } @else {
                   <select [(ngModel)]="idUbicacionSeleccionada" class="form-control" style="width: 100%; padding: 0.625rem; border: 1px solid #ca8a04; border-radius: 0.5rem; font-size: 0.875rem; background: white;">
-                    <option [ngValue]="null" disabled>Seleccione la estantería de destino...</option>
+                    <option [ngValue]="null" disabled>Seleccione la estantería de cuarentena de destino...</option>
                     @for (ub of ubicacionesDisponibles(); track ub.idUbicacion) {
                       <option [ngValue]="ub.idUbicacion" [disabled]="ub.disponible < (devSeleccionada()?.cantidadDevuelta || 1)">
                         {{ ub.label }}
@@ -210,7 +210,9 @@ export class BodegueroDevolucionesComponent implements OnInit {
     if (!nodos) return;
     for (const nodo of nodos) {
       const nombreActual = ruta ? `${ruta} › ${nodo.nombre}` : nodo.nombre;
-      if (nodo.tipo === 'UBICACION') {
+      // Solo estanterías/ubicaciones de la zona de Cuarentena: un producto con
+      // empaque dañado no debe mezclarse con el stock sano del resto del almacén.
+      if (nodo.tipo === 'UBICACION' && nodo.esCuarentena) {
         const capMax = nodo.capacidadMaxima || 100;
         const capAct = nodo.capacidadActual || 0;
         const disp = Math.max(0, capMax - capAct);

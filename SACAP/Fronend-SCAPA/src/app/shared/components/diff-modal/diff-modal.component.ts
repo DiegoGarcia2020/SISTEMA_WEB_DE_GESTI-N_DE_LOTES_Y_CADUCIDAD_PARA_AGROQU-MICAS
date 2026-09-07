@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, computed } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
 import { RegistroAuditoriaDTO } from '../../../core/models/sistema.model';
@@ -117,7 +117,7 @@ export class DiffModalComponent {
   @Input() entry: RegistroAuditoriaDTO | null = null;
   @Output() close = new EventEmitter<void>();
 
-  prevObj = computed(() => {
+  prevObj(): any {
     if (!this.entry) return {};
     if ((this.entry as any).valorAnterior) return (this.entry as any).valorAnterior;
     if (this.entry.accion === 'UPDATE') {
@@ -127,9 +127,9 @@ export class DiffModalComponent {
       return { id: 501, nombre: 'Registro de ejemplo eliminado', activo: false, ruc: '1790001111001' };
     }
     return {};
-  });
+  }
 
-  nextObj = computed(() => {
+  nextObj(): any {
     if (!this.entry) return {};
     if ((this.entry as any).valorNuevo) return (this.entry as any).valorNuevo;
     if (this.entry.accion === 'UPDATE') {
@@ -139,13 +139,13 @@ export class DiffModalComponent {
       return { id_nuevo: 882, tabla: this.entry.tablaAfectada, creador: this.entry.usuario, fecha: this.entry.fechaHora, estado: 'HABILITADO' };
     }
     return {};
-  });
+  }
 
-  allKeys = computed(() => {
+  allKeys(): string[] {
     const p = this.prevObj();
     const n = this.nextObj();
     return Array.from(new Set([...Object.keys(p), ...Object.keys(n)]));
-  });
+  }
 
   isDiff(key: string): boolean {
     const p = JSON.stringify(this.prevObj()[key]);

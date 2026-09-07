@@ -2,6 +2,10 @@ package org.uteq.sacpa.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,23 +27,28 @@ public class AuditoriaController {
 
     // --- AUDITORÍA ---
     @GetMapping("/auditoria")
-    public ResponseEntity<List<Map<String, Object>>> listarAuditoria() {
-        List<Map<String, Object>> res = new java.util.ArrayList<>();
-        for (Auditoria a : auditoriaService.listarAuditoria()) {
-            Map<String, Object> item = new LinkedHashMap<>();
-            item.put("idAuditoria", a.getIdAuditoria());
-            item.put("fechaHora", a.getFechaHora() != null ? a.getFechaHora().toString().replace("T", " ").substring(0, Math.min(19, a.getFechaHora().toString().length())) : "");
-            item.put("usuario", a.getUsuario() != null ? a.getUsuario().getCorreo() : "SISTEMA");
-            item.put("rol", a.getOperacion() != null ? a.getOperacion() : "SISTEMA");
-            item.put("accion", a.getAccion() != null ? a.getAccion() : "UPDATE");
-            item.put("tablaAfectada", a.getTablaAfectada() != null ? a.getTablaAfectada() : "SACPA");
-            item.put("detalleCambio", a.getDescripcion() != null ? a.getDescripcion() : "Modificación de registro");
-            item.put("direccionIp", "127.0.0.1");
-            item.put("valorAnterior", parseJson(a.getValorAnterior()));
-            item.put("valorNuevo", parseJson(a.getValorNuevo()));
-            res.add(item);
-        }
+    public ResponseEntity<Page<Map<String, Object>>> listarAuditoria(
+            @RequestParam(required = false) String accion,
+            @RequestParam(required = false) String q,
+            @PageableDefault(size = 20, sort = "fechaHora", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<Map<String, Object>> res = auditoriaService.listarAuditoria(accion, q, pageable)
+                .map(this::toMap);
         return ResponseEntity.ok(res);
+    }
+
+    private Map<String, Object> toMap(Auditoria a) {
+        Map<String, Object> item = new LinkedHashMap<>();
+        item.put("idAuditoria", a.getIdAuditoria());
+        item.put("fechaHora", a.getFechaHora() != null ? a.getFechaHora().toString().replace("T", " ").substring(0, Math.min(19, a.getFechaHora().toString().length())) : "");
+        item.put("usuario", a.getUsuario() != null ? a.getUsuario().getCorreo() : "SISTEMA");
+        item.put("rol", a.getOperacion() != null ? a.getOperacion() : "SISTEMA");
+        item.put("accion", a.getAccion() != null ? a.getAccion() : "UPDATE");
+        item.put("tablaAfectada", a.getTablaAfectada() != null ? a.getTablaAfectada() : "SACPA");
+        item.put("detalleCambio", a.getDescripcion() != null ? a.getDescripcion() : "Modificación de registro");
+        item.put("direccionIp", "127.0.0.1");
+        item.put("valorAnterior", parseJson(a.getValorAnterior()));
+        item.put("valorNuevo", parseJson(a.getValorNuevo()));
+        return item;
     }
 
     private Object parseJson(String texto) {

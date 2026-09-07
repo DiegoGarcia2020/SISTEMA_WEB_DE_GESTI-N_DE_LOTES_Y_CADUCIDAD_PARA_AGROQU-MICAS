@@ -1,9 +1,10 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { CatalogoItemDTO, RegistroAuditoriaDTO, HistorialSesionDTO, ConfiguracionGlobalDTO } from '../models/sistema.model';
+import { PageResponse } from './operaciones.service';
 
 @Injectable({
   providedIn: 'root'
@@ -28,8 +29,11 @@ export class SistemaService {
   }
 
   // ================= AUDITORÍA & SESIONES =================
-  listarAuditoria(): Observable<RegistroAuditoriaDTO[]> {
-    return this.http.get<RegistroAuditoriaDTO[]>(`${this.apiUrl}/seguridad/auditoria`);
+  listarAuditoria(page: number = 0, size: number = 20, accion?: string, q?: string): Observable<PageResponse<RegistroAuditoriaDTO>> {
+    let params = new HttpParams().set('page', page.toString()).set('size', size.toString());
+    if (accion) params = params.set('accion', accion);
+    if (q) params = params.set('q', q);
+    return this.http.get<PageResponse<RegistroAuditoriaDTO>>(`${this.apiUrl}/seguridad/auditoria`, { params });
   }
 
   listarHistorialSesiones(): Observable<HistorialSesionDTO[]> {

@@ -1,5 +1,7 @@
 package org.uteq.sacpa.service.seguridad;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.uteq.sacpa.entity.seguridad.Auditoria;
 import org.uteq.sacpa.entity.seguridad.HistorialSesion;
 
@@ -7,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface IAuditoriaService {
-    List<Auditoria> listarAuditoria();
+    Page<Auditoria> listarAuditoria(String accion, String q, Pageable pageable);
     Auditoria registrarAuditoria(Map<String, Object> datos);
 
     List<HistorialSesion> listarHistorialSesiones();
