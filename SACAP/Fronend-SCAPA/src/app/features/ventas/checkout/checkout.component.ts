@@ -5,7 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { VentasService } from '../../../core/services/ventas.service';
 import { CarritoService } from '../../../core/services/carrito.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { ClienteDTO, ProductoCatalogo } from '../../../core/models/ventas.model';
+import { ClienteDTO, ProductoCatalogo, RecetaAgricolaDTO } from '../../../core/models/ventas.model';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { MotorSugerenciasComponent } from '../motor-sugerencias/motor-sugerencias.component';
 
@@ -65,9 +65,14 @@ export class CheckoutComponent implements OnInit {
       cantidad: 1,
       precioUnitario: producto.precio || 0,
       esComboIA: false,
-      descuentoPct: 0
+      descuentoPct: 0,
+      requiereReceta: producto.requiereReceta || false,
+      codigoOmsToxicidad: producto.codigoOmsToxicidad
     });
     this.toast.success('Agregado', `${producto.nombre} agregado al carrito`);
+    if (producto.requiereReceta) {
+      this.toast.warning('Receta requerida', `${producto.nombre} es categoría ${producto.codigoOmsToxicidad || 'restringida'}: se pedirá receta agrícola antes de confirmar.`);
+    }
   }
 
   toggleSugerenciasIA() {
@@ -86,6 +91,15 @@ export class CheckoutComponent implements OnInit {
 
   confirmando = signal(false);
   errorCheckout = signal('');
+
+  // Receta agrícola (productos Ia/Ib o de venta restringida)
+  modalReceta = signal(false);
+  itemRecetaActual: { idProducto: number; nombreProducto: string; codigoOmsToxicidad?: string } | null = null;
+  recetasDisponiblesItem = signal<RecetaAgricolaDTO[]>([]);
+  cargandoRecetas = signal(false);
+  guardandoReceta = signal(false);
+  errorReceta = signal('');
+  formReceta = { numeroAutorizacion: '', nombreProfesional: '', registroProfesional: '', fechaEmision: '' };
 
   buscarCliente() {
     const texto = this.textoBusqueda().trim();
@@ -161,6 +175,13 @@ export class CheckoutComponent implements OnInit {
     if (!cliente) { this.errorCheckout.set('Seleccione o cree un cliente antes de confirmar.'); return; }
     if (this.carrito.items().length === 0) { this.errorCheckout.set('El carrito está vacío.'); return; }
 
+    const pendiente = this.carrito.itemsConRecetaPendiente()[0];
+    if (pendiente) {
+      this.errorCheckout.set(`"${pendiente.nombreProducto}" requiere receta agrícola. Adjúntela antes de confirmar.`);
+      this.abrirModalReceta(pendiente.idProducto, pendiente.nombreProducto, pendiente.codigoOmsToxicidad);
+      return;
+    }
+
     this.errorCheckout.set('');
     this.confirmando.set(true);
 
@@ -171,7 +192,8 @@ export class CheckoutComponent implements OnInit {
         cantidad: i.cantidad,
         esComboIA: i.esComboIA,
         idPromocion: i.idPromocion ?? null,
-        descuentoPct: i.descuentoPct ?? null
+        descuentoPct: i.descuentoPct ?? null,
+        idReceta: i.idReceta ?? null
       }))
     };
 
@@ -185,6 +207,69 @@ export class CheckoutComponent implements OnInit {
       error: e => {
         this.confirmando.set(false);
         this.errorCheckout.set(e?.error?.message || 'Error al confirmar la venta. Verifique el stock disponible.');
+      }
+    });
+  }
+
+  // ── Receta agrícola ──────────────────────────────────────────
+  abrirModalReceta(idProducto: number, nombreProducto: string, codigoOmsToxicidad?: string) {
+    const cliente = this.carrito.clienteSeleccionado();
+    if (!cliente) { this.errorCheckout.set('Seleccione un cliente antes de adjuntar la receta.'); return; }
+
+    this.itemRecetaActual = { idProducto, nombreProducto, codigoOmsToxicidad };
+    this.errorReceta.set('');
+    this.formReceta = { numeroAutorizacion: '', nombreProfesional: '', registroProfesional: '', fechaEmision: new Date().toISOString().substring(0, 10) };
+    this.modalReceta.set(true);
+
+    this.cargandoRecetas.set(true);
+    this.ventasService.recetasDisponiblesDeCliente(cliente.idCliente).subscribe({
+      next: recetas => {
+        this.recetasDisponiblesItem.set(recetas.filter(r => r.idProducto === idProducto));
+        this.cargandoRecetas.set(false);
+      },
+      error: () => { this.recetasDisponiblesItem.set([]); this.cargandoRecetas.set(false); }
+    });
+  }
+
+  cerrarModalReceta() {
+    this.modalReceta.set(false);
+    this.itemRecetaActual = null;
+  }
+
+  seleccionarRecetaExistente(receta: RecetaAgricolaDTO) {
+    if (!this.itemRecetaActual) return;
+    this.carrito.asignarReceta(this.itemRecetaActual.idProducto, receta.idReceta);
+    this.toast.success('Receta asociada', `Receta ${receta.numeroAutorizacion} asociada a ${this.itemRecetaActual.nombreProducto}.`);
+    this.cerrarModalReceta();
+  }
+
+  registrarYAsignarReceta() {
+    const cliente = this.carrito.clienteSeleccionado();
+    if (!cliente || !this.itemRecetaActual) return;
+    if (!this.formReceta.numeroAutorizacion.trim() || !this.formReceta.nombreProfesional.trim() || !this.formReceta.fechaEmision) {
+      this.errorReceta.set('Número de autorización, profesional y fecha de emisión son obligatorios.');
+      return;
+    }
+
+    this.errorReceta.set('');
+    this.guardandoReceta.set(true);
+    this.ventasService.registrarReceta({
+      numeroAutorizacion: this.formReceta.numeroAutorizacion.trim(),
+      idCliente: cliente.idCliente,
+      idProducto: this.itemRecetaActual.idProducto,
+      nombreProfesional: this.formReceta.nombreProfesional.trim(),
+      registroProfesional: this.formReceta.registroProfesional || undefined,
+      fechaEmision: this.formReceta.fechaEmision
+    }).subscribe({
+      next: receta => {
+        this.guardandoReceta.set(false);
+        this.carrito.asignarReceta(receta.idProducto, receta.idReceta);
+        this.toast.success('Receta registrada', `Receta ${receta.numeroAutorizacion} registrada y asociada.`);
+        this.cerrarModalReceta();
+      },
+      error: e => {
+        this.guardandoReceta.set(false);
+        this.errorReceta.set(e?.error?.message || 'Error al registrar la receta.');
       }
     });
   }

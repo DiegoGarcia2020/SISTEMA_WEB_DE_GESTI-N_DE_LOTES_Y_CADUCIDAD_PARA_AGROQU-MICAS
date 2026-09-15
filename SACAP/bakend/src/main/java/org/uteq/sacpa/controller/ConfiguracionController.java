@@ -2,6 +2,7 @@ package org.uteq.sacpa.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.uteq.sacpa.config.ConfiguracionIA;
 import org.uteq.sacpa.repository.inventario.IProductoRepository;
@@ -13,7 +14,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/configuracion")
-@CrossOrigin(origins = "*")
 public class ConfiguracionController {
 
     @Autowired
@@ -61,6 +61,7 @@ public class ConfiguracionController {
     }
 
     @PutMapping
+    @PreAuthorize("hasAuthority('ADMINISTRADOR')")
     public ResponseEntity<Map<String, Object>> actualizarConfiguracion(@RequestBody Map<String, Object> nuevaConfig) {
         if (nuevaConfig != null) {
             // Detectar si cambió el IVA global para propagar a productos

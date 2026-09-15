@@ -36,5 +36,6 @@ public interface IVentaIAService {
 
     List<VentaIAResponseDTO> misVentas(Integer idUsuarioAutenticado);
 
-    VentaIAResponseDTO obtenerVenta(Integer idVenta);
+    /** esRolDeSupervision=true (ADMINISTRADOR/SUPERVISOR) omite la verificación de dueño. */
+    VentaIAResponseDTO obtenerVenta(Integer idVenta, Integer idUsuarioAutenticado, boolean esRolDeSupervision);
 }

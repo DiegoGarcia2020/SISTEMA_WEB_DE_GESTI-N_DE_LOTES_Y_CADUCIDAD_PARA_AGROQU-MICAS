@@ -82,6 +82,63 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, "Bad Request", ex.getMessage());
     }
 
+    // Tenía @ResponseStatus(FORBIDDEN) propio, pero el handler genérico de abajo
+    // (Exception.class) la interceptaba primero y la devolvía como 500 -- afectaba tanto
+    // a los usos ya existentes (VentaServiceImpl) como a los nuevos (control de dueño de
+    // registro / IDOR en VentaIAServiceImpl.obtenerVenta).
+    @ExceptionHandler(AccesoDenegadoException.class)
+    public ResponseEntity<Map<String, Object>> handleAccesoDenegado(AccesoDenegadoException ex) {
+        return buildResponse(HttpStatus.FORBIDDEN, "Forbidden", ex.getMessage());
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // Varios servicios lanzan estas excepciones estandar de Java/Jakarta en
+    // vez de las propias del proyecto (ResourceNotFoundException/BadRequestException)
+    // y por eso caian al handler generico de abajo como 500 aunque el problema
+    // real era "no encontrado" o "solicitud invalida" (ej.: login con correo
+    // inexistente, QR sin ubicacion asociada, asignar un bodeguero a una
+    // bodega que no es del supervisor). Se mapean aqui explicitamente para
+    // no tener que salir a tocar cada sitio donde se usan.
+    // ════════════════════════════════════════════════════════════════════
+
+    @ExceptionHandler(jakarta.persistence.EntityNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleEntityNotFound(jakarta.persistence.EntityNotFoundException ex) {
+        return buildResponse(HttpStatus.NOT_FOUND, "Not Found", ex.getMessage());
+    }
+
+    @ExceptionHandler(org.springframework.security.core.userdetails.UsernameNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleUsernameNotFound(org.springframework.security.core.userdetails.UsernameNotFoundException ex) {
+        return buildResponse(HttpStatus.NOT_FOUND, "Not Found", ex.getMessage());
+    }
+
+    // Login: credenciales invalidas, cuenta bloqueada por intentos fallidos, o cuenta
+    // inactiva. Antes caian al handler generico de abajo como 500 (ver SecurityConfig.
+    // authenticationProvider(), que las lanza directamente sin pasar por un @RestController).
+    @ExceptionHandler(org.springframework.security.authentication.BadCredentialsException.class)
+    public ResponseEntity<Map<String, Object>> handleBadCredentials(org.springframework.security.authentication.BadCredentialsException ex) {
+        return buildResponse(HttpStatus.UNAUTHORIZED, "Unauthorized", ex.getMessage());
+    }
+
+    @ExceptionHandler(org.springframework.security.authentication.LockedException.class)
+    public ResponseEntity<Map<String, Object>> handleLocked(org.springframework.security.authentication.LockedException ex) {
+        return buildResponse(HttpStatus.LOCKED, "Locked", ex.getMessage());
+    }
+
+    @ExceptionHandler(org.springframework.security.authentication.DisabledException.class)
+    public ResponseEntity<Map<String, Object>> handleDisabled(org.springframework.security.authentication.DisabledException ex) {
+        return buildResponse(HttpStatus.FORBIDDEN, "Forbidden", ex.getMessage());
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
+        return buildResponse(HttpStatus.BAD_REQUEST, "Bad Request", ex.getMessage());
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalState(IllegalStateException ex) {
+        return buildResponse(HttpStatus.BAD_REQUEST, "Bad Request", ex.getMessage());
+    }
+
     @ExceptionHandler(ConvocatoriaBusinessException.class)
     public ResponseEntity<Map<String, Object>> handleBusiness(ConvocatoriaBusinessException ex) {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(Map.of(

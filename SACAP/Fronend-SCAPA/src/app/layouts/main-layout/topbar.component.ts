@@ -5,7 +5,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../core/services/auth.service';
-import { AdministradorService } from '../../core/services/administrador.service';
+import { PerfilService } from '../../core/services/perfil.service';
 import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
 import { ToastService } from '../../shared/components/toast/toast.service';
 
@@ -53,16 +53,14 @@ import { ToastService } from '../../shared/components/toast/toast.service';
       </div>
     </header>
 
-    <!-- MODAL DE PERFIL Y FOTO -->
+    <!-- MODAL DE PERFIL: FOTO, DATOS Y CONTRASEÑA (todos los roles) -->
     @if (isProfileModalOpen()) {
       <div class="modal-overlay animate-fade-in">
         <div class="modal-content">
           <div class="modal-header">
             <h3 class="modal-header__title">
               <lucide-icon name="user" class="w-5 h-5 text-[var(--c-dark-green)]"></lucide-icon>
-
-              <span>Configuración de Perfil</span>
-
+              <span>Mi Perfil</span>
             </h3>
             <button (click)="isProfileModalOpen.set(false)" class="btn-close">
               <lucide-icon name="x" class="w-5 h-5"></lucide-icon>
@@ -80,7 +78,7 @@ import { ToastService } from '../../shared/components/toast/toast.service';
                 }
               </div>
               <p class="avatar-preview__name">{{ authService.currentUser()?.correo }}</p>
-              <span class="avatar-preview__role">{{ authService.currentRole() || 'ADMINISTRADOR' }}</span>
+              <span class="avatar-preview__role">{{ authService.currentRole() || '' }}</span>
             </div>
 
             <!-- Carga de Archivo o URL -->
@@ -89,9 +87,7 @@ import { ToastService } from '../../shared/components/toast/toast.service';
                 <label class="upload-label">Subir imagen desde tu equipo</label>
                 <label class="upload-box">
                   <lucide-icon name="upload" class="w-4 h-4"></lucide-icon>
-
                   <span>Hacer clic para seleccionar archivo</span>
-
                   <input type="file" (change)="onFileSelected($event)" accept="image/*" style="display: none;">
                 </label>
               </div>
@@ -108,17 +104,44 @@ import { ToastService } from '../../shared/components/toast/toast.service';
                   </button>
                 </div>
               }
+
+              <button (click)="saveFoto()" class="btn-primary" style="margin-top: 8px;">
+                <lucide-icon name="save" class="w-4 h-4"></lucide-icon>
+                <span>Guardar foto</span>
+              </button>
+            </div>
+
+            <hr class="profile-modal-divider">
+
+            <!-- Datos personales -->
+            <div class="modal-upload-section">
+              <label class="upload-label">Datos personales</label>
+              <input type="text" [(ngModel)]="datosNombres" placeholder="Nombres" class="upload-input-text">
+              <input type="text" [(ngModel)]="datosApellidos" placeholder="Apellidos" class="upload-input-text">
+              <input type="text" [(ngModel)]="datosTelefono" placeholder="Teléfono" class="upload-input-text">
+              <button (click)="saveDatos()" class="btn-primary" style="margin-top: 8px;">
+                <lucide-icon name="save" class="w-4 h-4"></lucide-icon>
+                <span>Guardar datos</span>
+              </button>
+            </div>
+
+            <hr class="profile-modal-divider">
+
+            <!-- Cambiar contraseña -->
+            <div class="modal-upload-section">
+              <label class="upload-label">Cambiar contraseña</label>
+              <input type="password" [(ngModel)]="contrasenaActual" placeholder="Contraseña actual" class="upload-input-text">
+              <input type="password" [(ngModel)]="contrasenaNueva" placeholder="Nueva contraseña" class="upload-input-text">
+              <input type="password" [(ngModel)]="contrasenaConfirmar" placeholder="Confirmar nueva contraseña" class="upload-input-text">
+              <button (click)="cambiarContrasena()" class="btn-primary" style="margin-top: 8px;">
+                <lucide-icon name="key" class="w-4 h-4"></lucide-icon>
+                <span>Cambiar contraseña</span>
+              </button>
             </div>
           </div>
 
           <div class="modal-footer">
-            <button (click)="isProfileModalOpen.set(false)" class="btn-secondary">Cancelar</button>
-
-            <button (click)="saveFoto()" class="btn-primary" style="margin-top: 0;">
-
-              <lucide-icon name="save" class="w-4 h-4"></lucide-icon>
-              <span>Guardar</span>
-            </button>
+            <button (click)="isProfileModalOpen.set(false)" class="btn-secondary">Cerrar</button>
           </div>
         </div>
       </div>
@@ -127,7 +150,7 @@ import { ToastService } from '../../shared/components/toast/toast.service';
 })
 export class TopbarComponent {
   authService = inject(AuthService);
-  private adminService = inject(AdministradorService);
+  private perfilService = inject(PerfilService);
   private router = inject(Router);
   toast = inject(ToastService);
 
@@ -136,11 +159,13 @@ export class TopbarComponent {
   savedPhoto = signal<string | undefined>(undefined);
   fotoUrl = '';
 
-  /** Clave única de localStorage por usuario logueado para aislar fotos entre perfiles */
-  private getPhotoKey(): string {
-    const correo = this.authService.currentUser()?.correo || 'guest';
-    return `sacpa_foto_${correo}`;
-  }
+  datosNombres = '';
+  datosApellidos = '';
+  datosTelefono = '';
+
+  contrasenaActual = '';
+  contrasenaNueva = '';
+  contrasenaConfirmar = '';
 
   constructor() {
     this.router.events.pipe(
@@ -149,12 +174,18 @@ export class TopbarComponent {
       this.currentUrl.set(event.urlAfterRedirects);
     });
 
-    // Cargar la foto del usuario actual al iniciar (clave única por correo)
-    const key = this.getPhotoKey();
-    const fotoGuardada = localStorage.getItem(key);
-    if (fotoGuardada) {
-      this.savedPhoto.set(fotoGuardada);
-    }
+    // El servidor (seguridad.usuario) es la fuente de verdad para cualquier rol;
+    // se carga una vez al iniciar sesión para que el avatar del topbar ya
+    // muestre la foto/datos reales sin depender de que el usuario abra el modal.
+    this.perfilService.obtenerMiPerfil().subscribe({
+      next: perfil => {
+        this.savedPhoto.set(perfil.fotoPerfil || undefined);
+        this.datosNombres = perfil.nombres || '';
+        this.datosApellidos = perfil.apellidos || '';
+        this.datosTelefono = perfil.telefono || '';
+      },
+      error: () => {} // Sin bloquear el resto del topbar si esto falla
+    });
   }
 
   currentRouteInfo = computed(() => {
@@ -233,23 +264,45 @@ export class TopbarComponent {
   }
 
   saveFoto(): void {
-    const usrId = this.authService.currentUser()?.idUsuario || 1;
-    this.adminService.actualizarFoto(usrId, this.fotoUrl).subscribe({
+    this.perfilService.actualizarMiFoto(this.fotoUrl).subscribe({
       next: () => {
-        // Guardar en localStorage con clave única por usuario
-        const key = this.getPhotoKey();
-        if (this.fotoUrl) {
-          localStorage.setItem(key, this.fotoUrl);
-        } else {
-          localStorage.removeItem(key);
-        }
         this.savedPhoto.set(this.fotoUrl || undefined);
-        this.isProfileModalOpen.set(false);
-        this.toast.success('Foto actualizada', 'Tu foto de perfil ha sido guardada y sincronizada con el servidor.');
+        this.toast.success('Foto actualizada', 'Tu foto de perfil ha sido guardada.');
       },
-      error: () => {
-        this.toast.error('Error', 'No se pudo guardar la foto en el servidor.');
+      error: (err) => {
+        this.toast.error('Error', err?.error?.message || 'No se pudo guardar la foto en el servidor.');
       }
+    });
+  }
+
+  saveDatos(): void {
+    this.perfilService.actualizarMiPerfil({
+      nombres: this.datosNombres,
+      apellidos: this.datosApellidos,
+      telefono: this.datosTelefono
+    }).subscribe({
+      next: () => this.toast.success('Datos actualizados', 'Tu información personal fue guardada.'),
+      error: (err) => this.toast.error('Error', err?.error?.message || 'No se pudieron guardar tus datos.')
+    });
+  }
+
+  cambiarContrasena(): void {
+    if (!this.contrasenaActual || !this.contrasenaNueva) {
+      this.toast.warning('Faltan datos', 'Completa la contraseña actual y la nueva.');
+      return;
+    }
+    if (this.contrasenaNueva !== this.contrasenaConfirmar) {
+      this.toast.warning('No coinciden', 'La nueva contraseña y su confirmación no son iguales.');
+      return;
+    }
+    this.perfilService.cambiarMiContrasena(this.contrasenaActual, this.contrasenaNueva).subscribe({
+      next: () => {
+        this.toast.success('Contraseña actualizada', 'Tu contraseña fue cambiada correctamente.');
+        this.contrasenaActual = '';
+        this.contrasenaNueva = '';
+        this.contrasenaConfirmar = '';
+      },
+      error: (err) => this.toast.error('Error', err?.error?.message || 'No se pudo cambiar la contraseña.')
     });
   }
 }

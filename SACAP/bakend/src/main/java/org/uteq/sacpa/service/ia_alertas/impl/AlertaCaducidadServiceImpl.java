@@ -22,6 +22,7 @@ import org.uteq.sacpa.entity.ia_alertas.SugerenciaIA;
 import org.uteq.sacpa.entity.ia_alertas.TemporadaAgricola;
 import org.uteq.sacpa.entity.ia_alertas.ReglaNegocioIA;
 import org.uteq.sacpa.entity.catalogos.CatNivelAlerta;
+import org.uteq.sacpa.entity.entidades.ProveedorProducto;
 import org.uteq.sacpa.entity.inventario.Lote;
 import org.uteq.sacpa.repository.catalogos.ICatEstadoAlertaRepository;
 import org.uteq.sacpa.repository.catalogos.ICatEstadoAprobacionRepository;
@@ -34,10 +35,12 @@ import org.uteq.sacpa.repository.ia_alertas.IModeloIARepository;
 import org.uteq.sacpa.repository.ia_alertas.ISugerenciaIARepository;
 import org.uteq.sacpa.repository.ia_alertas.ITemporadaAgricolaRepository;
 import org.uteq.sacpa.repository.ia_alertas.IReglaNegocioIARepository;
+import org.uteq.sacpa.repository.entidades.IProveedorProductoRepository;
 import org.uteq.sacpa.repository.inventario.ILoteRepository;
 import org.uteq.sacpa.service.ia_alertas.IAlertaCaducidadService;
 import org.uteq.sacpa.service.ia_alertas.IMotorSugerenciaIAService;
 import org.uteq.sacpa.service.ia_alertas.IPromocionService;
+import org.uteq.sacpa.service.notificacion.EmailService;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -72,6 +75,8 @@ public class AlertaCaducidadServiceImpl implements IAlertaCaducidadService {
     private final IPromocionService promocionService;
     private final IReglaNegocioIARepository reglaNegocioIARepository;
     private final ILoteRepository loteRepository;
+    private final IProveedorProductoRepository proveedorProductoRepository;
+    private final EmailService emailService;
     private final JdbcTemplate jdbcTemplate;
 
     @Override
@@ -94,7 +99,7 @@ public class AlertaCaducidadServiceImpl implements IAlertaCaducidadService {
     @Transactional
     public Page<AlertaCaducidadResponseDTO> listarAlertasActivas(Integer idEstadoActivo, Pageable pageable) {
         sincronizarAlertasAutomaticas();
-        return alertaRepository.findAlertasActivas(idEstadoActivo, pageable)
+        return alertaRepository.findAlertasActivas(idEstadoActivo, ID_ESTADO_LOTE_DISPONIBLE, pageable)
                 .map(a -> AlertaCaducidadResponseDTO.from(a, sugerenciaDescuentoEstimado(a)));
     }
 
@@ -102,7 +107,7 @@ public class AlertaCaducidadServiceImpl implements IAlertaCaducidadService {
     @Transactional
     public Page<AlertaCaducidadResponseDTO> listarAlertasActivasPorAlmacen(Integer idEstadoActivo, Integer idAlmacen, Pageable pageable) {
         sincronizarAlertasAutomaticas();
-        return alertaRepository.findAlertasActivasPorAlmacen(idEstadoActivo, idAlmacen, pageable)
+        return alertaRepository.findAlertasActivasPorAlmacen(idEstadoActivo, ID_ESTADO_LOTE_DISPONIBLE, idAlmacen, pageable)
                 .map(a -> AlertaCaducidadResponseDTO.from(a, sugerenciaDescuentoEstimado(a)));
     }
 
@@ -147,6 +152,9 @@ public class AlertaCaducidadServiceImpl implements IAlertaCaducidadService {
 
             if (yaVencido) {
                 movidoACaducado = marcarLoteComoCaducado(lote);
+                if (movidoACaducado) {
+                    notificarProveedoresLoteCaducado(lote);
+                }
             }
 
             if (lotesConAlertaPrevia.contains(lote.getIdLote())) continue;
@@ -180,6 +188,26 @@ public class AlertaCaducidadServiceImpl implements IAlertaCaducidadService {
         lote.setIdEstadoLote(idCaducado);
         loteRepository.save(lote);
         return true;
+    }
+
+    /**
+     * AGROCALIDAD Res. 0227, Anexo 1 punto 23: el titular del registro/proveedor debe ser
+     * notificado cuando su producto caduca en bodega, para coordinar retiro/disposición.
+     * Un producto puede tener varios proveedores activos (ProveedorProducto); se notifica a todos.
+     */
+    private void notificarProveedoresLoteCaducado(Lote lote) {
+        if (lote.getProducto() == null) return;
+        List<ProveedorProducto> proveedores = proveedorProductoRepository.findByProducto_IdProducto(lote.getProducto().getIdProducto());
+        for (ProveedorProducto pp : proveedores) {
+            emailService.enviarNotificacionLoteCaducado(
+                    pp.getProveedor().getCorreoContacto(),
+                    pp.getProveedor().getNombreRepresentante(),
+                    lote.getProducto().getNombre(),
+                    lote.getNumeroLote(),
+                    lote.getFechaVencimiento(),
+                    lote.getCantidadActual()
+            );
+        }
     }
 
     private void crearAlertaJdbc(String mensaje, Integer idLote, Integer idNivelAlerta, Integer idEstado) {

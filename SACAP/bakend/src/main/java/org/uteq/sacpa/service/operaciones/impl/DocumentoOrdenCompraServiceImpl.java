@@ -33,13 +33,7 @@ public class DocumentoOrdenCompraServiceImpl implements IDocumentoOrdenCompraSer
         OrdenCompra ordenCompra = ordenCompraRepo.findById(idOrdenCompra)
                 .orElseThrow(() -> new RuntimeException("Orden de compra no encontrada: " + idOrdenCompra));
 
-        // Validación de tipo de archivo (solo PDF, JPG, PNG)
-        String contentType = archivo.getContentType();
-        if (contentType == null || (!contentType.equals("application/pdf") && 
-                                    !contentType.equals("image/jpeg") && 
-                                    !contentType.equals("image/png"))) {
-            throw new RuntimeException("Tipo de archivo no permitido. Solo se aceptan PDF, JPG y PNG.");
-        }
+        org.uteq.sacpa.util.ArchivoValidator.validarDocumento(archivo);
 
         String urlFinal = subirACloudinary(archivo, idOrdenCompra);
 

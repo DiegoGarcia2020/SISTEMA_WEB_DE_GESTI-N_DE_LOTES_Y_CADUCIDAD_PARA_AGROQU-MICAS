@@ -177,8 +177,21 @@
   border: 1px solid var(--c-sage-border);
   width: 100%;
   max-width: 400px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.modal-body {
+  overflow-y: auto;
+}
+
+.profile-modal-divider {
+  border: none;
+  border-top: 1px solid var(--c-sage-border);
+  margin: 0;
 }
 
 .modal-header {

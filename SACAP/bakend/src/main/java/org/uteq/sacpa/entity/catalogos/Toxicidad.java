@@ -22,4 +22,10 @@ public class Toxicidad {
 
     @Column(name = "descripcion", length = 255)
     private String descripcion;
+
+    @Column(name = "codigo_oms", length = 5)
+    private String codigoOms;
+
+    @Column(name = "requiere_receta", nullable = false)
+    private Boolean requiereReceta;
 }

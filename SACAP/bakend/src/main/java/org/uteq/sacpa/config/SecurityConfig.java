@@ -41,6 +41,11 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    /** Fuerza bruta / credential stuffing: tras este número de intentos fallidos consecutivos
+     *  se bloquea la cuenta temporalmente (ver authenticationProvider()). */
+    private static final int MAX_INTENTOS_FALLIDOS = 5;
+    private static final long MINUTOS_BLOQUEO = 15;
+
     private final JwtService jwtService;
     private final IUsuarioRepository usuarioRepository;
 
@@ -59,14 +64,39 @@ public class SecurityConfig {
             public Authentication authenticate(Authentication authentication) throws AuthenticationException {
                 String username = authentication.getName();
                 String password = authentication.getCredentials().toString();
-                UserDetails user = userDetailsService().loadUserByUsername(username);
+                UsuarioPrincipal user = (UsuarioPrincipal) userDetailsService().loadUserByUsername(username);
+
+                if (!user.isAccountNonLocked()) {
+                    long minutosRestantes = java.time.Duration.between(
+                            java.time.LocalDateTime.now(), user.getUsuario().getBloqueadoHasta()).toMinutes() + 1;
+                    throw new LockedException("Cuenta bloqueada temporalmente por múltiples intentos fallidos. "
+                            + "Intente de nuevo en " + minutosRestantes + " minuto(s).");
+                }
+
                 if (!passwordEncoder().matches(password, user.getPassword())) {
+                    registrarIntentoFallido(user.getUsuario());
                     throw new BadCredentialsException("Contrasena incorrecta");
                 }
                 if (!user.isEnabled()) {
                     throw new DisabledException("La cuenta esta inactiva");
                 }
+
+                if (user.getUsuario().getIntentosFallidos() != null && user.getUsuario().getIntentosFallidos() > 0) {
+                    user.getUsuario().setIntentosFallidos(0);
+                    user.getUsuario().setBloqueadoHasta(null);
+                    usuarioRepository.save(user.getUsuario());
+                }
+
                 return new UsernamePasswordAuthenticationToken(user, password, user.getAuthorities());
+            }
+
+            private void registrarIntentoFallido(org.uteq.sacpa.entity.seguridad.Usuario usuario) {
+                int intentos = (usuario.getIntentosFallidos() == null ? 0 : usuario.getIntentosFallidos()) + 1;
+                usuario.setIntentosFallidos(intentos);
+                if (intentos >= MAX_INTENTOS_FALLIDOS) {
+                    usuario.setBloqueadoHasta(java.time.LocalDateTime.now().plusMinutes(MINUTOS_BLOQUEO));
+                }
+                usuarioRepository.save(usuario);
             }
 
             @Override
@@ -92,11 +122,28 @@ public class SecurityConfig {
     }
 
     @Bean
+    public org.uteq.sacpa.security.RateLimitFilter rateLimitFilter() {
+        return new org.uteq.sacpa.security.RateLimitFilter();
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            // Defensa en profundidad a nivel de cabeceras HTTP (Spring Security ya aplica
+            // X-Content-Type-Options/X-Frame-Options por defecto; se dejan explícitos aquí
+            // más HSTS y Referrer-Policy, que no vienen activados por defecto).
+            .headers(headers -> headers
+                .frameOptions(frame -> frame.deny())
+                .contentTypeOptions(withDefaults -> {})
+                .referrerPolicy(referrer -> referrer.policy(
+                        org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+                .httpStrictTransportSecurity(hsts -> hsts
+                        .includeSubDomains(true)
+                        .maxAgeInSeconds(31536000))
+            )
             .authorizeHttpRequests(auth -> auth
                 // Publico o con token previo: login, seleccion de rol, cambio de contraseña y solicitud de registro
                 .requestMatchers(
@@ -119,8 +166,15 @@ public class SecurityConfig {
                     "/api/roles/**",
                     "/api/seguridad/**",
                     "/api/ia/modelos/**",
-                    "/api/ia/reglas/**"
+                    "/api/ia/reglas/**",
+                    "/api/admin/**"
                 ).hasAnyAuthority("ADMINISTRADOR")
+
+                // Configuracion global: la lectura (GET, ej. IVA global para el formulario de
+                // productos) queda abierta a cualquier autenticado, pero modificarla (PUT — IVA
+                // global, proveedor de IA activo) es solo ADMINISTRADOR.
+                .requestMatchers(HttpMethod.PUT, "/api/configuracion/**").hasAnyAuthority("ADMINISTRADOR")
+                .requestMatchers("/api/configuracion/**").authenticated()
 
                 // ADMINISTRADOR — gerencia (reportes tiene @PreAuthorize por endpoint)
                 .requestMatchers(
@@ -219,7 +273,8 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())
-            .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(rateLimitFilter(), JwtAuthenticationFilter.class);
 
         return http.build();
     }

@@ -2,6 +2,7 @@ package org.uteq.sacpa.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.uteq.sacpa.service.seguridad.IRespaldoService;
 
@@ -15,6 +16,7 @@ public class RespaldoController {
     private final IRespaldoService respaldoService;
 
     @PostMapping
+    @PreAuthorize("hasAuthority('ADMINISTRADOR')")
     public ResponseEntity<Map<String, Object>> generarRespaldo(@RequestBody Map<String, String> payload) {
         String tipo = payload.getOrDefault("tipo", "FULL");
         Map<String, Object> resultado = respaldoService.ejecutarRespaldo(tipo);

@@ -20,4 +20,8 @@ public class ProductoCatalogoDTO {
     private BigDecimal precio;
     private Integer stockDisponible;
     private LocalDate proximaCaducidad;
+
+    /** true si exige receta agrícola (toxicidad Ia/Ib o venta restringida) para poder venderse. */
+    private Boolean requiereReceta;
+    private String codigoOmsToxicidad;
 }

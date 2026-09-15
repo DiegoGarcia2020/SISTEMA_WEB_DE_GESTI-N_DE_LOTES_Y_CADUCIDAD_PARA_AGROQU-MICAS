@@ -33,4 +33,7 @@ public class DetalleVentaIARequestDTO {
     @DecimalMin(value = "0.0", message = "El descuento no puede ser negativo")
     @DecimalMax(value = "100.0", message = "El descuento no puede superar 100%")
     private BigDecimal descuentoPct;
+
+    /** Obligatorio cuando el producto exige receta agrícola (toxicidad Ia/Ib o venta restringida). */
+    private Integer idReceta;
 }

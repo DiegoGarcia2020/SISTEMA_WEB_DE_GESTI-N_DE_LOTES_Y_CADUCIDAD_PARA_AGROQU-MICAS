@@ -57,6 +57,32 @@ export interface DetalleVentaRequest {
   esComboIA?: boolean;
   idPromocion?: number | null;
   descuentoPct?: number | null;
+  idReceta?: number | null;
+}
+
+export interface RecetaAgricolaDTO {
+  idReceta: number;
+  numeroAutorizacion: string;
+  idCliente: number;
+  nombreFinca: string;
+  idProducto: number;
+  nombreProducto: string;
+  nombreProfesional: string;
+  registroProfesional?: string;
+  documentoUrl?: string;
+  fechaEmision: string;
+  usada: boolean;
+  fechaUso?: string;
+}
+
+export interface RecetaAgricolaCreateRequest {
+  numeroAutorizacion: string;
+  idCliente: number;
+  idProducto: number;
+  nombreProfesional: string;
+  registroProfesional?: string;
+  documentoUrl?: string;
+  fechaEmision: string;
 }
 
 export interface VentaCreateRequest {
@@ -109,6 +135,9 @@ export interface CarritoItem {
   descuentoPct?: number;
   idLote?: number;
   numeroLote?: string;
+  requiereReceta?: boolean;
+  codigoOmsToxicidad?: string;
+  idReceta?: number | null;
 }
 
 export interface ProductoCatalogo {
@@ -119,5 +148,7 @@ export interface ProductoCatalogo {
   precio: number;
   stockDisponible: number;
   proximaCaducidad: string;
+  requiereReceta?: boolean;
+  codigoOmsToxicidad?: string;
 }
 

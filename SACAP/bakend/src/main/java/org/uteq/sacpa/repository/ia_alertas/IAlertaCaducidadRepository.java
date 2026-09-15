@@ -16,22 +16,28 @@ import java.util.List;
  */
 public interface IAlertaCaducidadRepository extends JpaRepository<AlertaCaducidad, Integer> {
 
-    /** Alertas activas (no descartadas) */
-    @Query(value = "SELECT a FROM AlertaCaducidad a JOIN FETCH a.lote l JOIN FETCH a.nivelAlerta n WHERE a.estado.idEstadoAlerta = :idEstadoActivo ORDER BY l.fechaVencimiento ASC",
-           countQuery = "SELECT count(a) FROM AlertaCaducidad a WHERE a.estado.idEstadoAlerta = :idEstadoActivo")
-    Page<AlertaCaducidad> findAlertasActivas(@Param("idEstadoActivo") Integer idEstadoActivo, Pageable pageable);
+    /**
+     * Alertas activas (no descartadas) de lotes que TODAVIA son stock vendible.
+     * Un lote ya CADUCADO conserva su alerta historica en estado ACTIVA (nadie la cierra
+     * automaticamente al transicionar el lote), asi que sin este filtro el listado -y con el
+     * las pantallas de Kitting/Combos que se arman sobre el- seguia ofreciendo en promocion
+     * lotes que el propio sistema ya habia sacado de circulacion. Ver AlertaCaducidadServiceImpl.
+     */
+    @Query(value = "SELECT a FROM AlertaCaducidad a JOIN FETCH a.lote l JOIN FETCH a.nivelAlerta n WHERE a.estado.idEstadoAlerta = :idEstadoActivo AND l.idEstadoLote = :idEstadoLoteDisponible ORDER BY l.fechaVencimiento ASC",
+           countQuery = "SELECT count(a) FROM AlertaCaducidad a JOIN a.lote l WHERE a.estado.idEstadoAlerta = :idEstadoActivo AND l.idEstadoLote = :idEstadoLoteDisponible")
+    Page<AlertaCaducidad> findAlertasActivas(@Param("idEstadoActivo") Integer idEstadoActivo, @Param("idEstadoLoteDisponible") Integer idEstadoLoteDisponible, Pageable pageable);
 
     /** Igual que findAlertasActivas pero acotado a un almacén (Bodeguero: solo mi bodega) */
     @Query(value = "SELECT a FROM AlertaCaducidad a JOIN FETCH a.lote l JOIN FETCH a.nivelAlerta n " +
            "LEFT JOIN l.ubicacion u LEFT JOIN u.estanteria e LEFT JOIN e.zona z LEFT JOIN z.almacen za " +
-           "WHERE a.estado.idEstadoAlerta = :idEstadoActivo " +
+           "WHERE a.estado.idEstadoAlerta = :idEstadoActivo AND l.idEstadoLote = :idEstadoLoteDisponible " +
            "AND ((u IS NOT NULL AND za.idAlmacen = :idAlmacen) OR (u IS NULL AND l.almacen.idAlmacen = :idAlmacen)) " +
            "ORDER BY l.fechaVencimiento ASC",
            countQuery = "SELECT count(a) FROM AlertaCaducidad a JOIN a.lote l " +
            "LEFT JOIN l.ubicacion u LEFT JOIN u.estanteria e LEFT JOIN e.zona z LEFT JOIN z.almacen za " +
-           "WHERE a.estado.idEstadoAlerta = :idEstadoActivo " +
+           "WHERE a.estado.idEstadoAlerta = :idEstadoActivo AND l.idEstadoLote = :idEstadoLoteDisponible " +
            "AND ((u IS NOT NULL AND za.idAlmacen = :idAlmacen) OR (u IS NULL AND l.almacen.idAlmacen = :idAlmacen))")
-    Page<AlertaCaducidad> findAlertasActivasPorAlmacen(@Param("idEstadoActivo") Integer idEstadoActivo, @Param("idAlmacen") Integer idAlmacen, Pageable pageable);
+    Page<AlertaCaducidad> findAlertasActivasPorAlmacen(@Param("idEstadoActivo") Integer idEstadoActivo, @Param("idEstadoLoteDisponible") Integer idEstadoLoteDisponible, @Param("idAlmacen") Integer idAlmacen, Pageable pageable);
 
     /** Alertas por nivel */
     @Query("SELECT a FROM AlertaCaducidad a WHERE a.nivelAlerta.idNivelAlerta = :idNivel AND a.estado.idEstadoAlerta = :idEstado")

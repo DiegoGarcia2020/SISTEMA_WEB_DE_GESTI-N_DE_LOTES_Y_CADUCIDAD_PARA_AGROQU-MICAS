@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.uteq.sacpa.entity.inventario.Producto;
 import org.uteq.sacpa.entity.inventario.Lote;
+import org.uteq.sacpa.entity.inventario.UbicacionInterna;
 
 import java.time.LocalDateTime;
 
@@ -46,4 +47,9 @@ public class DevolucionVenta {
 
     @Column(name = "fecha_recepcion")
     private LocalDateTime fechaRecepcion;
+
+    /** Ubicación física (en una zona es_cuarentena=true) para CUARENTENA/DESECHADO -- trazabilidad mientras se revisa. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_ubicacion_cuarentena")
+    private UbicacionInterna ubicacionCuarentena;
 }

@@ -33,6 +33,14 @@ export class CarritoService {
     this.items.update(list => list.filter(i => i.idProducto !== idProducto));
   }
 
+  asignarReceta(idProducto: number, idReceta: number) {
+    this.items.update(list => list.map(i => i.idProducto === idProducto ? { ...i, idReceta } : i));
+  }
+
+  /** Productos con receta pendiente: exigen receta pero aún no se les asignó una. */
+  itemsConRecetaPendiente = computed(() =>
+    this.items().filter(i => i.requiereReceta && !i.idReceta));
+
   vaciar() {
     this.items.set([]);
     this.clienteSeleccionado.set(null);

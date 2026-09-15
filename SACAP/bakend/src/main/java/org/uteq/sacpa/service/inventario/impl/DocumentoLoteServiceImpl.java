@@ -32,6 +32,7 @@ public class DocumentoLoteServiceImpl implements IDocumentoLoteService {
 
     @Override
     public DocumentoLoteResponseDTO subirDocumento(Integer idLote, MultipartFile archivo, String tipoDocumento) {
+        org.uteq.sacpa.util.ArchivoValidator.validarDocumento(archivo);
         String urlFinal = subirACloudinary(archivo, idLote);
 
         documentoRepo.crearDocumento(

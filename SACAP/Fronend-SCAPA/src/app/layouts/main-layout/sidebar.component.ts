@@ -58,6 +58,10 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
             <lucide-icon name="corner-up-left" class="nav-item__icon"></lucide-icon>
             @if (!colapsado()) { <span>Devoluciones Pendientes</span> }
           </a>
+          <a routerLink="/bodega/temperatura" routerLinkActive="active" class="nav-item" title="Control de Temperatura">
+            <lucide-icon name="thermometer" class="nav-item__icon"></lucide-icon>
+            @if (!colapsado()) { <span>Control de Temperatura</span> }
+          </a>
           <a routerLink="/admin/bodega/topologia" routerLinkActive="active" class="nav-item" title="Topología de Bodega">
             <lucide-icon name="network" class="nav-item__icon"></lucide-icon>
             @if (!colapsado()) { <span>Topología de Bodega</span> }
@@ -233,6 +237,10 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
               <a routerLink="/admin/respaldos" routerLinkActive="active" class="nav-item nav-item--sub" title="Gestión de Respaldos">
                 <lucide-icon name="database-backup" class="nav-item__icon"></lucide-icon>
                 <span>Gestión de Respaldos</span>
+              </a>
+              <a routerLink="/admin/documentos-institucionales" routerLinkActive="active" class="nav-item nav-item--sub" title="Documentos Institucionales">
+                <lucide-icon name="file-badge" class="nav-item__icon"></lucide-icon>
+                <span>Documentos Institucionales</span>
               </a>
             </div>
           </div>

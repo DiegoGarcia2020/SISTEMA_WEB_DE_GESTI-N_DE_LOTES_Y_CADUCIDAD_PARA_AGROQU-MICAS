@@ -20,6 +20,46 @@ export interface ZonaDTO {
   idAlmacen:         number;
 }
 
+export interface RegistroTemperaturaDTO {
+  idRegistro: number;
+  idZona: number;
+  nombreZona: string;
+  temperatura: number;
+  humedadRelativa?: number;
+  fueraDeRango: boolean;
+  observaciones?: string;
+  nombreUsuarioRegistro?: string;
+  fechaHora: string;
+}
+
+export interface RegistroTemperaturaRequest {
+  idZona: number;
+  temperatura: number;
+  humedadRelativa?: number;
+  observaciones?: string;
+}
+
+export interface DocumentoInstitucionalDTO {
+  idDocumento: number;
+  idAlmacen?: number;
+  nombreAlmacen: string;
+  tipoDocumento: string;
+  nombreArchivo: string;
+  rutaArchivo: string;
+  fechaEmision?: string;
+  fechaVencimiento?: string;
+  vencido: boolean;
+  nombreUsuarioSubida?: string;
+  fechaSubida: string;
+}
+
+export interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+}
+
 export interface EstanteriaDTO {
   idEstanteria: number;
   codigo:       string;
@@ -308,6 +348,41 @@ export class InventarioService {
 
   getUbicacionPorQr(codigoQr: string): Observable<UbicacionDetalleQrDTO> {
     return this.http.get<UbicacionDetalleQrDTO>(`${this.apiUrl}/almacenes/ubicaciones/qr/${codigoQr}`);
+  }
+
+  // ── Registro de Temperatura/Humedad por Zona (AGROCALIDAD Res. 0227, Anexo 1 punto 20) ──
+
+  registrarTemperatura(data: RegistroTemperaturaRequest): Observable<RegistroTemperaturaDTO> {
+    return this.http.post<RegistroTemperaturaDTO>(`${this.apiUrl}/registros-temperatura`, data);
+  }
+
+  historialTemperaturaPorAlmacen(idAlmacen: number, page = 0, size = 20): Observable<PageResponse<RegistroTemperaturaDTO>> {
+    return this.http.get<PageResponse<RegistroTemperaturaDTO>>(
+      `${this.apiUrl}/registros-temperatura/almacen/${idAlmacen}?page=${page}&size=${size}&sort=fechaHora,desc`
+    );
+  }
+
+  // ── Documentos Institucionales (permiso AGROCALIDAD, LUAE, RUC, etc.) ──
+
+  listarDocumentosInstitucionales(idAlmacen?: number | null): Observable<DocumentoInstitucionalDTO[]> {
+    const qs = idAlmacen ? `?idAlmacen=${idAlmacen}` : '';
+    return this.http.get<DocumentoInstitucionalDTO[]>(`${this.apiUrl}/documentos-institucionales${qs}`).pipe(
+      catchError(e => e.status === 0 || e.status === 404 ? of([]) : throwError(() => e))
+    );
+  }
+
+  subirDocumentoInstitucional(archivo: File, tipoDocumento: string, idAlmacen: number | null, fechaEmision: string | null, fechaVencimiento: string | null): Observable<DocumentoInstitucionalDTO> {
+    const form = new FormData();
+    form.append('archivo', archivo);
+    form.append('tipoDocumento', tipoDocumento);
+    if (idAlmacen) form.append('idAlmacen', String(idAlmacen));
+    if (fechaEmision) form.append('fechaEmision', fechaEmision);
+    if (fechaVencimiento) form.append('fechaVencimiento', fechaVencimiento);
+    return this.http.post<DocumentoInstitucionalDTO>(`${this.apiUrl}/documentos-institucionales`, form);
+  }
+
+  eliminarDocumentoInstitucional(idDocumento: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/documentos-institucionales/${idDocumento}`);
   }
 
   // ── Módulo 2: Configuración global — Bodegas y Supervisores (Admin) ──

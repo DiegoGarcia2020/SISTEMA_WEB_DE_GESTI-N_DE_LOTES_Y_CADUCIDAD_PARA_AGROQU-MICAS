@@ -219,6 +219,19 @@ export class ReportesDashboardComponent implements OnInit {
             rolesPermitidos: ['ADMINISTRADOR']
           }
         ]
+      },
+      {
+        nombre: 'G. Cumplimiento Regulatorio',
+        links: [
+          {
+            id: 'recetas-agricolas',
+            categoria: 'regulatorio',
+            titulo: 'Archivo de Recetas Agrícolas',
+            descripcion: 'Recetas de plaguicidas Ia/Ib y venta restringida (AGROCALIDAD, reporte semestral).',
+            icon: 'file-text',
+            rolesPermitidos: ['ADMINISTRADOR', 'SUPERVISOR']
+          }
+        ]
       }
     ];
 

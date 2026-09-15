@@ -48,6 +48,11 @@ public class Producto {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_formulacion") private Formulacion formulacion;
 
+    /** Plaguicidas de venta restringida (Paraquat y mezclas, Carbosulfán, etc.) que exigen
+     *  receta agrícola aunque su categoría toxicológica por sí sola no lo requiera
+     *  (AGROCALIDAD Resolución 0227, Anexo 6). */
+    @Column(name = "venta_restringida") private Boolean ventaRestringida;
+
     @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "producto_plaga", schema = "inventario",

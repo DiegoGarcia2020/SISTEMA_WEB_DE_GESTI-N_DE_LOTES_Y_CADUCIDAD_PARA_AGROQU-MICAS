@@ -18,6 +18,7 @@ import { GestionCatalogosComponent } from './features/admin/gestion-catalogos/ge
 import { AuditoriaComponent } from './features/admin/auditoria/auditoria.component';
 import { ConfiguracionComponent } from './features/admin/configuracion/configuracion.component';
 import { GestionRespaldosComponent } from './features/admin/gestion-respaldos/gestion-respaldos.component';
+import { DocumentosInstitucionalesComponent } from './features/admin/documentos-institucionales/documentos-institucionales.component';
 
 
 // Componentes por Rol (Bodega, Campo, Supervisor)
@@ -28,6 +29,7 @@ import { BodegaDespachosComponent } from './features/bodeguero/despachos/bodega-
 import { CampoDashboardComponent } from './features/tecnico-campo/campo-dashboard.component';
 import { HistorialDevolucionesComponent } from './features/tecnico-campo/historial-devoluciones.component';
 import { BodegueroDevolucionesComponent } from './features/bodeguero/bodeguero-devoluciones.component';
+import { RegistroTemperaturaComponent } from './features/bodeguero/registro-temperatura.component';
 
 import { TecnicoEntregasComponent } from './features/tecnico-campo/entregas/tecnico-entregas.component';
 import { SupervisorDashboardComponent } from './features/supervisor/supervisor-dashboard.component';
@@ -70,6 +72,7 @@ export const routes: Routes = [
       { path: 'despachos', component: BodegaDespachosComponent },
       { path: 'recepcion/:idOrden', component: ComprasRecepcionComponent },
       { path: 'devoluciones', component: BodegueroDevolucionesComponent },
+      { path: 'temperatura', component: RegistroTemperaturaComponent },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },
@@ -177,6 +180,12 @@ export const routes: Routes = [
         canActivate: [roleGuard],
         data: { roles: ['Administrador'] }
       },
+      {
+        path: 'documentos-institucionales',
+        component: DocumentosInstitucionalesComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['Administrador', 'Supervisor'] }
+      },
       // -- MÓDULO 2: TOPOLOGÍA Y GESTIÓN FÍSICA (Bodeguero & Admin) --
       {
         path: 'bodega/topologia',
@@ -192,6 +201,16 @@ export const routes: Routes = [
       },
       {
         path: 'bodega/auditoria-qr',
+        component: AuditoriaQrComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['Administrador', 'Bodeguero'] }
+      },
+      {
+        // Destino real del QR impreso/generado: :codigo llega prellenado
+        // y el componente dispara la busqueda solo. Requiere login igual
+        // que el resto de /admin — evita exponer stock/ubicaciones a
+        // cualquiera que escanee el QR de un estante sin ser personal.
+        path: 'bodega/auditoria-qr/:codigo',
         component: AuditoriaQrComponent,
         canActivate: [roleGuard],
         data: { roles: ['Administrador', 'Bodeguero'] }

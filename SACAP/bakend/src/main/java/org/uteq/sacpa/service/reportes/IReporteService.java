@@ -34,4 +34,7 @@ public interface IReporteService {
 
     // F. Auditoria
     ReporteRespuestaDTO getAuditoriaAnulaciones(ReporteFiltrosDTO filtros);
+
+    // G. Cumplimiento Regulatorio
+    ReporteRespuestaDTO getRecetasAgricolas(ReporteFiltrosDTO filtros);
 }

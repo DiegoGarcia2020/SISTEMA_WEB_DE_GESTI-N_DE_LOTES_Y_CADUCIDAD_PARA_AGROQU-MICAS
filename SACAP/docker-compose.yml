@@ -1,0 +1,52 @@
+services:
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: SCAPAV2
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Solo corren en el PRIMER arranque (volumen vacio): 01_schema.sql
+      # crea las 71 tablas, 02_roles_privilegios.sql crea los roles agro_*
+      # y sus grants. Si ya tienes el volumen creado de una corrida previa,
+      # borralo con "docker compose down -v" para que se vuelvan a aplicar.
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  backend:
+    build: ./bakend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/SCAPAV2
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME}
+      SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GROQ_API_KEY: ${GROQ_API_KEY}
+      APP_FRONTEND_URL: ${APP_FRONTEND_URL:-http://localhost}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+  frontend:
+    build: ./Fronend-SCAPA
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  pgdata:

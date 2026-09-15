@@ -126,16 +126,16 @@ import { ToastService } from '../../shared/components/toast/toast.service';
               </p>
             </div>
 
-            @if (estadoInventarioSeleccionado === 'EMPAQUE_DANADO') {
+            @if (estadoInventarioSeleccionado === 'EMPAQUE_DANADO' || estadoInventarioSeleccionado === 'CUARENTENA' || estadoInventarioSeleccionado === 'DESECHADO') {
               <div class="form-group" style="margin-bottom: 1.25rem; padding: 0.875rem; background: #fefce8; border: 1px solid #fef08a; border-radius: 0.75rem;">
                 <label style="display: block; font-size: 0.8125rem; font-weight: 700; color: #854d0e; margin-bottom: 0.375rem; text-transform: uppercase;">
-                  Seleccionar Estantería / Ubicación Destino *
+                  Seleccionar Estantería / Ubicación de Cuarentena {{ estadoInventarioSeleccionado === 'EMPAQUE_DANADO' ? '*' : '(recomendado)' }}
                 </label>
                 @if (cargandoUbicaciones()) {
                   <p style="font-size: 0.8125rem; color: #713f12; margin: 0.25rem 0;">Cargando estanterías disponibles...</p>
                 } @else {
                   <select [(ngModel)]="idUbicacionSeleccionada" class="form-control" style="width: 100%; padding: 0.625rem; border: 1px solid #ca8a04; border-radius: 0.5rem; font-size: 0.875rem; background: white;">
-                    <option [ngValue]="null" disabled>Seleccione la estantería de cuarentena de destino...</option>
+                    <option [ngValue]="null">Sin ubicación asignada</option>
                     @for (ub of ubicacionesDisponibles(); track ub.idUbicacion) {
                       <option [ngValue]="ub.idUbicacion" [disabled]="ub.disponible < (devSeleccionada()?.cantidadDevuelta || 1)">
                         {{ ub.label }}
@@ -143,7 +143,11 @@ import { ToastService } from '../../shared/components/toast/toast.service';
                     }
                   </select>
                   <p style="font-size: 0.75rem; color: #854d0e; margin-top: 0.25rem;">
-                    Reintegrará este stock a la estantería seleccionada para productos con caja/empaque dañado.
+                    @if (estadoInventarioSeleccionado === 'EMPAQUE_DANADO') {
+                      Reintegrará este stock a la estantería seleccionada para productos con caja/empaque dañado.
+                    } @else {
+                      Registra dónde queda físicamente retenido el producto (trazabilidad), sin reintegrarlo al stock vendible.
+                    }
                   </p>
                 }
               </div>
@@ -261,7 +265,7 @@ export class BodegueroDevolucionesComponent implements OnInit {
       estadoInventario: this.estadoInventarioSeleccionado
     };
 
-    if (this.estadoInventarioSeleccionado === 'EMPAQUE_DANADO' && this.idUbicacionSeleccionada()) {
+    if (this.idUbicacionSeleccionada()) {
       payload.idUbicacionDestino = this.idUbicacionSeleccionada();
     }
 

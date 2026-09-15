@@ -85,9 +85,14 @@ public class VentaIAController {
         return ResponseEntity.ok(ventaService.misVentas(idUsuarioAutenticado()));
     }
 
+    /**
+     * IDOR corregido: antes cualquier Técnico autenticado podía leer la venta de OTRO
+     * técnico (con datos de cliente incluidos) con solo cambiar el idVenta en la URL.
+     * Ahora se exige ser el técnico dueño de la venta, o tener rol de supervisión.
+     */
     @GetMapping("/{idVenta}")
     public ResponseEntity<VentaIAResponseDTO> obtenerVenta(@PathVariable Integer idVenta) {
-        return ResponseEntity.ok(ventaService.obtenerVenta(idVenta));
+        return ResponseEntity.ok(ventaService.obtenerVenta(idVenta, idUsuarioAutenticado(), esRolDeSupervision()));
     }
 
     private Integer idUsuarioAutenticado() {
@@ -96,5 +101,12 @@ public class VentaIAController {
             return principal.getIdUsuario();
         }
         throw new IllegalStateException("No se encontró un usuario autenticado en el contexto de seguridad");
+    }
+
+    private boolean esRolDeSupervision() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) return false;
+        return auth.getAuthorities().stream().anyMatch(a ->
+                a.getAuthority().equals("ADMINISTRADOR") || a.getAuthority().equals("SUPERVISOR"));
     }
 }

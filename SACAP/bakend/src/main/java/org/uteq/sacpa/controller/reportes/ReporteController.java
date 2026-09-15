@@ -149,4 +149,11 @@ public class ReporteController {
     public ResponseEntity<ReporteRespuestaDTO> getAuditoriaAnulaciones(@ModelAttribute ReporteFiltrosDTO filtros) {
         return ResponseEntity.ok(reporteService.getAuditoriaAnulaciones(filtros));
     }
+
+    // G. Cumplimiento Regulatorio
+    @GetMapping("/regulatorio/recetas-agricolas")
+    @PreAuthorize("hasAnyAuthority('ADMINISTRADOR', 'SUPERVISOR')")
+    public ResponseEntity<ReporteRespuestaDTO> getRecetasAgricolas(@ModelAttribute ReporteFiltrosDTO filtros) {
+        return ResponseEntity.ok(reporteService.getRecetasAgricolas(filtros));
+    }
 }

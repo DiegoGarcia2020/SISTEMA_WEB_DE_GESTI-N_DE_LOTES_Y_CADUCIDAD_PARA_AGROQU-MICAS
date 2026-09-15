@@ -1,0 +1,6 @@
+target/
+.idea/
+.mvn/wrapper/maven-wrapper.jar
+respaldo/
+respaldos_bd/
+*.log

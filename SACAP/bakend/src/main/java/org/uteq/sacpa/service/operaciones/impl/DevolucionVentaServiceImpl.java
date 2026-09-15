@@ -98,8 +98,21 @@ public class DevolucionVentaServiceImpl implements IDevolucionVentaService {
         String estadoInventario = request.getEstadoInventario();
 
         devolucion.setEstadoLogistico(EstadoLogisticoDevolucion.RECIBIDO_BODEGA.name());
-        devolucion.setEstadoInventario(estadoInventario); // CUARENTENA, DISPONIBLE o DESECHADO
+        devolucion.setEstadoInventario(estadoInventario); // CUARENTENA, DISPONIBLE, EMPAQUE_DANADO o DESECHADO
         devolucion.setFechaRecepcion(LocalDateTime.now());
+
+        // CUARENTENA / DESECHADO no vuelven a stock vendible, pero deben quedar físicamente
+        // ubicados (AGROCALIDAD Res. 0227, Anexo 1 punto 12) en una zona marcada es_cuarentena,
+        // para que no se pierda la trazabilidad de dónde está el producto retenido.
+        if ((EstadoInventarioDevolucion.CUARENTENA.name().equals(estadoInventario) ||
+             EstadoInventarioDevolucion.DESECHADO.name().equals(estadoInventario))
+                && request.getIdUbicacionDestino() != null) {
+            org.uteq.sacpa.entity.inventario.UbicacionInterna ubicacionCuarentena =
+                    ubicacionRepository.findById(request.getIdUbicacionDestino())
+                            .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Ubicación de cuarentena no encontrada: " + request.getIdUbicacionDestino()));
+            validarZonaDeCuarentena(ubicacionCuarentena);
+            devolucion.setUbicacionCuarentena(ubicacionCuarentena);
+        }
 
         // Reintegro de stock y trazabilidad
         if (EstadoInventarioDevolucion.DISPONIBLE.name().equals(estadoInventario) ||
@@ -121,7 +134,14 @@ public class DevolucionVentaServiceImpl implements IDevolucionVentaService {
             if (idUbicacionDestino != null && (loteReintegro.getUbicacion() == null || !loteReintegro.getUbicacion().getIdUbicacion().equals(idUbicacionDestino))) {
                 org.uteq.sacpa.entity.inventario.UbicacionInterna nuevaUbicacion = ubicacionRepository.findById(idUbicacionDestino)
                         .orElseThrow(() -> new RuntimeException("Ubicación destino no encontrada: " + idUbicacionDestino));
-                
+
+                // Empaque dañado: producto en buen estado pero segregado hasta reempacar. Debe
+                // caer en una zona es_cuarentena igual que CUARENTENA -- antes esto solo lo
+                // garantizaba el filtro del combo en el frontend, no el backend.
+                if (EstadoInventarioDevolucion.EMPAQUE_DANADO.name().equals(estadoInventario)) {
+                    validarZonaDeCuarentena(nuevaUbicacion);
+                }
+
                 // Validar capacidad
                 int capacidadOcupada = 0;
                 for (Object[] row : loteRepository.sumCantidadActualAgrupadoPorUbicacion()) {
@@ -154,6 +174,17 @@ public class DevolucionVentaServiceImpl implements IDevolucionVentaService {
         return toResponseDTO(devolucionVentaRepository.save(devolucion));
     }
 
+    /** La ubicación destino de un producto retenido (cuarentena/empaque dañado) debe estar en una zona marcada es_cuarentena. */
+    private void validarZonaDeCuarentena(org.uteq.sacpa.entity.inventario.UbicacionInterna ubicacion) {
+        boolean esCuarentena = ubicacion.getEstanteria() != null
+                && ubicacion.getEstanteria().getZona() != null
+                && Boolean.TRUE.equals(ubicacion.getEstanteria().getZona().getEsCuarentena());
+        if (!esCuarentena) {
+            throw new org.uteq.sacpa.exception.BadRequestException("La ubicación seleccionada no pertenece a una zona de cuarentena. "
+                    + "Los productos retenidos deben ubicarse en una zona marcada como cuarentena.");
+        }
+    }
+
     private org.uteq.sacpa.dto.operaciones.DevolucionVentaResponseDTO toResponseDTO(DevolucionVenta d) {
         return org.uteq.sacpa.dto.operaciones.DevolucionVentaResponseDTO.builder()
                 .id(d.getId())
@@ -169,7 +200,14 @@ public class DevolucionVentaServiceImpl implements IDevolucionVentaService {
                 .estadoLogistico(d.getEstadoLogistico())
                 .estadoInventario(d.getEstadoInventario())
                 .fechaRecepcion(d.getFechaRecepcion())
+                .ubicacionCuarentena(formatearUbicacion(d.getUbicacionCuarentena()))
                 .build();
+    }
+
+    private String formatearUbicacion(org.uteq.sacpa.entity.inventario.UbicacionInterna u) {
+        if (u == null) return null;
+        String estanteria = u.getEstanteria() != null ? u.getEstanteria().getCodigo() : "?";
+        return estanteria + " - " + u.getNivel() + (u.getPosicion() != null ? "/" + u.getPosicion() : "");
     }
 
     /**

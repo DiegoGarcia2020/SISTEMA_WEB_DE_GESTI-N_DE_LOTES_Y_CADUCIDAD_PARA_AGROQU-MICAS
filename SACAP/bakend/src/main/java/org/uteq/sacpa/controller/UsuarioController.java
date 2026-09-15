@@ -74,7 +74,7 @@ public class UsuarioController {
 
     @PostMapping("/forzar-cierre/{username}")
     public ResponseEntity<Void> forzarCierreSesion(@PathVariable String username) {
-        messagingTemplate.convertAndSend("/topic/logout/" + username, 
+        messagingTemplate.convertAndSend("/topic/logout/" + username,
             (Object) Map.of("mensaje", "Tu sesión ha sido cerrada por un administrador."));
         return ResponseEntity.ok().build();
     }

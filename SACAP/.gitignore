@@ -1,0 +1,10 @@
+# Secretos locales — nunca deben commitearse (ver .env.example)
+.env
+.env.local
+.env.*.local
+
+# Respaldos de base de datos generados por la app
+bakend/respaldos_bd/
+
+# Script de arranque local con ruta de JDK y secretos de desarrollo propios de esta maquina
+bakend/start-dev.ps1

@@ -1,6 +1,7 @@
 import { Component, signal, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { InventarioService, UbicacionDetalleQrDTO } from '../../../core/services/inventario.service';
 
 @Component({
@@ -13,6 +14,7 @@ import { InventarioService, UbicacionDetalleQrDTO } from '../../../core/services
 export class AuditoriaQrComponent implements OnInit {
 
   private inventario = inject(InventarioService);
+  private route = inject(ActivatedRoute);
 
   // Escaneo manual / cámara
   codigoQrBusqueda = '';
@@ -70,7 +72,15 @@ export class AuditoriaQrComponent implements OnInit {
     return this.conteoFisicoReal - this.stockSistema;
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+    // Llegada directa desde un QR escaneado (/bodega/auditoria-qr/:codigo):
+    // prellena y busca sola, sin que el bodeguero tenga que tipear nada.
+    const codigo = this.route.snapshot.paramMap.get('codigo');
+    if (codigo) {
+      this.codigoQrBusqueda = codigo;
+      this.buscarPorQr();
+    }
+  }
 
   buscarPorQr() {
     if (!this.codigoQrBusqueda.trim()) return;

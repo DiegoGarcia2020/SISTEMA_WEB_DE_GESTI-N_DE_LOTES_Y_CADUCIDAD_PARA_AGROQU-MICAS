@@ -127,6 +127,8 @@ public class LoteServiceImpl implements ILoteService {
         UbicacionInterna ubicacion = ubicacionRepository.findById(dto.getIdUbicacion())
                 .orElseThrow(() -> new EntityNotFoundException("Ubicación no encontrada: " + dto.getIdUbicacion()));
 
+        validarIncompatibilidadQuimica(lote, ubicacion);
+
         // Validación de Capacidad de Almacenamiento
         int capMax = ubicacion.getCapacidadMaxima() != null ? ubicacion.getCapacidadMaxima() : 100;
         int capAct = ubicacion.getCapacidadActual() != null ? ubicacion.getCapacidadActual() : 0;
@@ -162,6 +164,8 @@ public class LoteServiceImpl implements ILoteService {
 
         UbicacionInterna ubicacion = ubicacionRepository.findById(idUbicacion)
                 .orElseThrow(() -> new EntityNotFoundException("Ubicación no encontrada: " + idUbicacion));
+
+        validarIncompatibilidadQuimica(lote, ubicacion);
 
         // 2. Validar que la capacidad actual + cantidad <= capacidad máxima
         int capMax = ubicacion.getCapacidadMaxima() != null ? ubicacion.getCapacidadMaxima() : 100;
@@ -206,6 +210,45 @@ public class LoteServiceImpl implements ILoteService {
         }
 
         return LoteResponseDTO.from(guardado);
+    }
+
+    /**
+     * AGROCALIDAD Res. 0227, Anexo 1 punto 17: la asignación de ubicación debe considerar
+     * incompatibilidad química. No se modela una matriz fina por ingrediente activo (no hay
+     * esa clasificación en el sistema); se aplica la segregación básica y mejor establecida
+     * (FAO/AGROCALIDAD): un PLAGUICIDA no puede compartir la misma ubicación física con
+     * FERTILIZANTE ni SEMILLA, y viceversa.
+     */
+    private void validarIncompatibilidadQuimica(Lote lote, UbicacionInterna ubicacion) {
+        String grupoNuevo = grupoDe(lote);
+        if (grupoNuevo == null) return;
+
+        List<Lote> ocupantes = loteRepository.findByUbicacion_IdUbicacion(ubicacion.getIdUbicacion());
+        for (Lote ocupante : ocupantes) {
+            if (ocupante.getIdLote().equals(lote.getIdLote())) continue;
+            String grupoOcupante = grupoDe(ocupante);
+            if (grupoOcupante == null) continue;
+            if (sonIncompatibles(grupoNuevo, grupoOcupante)) {
+                throw new IllegalArgumentException("Incompatibilidad química: no se puede ubicar '" + grupoNuevo
+                        + "' (" + lote.getProducto().getNombre() + ") junto a '" + grupoOcupante
+                        + "' (" + ocupante.getProducto().getNombre() + ") ya presente en esta ubicación. "
+                        + "Los plaguicidas deben almacenarse segregados de fertilizantes y semillas.");
+            }
+        }
+    }
+
+    private String grupoDe(Lote lote) {
+        return lote.getProducto() != null && lote.getProducto().getCategoria() != null
+                ? lote.getProducto().getCategoria().getGrupoAlmacenamiento()
+                : null;
+    }
+
+    private boolean sonIncompatibles(String grupoA, String grupoB) {
+        if (grupoA.equals(grupoB)) return false;
+        boolean unoEsPlaguicida = "PLAGUICIDA".equals(grupoA) || "PLAGUICIDA".equals(grupoB);
+        boolean otroEsSegregable = "FERTILIZANTE".equals(grupoA) || "SEMILLA".equals(grupoA)
+                || "FERTILIZANTE".equals(grupoB) || "SEMILLA".equals(grupoB);
+        return unoEsPlaguicida && otroEsSegregable;
     }
 
     // ── Consultas ────────────────────────────────────────────

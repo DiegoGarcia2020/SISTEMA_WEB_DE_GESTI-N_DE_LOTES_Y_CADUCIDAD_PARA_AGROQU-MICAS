@@ -107,6 +107,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
                 if (documento == null || documento.isEmpty()) {
                     throw new RuntimeException("El rol de Técnico de Campo requiere subir obligatoriamente el documento PDF de licencia en formato binario.");
                 }
+                org.uteq.sacpa.util.ArchivoValidator.validarDocumento(documento);
                 try {
                     byte[] bytes = documento.getBytes();
                     if (tecnico == null) {

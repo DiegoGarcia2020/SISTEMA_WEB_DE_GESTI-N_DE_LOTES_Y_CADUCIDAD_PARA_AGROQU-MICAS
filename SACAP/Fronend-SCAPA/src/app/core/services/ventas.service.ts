@@ -5,7 +5,8 @@ import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import {
   ClienteDTO, ClienteCreateRequest, SugerenciaComboDTO,
-  VentaCreateRequest, VentaDTO, VentaDashboardDTO, CultivoDTO, PlagaDTO, ProductoCatalogo
+  VentaCreateRequest, VentaDTO, VentaDashboardDTO, CultivoDTO, PlagaDTO, ProductoCatalogo,
+  RecetaAgricolaDTO, RecetaAgricolaCreateRequest
 } from '../models/ventas.model';
 
 export interface CategoriaDTO {
@@ -100,5 +101,16 @@ export class VentasService {
 
   obtenerVenta(idVenta: number): Observable<VentaDTO> {
     return this.http.get<VentaDTO>(`${this.apiUrl}/ventas/${idVenta}`);
+  }
+
+  // ── Recetas agrícolas (plaguicidas Ia/Ib y de venta restringida) ───────────
+  recetasDisponiblesDeCliente(idCliente: number): Observable<RecetaAgricolaDTO[]> {
+    return this.http.get<RecetaAgricolaDTO[]>(`${this.apiUrl}/recetas-agricolas/cliente/${idCliente}/disponibles`).pipe(
+      catchError(e => e.status === 0 || e.status === 404 ? of([]) : throwError(() => e))
+    );
+  }
+
+  registrarReceta(data: RecetaAgricolaCreateRequest): Observable<RecetaAgricolaDTO> {
+    return this.http.post<RecetaAgricolaDTO>(`${this.apiUrl}/recetas-agricolas`, data);
   }
 }

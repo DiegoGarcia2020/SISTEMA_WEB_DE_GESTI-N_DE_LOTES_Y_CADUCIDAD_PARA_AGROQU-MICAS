@@ -25,4 +25,5 @@ public class DevolucionVentaResponseDTO {
     private String estadoLogistico;
     private String estadoInventario;
     private LocalDateTime fechaRecepcion;
+    private String ubicacionCuarentena;
 }

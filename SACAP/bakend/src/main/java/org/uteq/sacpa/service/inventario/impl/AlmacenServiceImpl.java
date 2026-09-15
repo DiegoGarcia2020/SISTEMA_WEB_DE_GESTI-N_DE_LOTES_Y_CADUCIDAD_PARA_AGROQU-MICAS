@@ -2,6 +2,7 @@ package org.uteq.sacpa.service.inventario.impl;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityNotFoundException;
@@ -37,6 +38,9 @@ public class AlmacenServiceImpl implements IAlmacenService {
     private final IQrService                  qrService;
     private final ICiudadRepository           ciudadRepository;
     private final ISupervisorRepository       supervisorRepository;
+
+    @Value("${app.frontend-url:http://localhost:4200}")
+    private String frontendUrl;
 
     /**
      * Crea una bodega nueva (configuración global del Administrador).
@@ -300,9 +304,13 @@ public class AlmacenServiceImpl implements IAlmacenService {
                 .orElseThrow(() -> new EntityNotFoundException("Ubicación no encontrada: " + idUbicacion));
 
         String qrCode = u.getCodigoQr() != null ? u.getCodigoQr() : ("UBIC-EST" + (u.getEstanteria() != null ? u.getEstanteria().getIdEstanteria() : "0") + "-N" + u.getNivel() + "-P" + u.getPosicion());
-        String payloadJson = "{\"id_ubicacion\":" + u.getIdUbicacion() + ",\"codigo_qr\":\"" + qrCode + "\"}";
+        // Antes el QR codificaba JSON crudo ({"id_ubicacion":...}), que cualquier
+        // camara de celular fuera de la app mostraba como texto plano. Ahora
+        // codifica una URL: el celular abre el navegador y cae directo en la
+        // pantalla de Auditoria QR ya con los datos formateados.
+        String url = frontendUrl + "/admin/bodega/auditoria-qr/" + qrCode;
 
-        return qrService.generarQrBase64(payloadJson, 300, 300);
+        return qrService.generarQrBase64(url, 300, 300);
     }
 
     @Override

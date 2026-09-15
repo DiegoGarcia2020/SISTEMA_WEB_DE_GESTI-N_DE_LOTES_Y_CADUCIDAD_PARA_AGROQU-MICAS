@@ -50,6 +50,16 @@ public class Usuario {
     @Column(name = "ocupacion", length = 150)
     private String ocupacion;
 
+    @Column(name = "foto_perfil", columnDefinition = "TEXT")
+    private String fotoPerfil;
+
+    @Column(name = "intentos_fallidos", nullable = false)
+    @Builder.Default
+    private Integer intentosFallidos = 0;
+
+    @Column(name = "bloqueado_hasta")
+    private LocalDateTime bloqueadoHasta;
+
     @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<UsuarioRol> roles;
 }

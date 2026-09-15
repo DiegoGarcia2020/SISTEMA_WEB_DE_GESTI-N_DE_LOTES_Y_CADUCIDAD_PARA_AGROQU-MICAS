@@ -21,9 +21,12 @@ import org.uteq.sacpa.entity.entidades.Cliente;
 import org.uteq.sacpa.entity.ia_alertas.Promocion;
 import org.uteq.sacpa.entity.inventario.Categoria;
 import org.uteq.sacpa.entity.inventario.Lote;
+import org.uteq.sacpa.entity.inventario.Producto;
 import org.uteq.sacpa.entity.operaciones.DetalleVenta;
+import org.uteq.sacpa.entity.operaciones.RecetaAgricola;
 import org.uteq.sacpa.entity.operaciones.TecnicoCampo;
 import org.uteq.sacpa.entity.operaciones.Venta;
+import org.uteq.sacpa.exception.BadRequestException;
 import org.uteq.sacpa.repository.catalogos.ICatCultivoRepository;
 import org.uteq.sacpa.repository.catalogos.ICatEstadoPromocionRepository;
 import org.uteq.sacpa.repository.catalogos.ICatEstadoTemporadaRepository;
@@ -33,7 +36,9 @@ import org.uteq.sacpa.repository.ia_alertas.IPromocionRepository;
 import org.uteq.sacpa.repository.ia_alertas.ITemporadaAgricolaRepository;
 import org.uteq.sacpa.repository.inventario.ICategoriaRepository;
 import org.uteq.sacpa.repository.inventario.ILoteRepository;
+import org.uteq.sacpa.repository.inventario.IProductoRepository;
 import org.uteq.sacpa.repository.operaciones.IDetalleVentaRepository;
+import org.uteq.sacpa.repository.operaciones.IRecetaAgricolaRepository;
 import org.uteq.sacpa.repository.operaciones.ITecnicoCampoRepository;
 import org.uteq.sacpa.repository.operaciones.VentaRepository;
 import org.uteq.sacpa.service.ia_alertas.IMotorSugerenciaIAService;
@@ -64,6 +69,8 @@ public class VentaIAServiceImpl implements IVentaIAService {
     private final ICategoriaRepository categoriaRepository;
     private final ICatCultivoRepository catCultivoRepository;
     private final ICatPlagaRepository catPlagaRepository;
+    private final IProductoRepository productoRepository;
+    private final IRecetaAgricolaRepository recetaAgricolaRepository;
 
     private static final int ID_ESTADO_ACTIVO = 1;
 
@@ -150,14 +157,19 @@ public class VentaIAServiceImpl implements IVentaIAService {
             if (disponible <= 0) continue;
 
             if (!catalogoMap.containsKey(idProd)) {
+                Producto p = lote.getProducto();
+                boolean requiereReceta = Boolean.TRUE.equals(p.getVentaRestringida())
+                        || (p.getToxicidad() != null && Boolean.TRUE.equals(p.getToxicidad().getRequiereReceta()));
                 catalogoMap.put(idProd, ProductoCatalogoDTO.builder()
                         .idProducto(idProd)
-                        .nombre(lote.getProducto().getNombre())
-                        .descripcion(lote.getProducto().getDescripcion())
-                        .unidadMedida(lote.getProducto().getUnidadMedida())
-                        .precio(lote.getProducto().getPrecio())
+                        .nombre(p.getNombre())
+                        .descripcion(p.getDescripcion())
+                        .unidadMedida(p.getUnidadMedida())
+                        .precio(p.getPrecio())
                         .stockDisponible(disponible)
                         .proximaCaducidad(lote.getFechaVencimiento()) // El primero en orden FEFO
+                        .requiereReceta(requiereReceta)
+                        .codigoOmsToxicidad(p.getToxicidad() != null ? p.getToxicidad().getCodigoOms() : null)
                         .build());
             } else {
                 ProductoCatalogoDTO dto = catalogoMap.get(idProd);
@@ -190,6 +202,32 @@ public class VentaIAServiceImpl implements IVentaIAService {
 
         Cliente cliente = clienteRepository.findById(dto.getIdCliente())
                 .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado: " + dto.getIdCliente()));
+
+        // Receta agrícola (AGROCALIDAD Res. 0227, Anexo 1 punto 25 y Anexo 6): plaguicidas
+        // Ia/Ib o marcados como de venta restringida no pueden salir sin una receta firmada
+        // por un Ing. Agrónomo/Agropecuario, ligada a este cliente y este producto.
+        List<RecetaAgricola> recetasAUsar = new ArrayList<>();
+        for (DetalleVentaIARequestDTO linea : dto.getLineas()) {
+            Producto producto = productoRepository.findById(linea.getIdProducto())
+                    .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado: " + linea.getIdProducto()));
+
+            boolean exigeReceta = Boolean.TRUE.equals(producto.getVentaRestringida())
+                    || (producto.getToxicidad() != null && Boolean.TRUE.equals(producto.getToxicidad().getRequiereReceta()));
+
+            if (exigeReceta) {
+                if (linea.getIdReceta() == null) {
+                    throw new BadRequestException("El producto '" + producto.getNombre()
+                            + "' requiere receta agrícola (categoría toxicológica " +
+                            (producto.getToxicidad() != null ? producto.getToxicidad().getCodigoOms() : "restringida") +
+                            "). Adjunte una receta válida para venderlo.");
+                }
+                RecetaAgricola receta = recetaAgricolaRepository
+                        .findDisponible(linea.getIdReceta(), cliente.getIdCliente(), producto.getIdProducto())
+                        .orElseThrow(() -> new BadRequestException("La receta agrícola indicada para '"
+                                + producto.getNombre() + "' no existe, ya fue usada, o no corresponde a este cliente/producto."));
+                recetasAUsar.add(receta);
+            }
+        }
 
         BigDecimal subtotal = BigDecimal.ZERO;
         BigDecimal descuentoTotal = BigDecimal.ZERO;
@@ -311,6 +349,14 @@ public class VentaIAServiceImpl implements IVentaIAService {
         }
 
         Venta ventaCreada = ventaRepository.save(venta);
+
+        for (RecetaAgricola receta : recetasAUsar) {
+            receta.setUsada(true);
+            receta.setVentaUso(ventaCreada);
+            receta.setFechaUso(LocalDateTime.now());
+            recetaAgricolaRepository.save(receta);
+        }
+
         return construirRespuesta(ventaCreada);
     }
 
@@ -325,9 +371,15 @@ public class VentaIAServiceImpl implements IVentaIAService {
 
     @Override
     @Transactional(readOnly = true)
-    public VentaIAResponseDTO obtenerVenta(Integer idVenta) {
+    public VentaIAResponseDTO obtenerVenta(Integer idVenta, Integer idUsuarioAutenticado, boolean esRolDeSupervision) {
         Venta venta = ventaRepository.findById(idVenta)
                 .orElseThrow(() -> new EntityNotFoundException("Venta no encontrada: " + idVenta));
+
+        boolean esDueño = venta.getTecnico() != null && venta.getTecnico().getIdUsuario().equals(idUsuarioAutenticado);
+        if (!esDueño && !esRolDeSupervision) {
+            throw new org.uteq.sacpa.exception.AccesoDenegadoException("No tiene permiso para consultar esta venta.");
+        }
+
         return construirRespuesta(venta);
     }
 

@@ -744,4 +744,42 @@ public class ReporteServiceImpl implements IReporteService {
 
         return ejecutarPaginado("Log de Anulaciones", sql, params, f);
     }
+
+    // ------------------------------------------------------------------
+    // G. Cumplimiento Regulatorio
+    // ------------------------------------------------------------------
+
+    /**
+     * Archivo de recetas agrícolas para plaguicidas Ia/Ib y de venta restringida
+     * (AGROCALIDAD Res. 0227, Anexo 1 punto 25) -- se genera semestralmente para
+     * inspección, filtrando por rango de fechas de emisión (fechaInicio/fechaFin).
+     * Conservar 2 años: este reporte es solo de lectura, no purga nada.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public ReporteRespuestaDTO getRecetasAgricolas(ReporteFiltrosDTO f) {
+        StringBuilder sql = new StringBuilder(
+            "SELECT r.fecha_emision                        AS fecha_emision, " +
+            "       r.numero_autorizacion                  AS numero_autorizacion, " +
+            "       c.nombre_finca                         AS cliente, " +
+            "       p.nombre                                AS producto, " +
+            "       r.nombre_profesional                   AS profesional, " +
+            "       r.registro_profesional                 AS registro_profesional, " +
+            "       CASE WHEN r.usada THEN 'USADA' ELSE 'DISPONIBLE' END AS estado, " +
+            "       r.fecha_uso                            AS fecha_uso " +
+            "FROM operaciones.receta_agricola r " +
+            "JOIN entidades.clientes c ON c.id_cliente = r.id_cliente " +
+            "JOIN inventario.producto p ON p.id_producto = r.id_producto " +
+            "WHERE 1 = 1 "
+        );
+        List<Object> params = new ArrayList<>();
+        if (f != null) {
+            aplicarRangoFechas(sql, params, f, "r.fecha_emision");
+            aplicarFiltro(sql, params, f.getIdProducto(), "AND r.id_producto = ?");
+            aplicarFiltro(sql, params, f.getIdCliente(), "AND r.id_cliente = ?");
+        }
+        sql.append(" ORDER BY r.fecha_emision DESC");
+
+        return ejecutarPaginado("Archivo de Recetas Agrícolas", sql, params, f);
+    }
 }

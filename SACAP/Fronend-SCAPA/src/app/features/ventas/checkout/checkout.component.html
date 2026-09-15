@@ -68,6 +68,11 @@
               <div class="vt-producto-card" style="border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; display: flex; flex-direction: column; justify-content: space-between;">
                 <div class="vt-producto-info" style="display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 1rem;">
                   <strong>{{ producto.nombre }}</strong>
+                  @if (producto.requiereReceta) {
+                    <span class="vt-badge" style="background:#fde68a; color:#7c2d12; align-self:flex-start;">
+                      ⚠ Receta {{ producto.codigoOmsToxicidad || 'requerida' }}
+                    </span>
+                  }
                   <span style="font-size: 0.85rem; color: var(--text-muted)">{{ producto.unidadMedida }}</span>
                   <span style="font-size: 0.85rem; color: var(--text-muted)">Stock disp: {{ producto.stockDisponible }}</span>
                   <span class="vt-precio" style="font-weight: 600; color: var(--primary-color)">${{ (producto.precio || 0).toFixed(2) }}</span>
@@ -102,6 +107,16 @@
                 <div class="vt-cart-item-info">
                   <strong>{{ item.nombreProducto }}</strong>
                   <span>@if (item.esComboIA) { <span class="vt-tag-combo">Combo IA</span> }</span>
+                  @if (item.requiereReceta) {
+                    @if (item.idReceta) {
+                      <span class="vt-badge" style="background:#bbf7d0; color:#14532d;">✓ Receta adjunta</span>
+                    } @else {
+                      <button class="vt-badge" style="background:#fecaca; color:#7f1d1d; border:none; cursor:pointer;"
+                              (click)="abrirModalReceta(item.idProducto, item.nombreProducto, item.codigoOmsToxicidad)">
+                        ⚠ Adjuntar receta {{ item.codigoOmsToxicidad || '' }}
+                      </button>
+                    }
+                  }
                 </div>
                 <input type="number" min="1" class="vt-qty-input" [value]="item.cantidad"
                        (change)="actualizarCantidad(item.idProducto, $any($event.target).value)" />
@@ -158,6 +173,60 @@
           <button class="vt-btn vt-btn--ghost" (click)="cerrarModalNuevoCliente()">Cancelar</button>
           <button class="vt-btn vt-btn--primary" [disabled]="guardandoCliente()" (click)="guardarNuevoCliente()">
             {{ guardandoCliente() ? 'Guardando...' : 'Crear Cliente' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Modal Receta Agrícola -->
+  @if (modalReceta() && itemRecetaActual) {
+    <div class="vt-modal-overlay" (click)="cerrarModalReceta()">
+      <div class="vt-modal" (click)="$event.stopPropagation()">
+        <div class="vt-modal-header">
+          <h3>Receta agrícola: {{ itemRecetaActual.nombreProducto }}</h3>
+          <button class="vt-modal-close" (click)="cerrarModalReceta()">×</button>
+        </div>
+        <div class="vt-modal-body">
+          <p class="vt-nota">
+            Categoría toxicológica {{ itemRecetaActual.codigoOmsToxicidad || 'restringida' }}: AGROCALIDAD exige
+            receta firmada por un Ing. Agrónomo/Agropecuario para vender este producto (Res. 0227, Anexo 6).
+          </p>
+
+          @if (cargandoRecetas()) {
+            <p class="vt-empty-text">Buscando recetas disponibles del cliente...</p>
+          } @else if (recetasDisponiblesItem().length > 0) {
+            <label class="vt-field"><span>Recetas disponibles de este cliente para este producto</span></label>
+            <div class="vt-resultado-list">
+              @for (r of recetasDisponiblesItem(); track r.idReceta) {
+                <div class="vt-resultado-item" (click)="seleccionarRecetaExistente(r)">
+                  <strong>{{ r.numeroAutorizacion }}</strong>
+                  <span>{{ r.nombreProfesional }} · {{ r.fechaEmision }}</span>
+                </div>
+              }
+            </div>
+            <p class="vt-nota">— o registre una receta nueva —</p>
+          }
+
+          <label class="vt-field"><span>N° de autorización / registro *</span>
+            <input type="text" [(ngModel)]="formReceta.numeroAutorizacion" class="vt-input" />
+          </label>
+          <label class="vt-field"><span>Ing. Agrónomo/Agropecuario que firma *</span>
+            <input type="text" [(ngModel)]="formReceta.nombreProfesional" class="vt-input" />
+          </label>
+          <label class="vt-field"><span>N° de registro profesional (SENESCYT)</span>
+            <input type="text" [(ngModel)]="formReceta.registroProfesional" class="vt-input" />
+          </label>
+          <label class="vt-field"><span>Fecha de emisión *</span>
+            <input type="date" [(ngModel)]="formReceta.fechaEmision" class="vt-input" />
+          </label>
+
+          @if (errorReceta()) { <div class="vt-alert-error">{{ errorReceta() }}</div> }
+        </div>
+        <div class="vt-modal-footer">
+          <button class="vt-btn vt-btn--ghost" (click)="cerrarModalReceta()">Cancelar</button>
+          <button class="vt-btn vt-btn--primary" [disabled]="guardandoReceta()" (click)="registrarYAsignarReceta()">
+            {{ guardandoReceta() ? 'Guardando...' : 'Registrar y usar esta receta' }}
           </button>
         </div>
       </div>
